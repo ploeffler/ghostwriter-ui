@@ -1,0 +1,108 @@
+<!--
+  Vorlage: Neuer Abschnitt (Formular, siehe templates/ui/README.md in GhostWriter)
+
+  Inline-Widget für den Chat. Wird über den Symbol-Knopf "Neuer Abschnitt"
+  der Kapitelansicht geöffnet (Aktion section.create.open).
+
+  Aufbau:
+  - Kopf: Plus-Symbol, "Neuer Abschnitt in Kapitel N"
+  - Titel (Pflichtfeld), Ziel, Kurzbeschreibung, Faktencheck, Position
+  - Abbrechen und Abschnitt anlegen
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{CHAPTER_ID}}, {{CHAPTER_NUMBER}}, {{CHAPTER_TITLE}}  das Kapitel
+  - {{FACT_CHECK_DEFAULT}}  workflow.fact_checking_default: disabled | optional | requested
+
+  Wiederholung pro Position zwischen {{#POSITIONS}} und {{/POSITIONS}}:
+  "Am Anfang (vor N.1)", dann "Nach N.M „Titel“" für jeden Abschnitt; die
+  letzte lautet "Am Ende (nach N.M „Titel“)". Ohne Abschnitte nur
+  "Als erster Abschnitt".
+  - {{POSITION_LABEL}}     Text der Position, wird auch gesendet
+  - {{POSITION_SELECTED}}  "selected" für die Vorauswahl (am Ende), sonst leer
+
+  Verhalten:
+  - Abschnitt anlegen prüft, dass ein Titel eingegeben ist, und sendet alle Felder.
+    Ziel und Kurzbeschreibung dürfen vorläufig leer bleiben.
+  - Abbrechen meldet nur den Abbruch. Danach ist das Formular gesperrt.
+
+  Nachrichten: Klartextzeile plus Block ```gw mit JSON, siehe BEFUELLUNG.md in GhostWriter.
+  Aktionen: section.create {chapter_id, title, goal, summary, fact_check, position: Index der Auswahl, 0 = am Anfang, position_label}, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Formular zum Anlegen eines neuen Abschnitts in Kapitel {{CHAPTER_NUMBER}}: Titel, Ziel, Kurzbeschreibung, Faktencheck und Position.</h2>
+<style>
+.gw-f label{display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
+.gw-f .hint{font-size:12px;color:var(--text-muted);font-weight:400}
+.gw-f input,.gw-f textarea,.gw-f select{width:100%;box-sizing:border-box;padding:9px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px}
+.gw-f input:focus,.gw-f textarea:focus,.gw-f select:focus{outline:none;border-color:var(--border-accent)}
+.gw-f textarea{resize:vertical;line-height:1.6}
+.gw-err{font-size:13px;color:var(--text-danger);margin-top:4px}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+</style>
+<div style="padding:1rem 0">
+  <form class="gw-f" id="gw-abschnitt-anlegen" data-chapter="{{CHAPTER_ID}}" data-num="{{CHAPTER_NUMBER}}" data-fc="{{FACT_CHECK_DEFAULT}}" novalidate style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="display:flex;align-items:center;gap:var(--gap-sm)">
+      <i class="ti ti-plus" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
+      <span style="font-size:16px;font-weight:500">Neuer Abschnitt in Kapitel {{CHAPTER_NUMBER}}</span>
+      <span style="font-size:13px;color:var(--text-secondary);margin-left:auto">{{CHAPTER_TITLE}}</span>
+    </div>
+    <div>
+      <label for="gw-title">Titel</label>
+      <input id="gw-title" placeholder="Titel des Abschnitts">
+      <div class="gw-err" id="gw-title-err" hidden>Bitte einen Titel eingeben.</div>
+    </div>
+    <div>
+      <label for="gw-goal">Ziel des Abschnitts <span class="hint">was soll dieser Abschnitt leisten?</span></label>
+      <textarea id="gw-goal" rows="2"></textarea>
+    </div>
+    <div>
+      <label for="gw-summary">Kurzbeschreibung <span class="hint">worum es geht</span></label>
+      <textarea id="gw-summary" rows="2"></textarea>
+    </div>
+    <div style="display:flex;gap:var(--gap-md);flex-wrap:wrap">
+      <div style="flex:1 1 160px">
+        <label for="gw-fc">Faktencheck</label>
+        <select id="gw-fc">
+          <option value="disabled">aus</option>
+          <option value="optional">optional</option>
+          <option value="requested">angefordert</option>
+        </select>
+      </div>
+      <div style="flex:2 1 240px">
+        <label for="gw-pos">Position</label>
+        <select id="gw-pos">
+          {{#POSITIONS}}
+          <option {{POSITION_SELECTED}}>{{POSITION_LABEL}}</option>
+          {{/POSITIONS}}
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">Abschnitt anlegen</button>
+    </div>
+  </form>
+</div>
+<script>
+function gwSend(text,action,data){var p=Object.assign({action:action},data||{});sendPrompt(text+'\n\n```gw\n'+JSON.stringify(p)+'\n```');}
+(function(){
+  var f=document.getElementById('gw-abschnitt-anlegen');
+  var $=function(id){return document.getElementById(id);};
+  var id=f.dataset.chapter,num=f.dataset.num;
+  if(f.dataset.fc)$('gw-fc').value=f.dataset.fc;
+  var title=$('gw-title'),err=$('gw-title-err');
+  title.addEventListener('input',function(){err.hidden=true;});
+  function lock(){f.querySelectorAll('input,textarea,select,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
+  $('gw-save').addEventListener('click',function(){
+    if(!title.value.trim()){err.hidden=false;title.focus();return;}
+    var g=function(k){return $(k).value.trim();},s=$('gw-pos');
+    var d={chapter_id:id,title:g('gw-title'),goal:g('gw-goal'),summary:g('gw-summary'),fact_check:$('gw-fc').value,position:s.selectedIndex,position_label:s.value};
+    lock();
+    gwSend('Neuer Abschnitt in Kapitel '+num+': '+d.title,'section.create',d);
+  });
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Neuer Abschnitt in Kapitel '+num+' abgebrochen','form.cancel',{form:'section.create',chapter_id:id});});
+})();
+</script>

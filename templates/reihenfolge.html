@@ -1,0 +1,117 @@
+<!--
+  Vorlage: Reihenfolge ändern (Formular, siehe templates/ui/README.md in GhostWriter)
+
+  Inline-Widget für den Chat, für beide Fälle:
+  - Kapitelreihenfolge (Aktion chapter.reorder.open, Projektübersicht)
+  - Abschnittsreihenfolge eines Kapitels (Aktion section.reorder.open, Kapitelansicht)
+
+  Aufbau:
+  - Kopf: Pfeil-Symbol, Überschrift
+  - Liste der Einträge mit bisheriger Nummer, Titel und Knöpfen "nach oben" / "nach unten"
+  - Zurücksetzen, Abbrechen und Reihenfolge speichern
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{REORDER_KIND}}     chapter | section
+  - {{REORDER_HEADING}}  "Kapitelreihenfolge ändern" bzw. "Abschnittsreihenfolge in Kapitel N ändern"
+  - {{CHAPTER_ID}}       bei section das Kapitel, bei chapter leer
+  - {{CHAPTER_NUMBER}}   bei section die Kapitelnummer, bei chapter leer
+
+  Wiederholung pro Eintrag in der bisherigen Reihenfolge zwischen {{#ITEMS}} und {{/ITEMS}}:
+  - {{ITEM_ID}}      Kapitel- bzw. Abschnitts-ID
+  - {{ITEM_NUMBER}}  bisherige Nummer, z. B. "3" oder "2.4"
+  - {{ITEM_TITLE}}   Titel
+
+  Verhalten:
+  - Speichern ist erst aktiv, wenn sich die Reihenfolge geändert hat, und sendet
+    die IDs in der neuen Reihenfolge. IDs und Dateinamen ändern sich dabei nicht;
+    nur die Reihenfolge in structure.chapters und damit die sichtbaren Nummern.
+  - Abbrechen meldet nur den Abbruch. Danach ist das Formular gesperrt.
+
+  Nachrichten: Klartextzeile plus Block ```gw mit JSON, siehe BEFUELLUNG.md in GhostWriter.
+  Aktionen: chapter.reorder {order: [chapter_id, …]},
+            section.reorder {chapter_id, order: [section_id, …]}, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">{{REORDER_HEADING}}: Einträge mit den Pfeilen verschieben und speichern.</h2>
+<style>
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+.gw-btn:disabled{opacity:0.4;cursor:default}
+.gw-row{display:flex;align-items:center;gap:var(--gap-sm);padding:8px 10px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2)}
+.gw-row.moved{border-color:var(--border-accent)}
+.gw-num{min-width:2.6em;font-size:13px;color:var(--text-muted);font-variant-numeric:tabular-nums}
+.gw-t{flex:1;font-size:14px;min-width:0}
+.gw-mv{width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:0.5px solid var(--border);border-radius:var(--radius);background:transparent;color:var(--text-secondary);cursor:pointer;padding:0}
+.gw-mv:hover:not(:disabled){border-color:var(--border-strong);color:var(--text-primary)}
+.gw-mv:disabled{opacity:0.3;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div id="gw-reihenfolge" data-kind="{{REORDER_KIND}}" data-chapter="{{CHAPTER_ID}}" data-num="{{CHAPTER_NUMBER}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="display:flex;align-items:center;gap:var(--gap-sm)">
+      <i class="ti ti-arrows-sort" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
+      <span style="font-size:16px;font-weight:500">{{REORDER_HEADING}}</span>
+    </div>
+    <div id="gw-list" style="display:flex;flex-direction:column;gap:6px">
+      {{#ITEMS}}
+      <div class="gw-row" data-id="{{ITEM_ID}}" data-num="{{ITEM_NUMBER}}">
+        <span class="gw-num">{{ITEM_NUMBER}}</span>
+        <span class="gw-t">{{ITEM_TITLE}}</span>
+        <button type="button" class="gw-mv" data-d="-1" title="Nach oben" aria-label="Nach oben"><i class="ti ti-chevron-up" aria-hidden="true"></i></button>
+        <button type="button" class="gw-mv" data-d="1" title="Nach unten" aria-label="Nach unten"><i class="ti ti-chevron-down" aria-hidden="true"></i></button>
+      </div>
+      {{/ITEMS}}
+    </div>
+    <div style="display:flex;align-items:center;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-reset" style="border:none;background:transparent;color:var(--text-secondary);padding-left:0" disabled>Zurücksetzen</button>
+      <span style="flex:1"></span>
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)" disabled>Reihenfolge speichern</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var p=Object.assign({action:action},data||{});sendPrompt(text+'\n\n```gw\n'+JSON.stringify(p)+'\n```');}
+(function(){
+  var w=document.getElementById('gw-reihenfolge'),list=document.getElementById('gw-list');
+  var kind=w.dataset.kind,ch=w.dataset.chapter,num=w.dataset.num;
+  var rows=function(){return Array.prototype.slice.call(list.querySelectorAll('.gw-row'));};
+  var orig=rows().map(function(r){return r.dataset.id;});
+  var done=false;
+  function order(){return rows().map(function(r){return r.dataset.id;});}
+  function refresh(){
+    var rs=rows(),changed=false;
+    rs.forEach(function(r,i){
+      var moved=orig[i]!==r.dataset.id;changed=changed||moved;
+      r.classList.toggle('moved',moved);
+      var b=r.querySelectorAll('.gw-mv');b[0].disabled=done||i===0;b[1].disabled=done||i===rs.length-1;
+    });
+    document.getElementById('gw-save').disabled=done||!changed;
+    document.getElementById('gw-reset').disabled=done||!changed;
+  }
+  list.addEventListener('click',function(ev){
+    var b=ev.target.closest('.gw-mv');if(!b||b.disabled)return;
+    var r=b.closest('.gw-row'),d=+b.dataset.d;
+    if(d<0&&r.previousElementSibling)list.insertBefore(r,r.previousElementSibling);
+    if(d>0&&r.nextElementSibling)list.insertBefore(r.nextElementSibling,r);
+    refresh();
+  });
+  document.getElementById('gw-reset').addEventListener('click',function(){
+    orig.forEach(function(id){list.appendChild(list.querySelector('[data-id="'+id+'"]'));});refresh();
+  });
+  function lock(){done=true;refresh();w.querySelectorAll('button').forEach(function(x){x.disabled=true;});w.style.opacity='0.6';}
+  document.getElementById('gw-save').addEventListener('click',function(){
+    var o=order(),nums=rows().map(function(r){return r.dataset.num;}).join(', ');
+    lock();
+    if(kind==='section')gwSend('Abschnittsreihenfolge in Kapitel '+num+' speichern: '+nums,'section.reorder',{chapter_id:ch,order:o});
+    else gwSend('Kapitelreihenfolge speichern: '+nums,'chapter.reorder',{order:o});
+  });
+  document.getElementById('gw-cancel').addEventListener('click',function(){
+    lock();
+    if(kind==='section')gwSend('Abschnittsreihenfolge in Kapitel '+num+' abgebrochen','form.cancel',{form:'section.reorder',chapter_id:ch});
+    else gwSend('Kapitelreihenfolge abgebrochen','form.cancel',{form:'chapter.reorder'});
+  });
+  refresh();
+})();
+</script>

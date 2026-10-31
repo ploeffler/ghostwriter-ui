@@ -1,0 +1,172 @@
+<!--
+  Vorlage: Projekteinstellungen (Formular, siehe templates/ui/README.md in GhostWriter)
+
+  Inline-Widget für den Chat. Wird über den Symbol-Knopf "Projekteinstellungen"
+  der Projektübersicht geöffnet (Aktion project.settings.open). Technische
+  Einstellungen des Buchprojekts; Titel, Autor und Beschreibungen stehen in
+  "Projektdaten bearbeiten".
+
+  Aufbau:
+  - Kopf: Zahnrad-Symbol, "Projekteinstellungen"
+  - Feste Regeln (nur Anzeige): KI-Grundeinstellungen und Freigaben. Sie dürfen
+    nicht stillschweigend abgeschwächt werden (START.md, Abschnitt 3); Änderungen
+    nur im Chat mit ausdrücklicher Bestätigung.
+  - Faktencheck-Vorgabe für neue Abschnitte
+  - Buchsatz: Seitenformat, Schrift, Schriftgröße, Titelei (Titelseite, Impressum),
+    Inhaltsverzeichnis mit Tiefe
+  - Abbrechen und Speichern
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{FACT_CHECK_DEFAULT}}  workflow.fact_checking_default: disabled | optional | requested
+  - {{PAGE_SIZE}}           typesetting.page_size: a5 | 12x19 | 13.5x21.5 | a4
+  - {{FONT}}                typesetting.font: serif | sans
+  - {{FONT_SIZE}}           typesetting.font_size: 10 | 10.5 | 11 | 11.5 | 12
+  - {{TITLE_PAGE}}, {{IMPRINT}}, {{TOC}}  typesetting.title_page, .imprint, .toc als true/false
+  - {{TOC_DEPTH}}           typesetting.toc_depth: 1 (Kapitel) | 2 (Kapitel und Abschnitte)
+  Fehlt typesetting in ghostwriter.yml, gelten die Vorgaben aus docs/DATA-MODEL.md.
+
+  Wiederholung pro fester Regel zwischen {{#FIXED}} und {{/FIXED}}:
+  - {{FIXED_LABEL}}  z. B. "Halluzinationen"
+  - {{FIXED_VALUE}}  z. B. "strikt ausgeschlossen (strict)"
+
+  Verhalten:
+  - Speichern ist erst aktiv, wenn sich etwas geändert hat, und sendet alle
+    bearbeitbaren Werte.
+  - Abbrechen meldet nur den Abbruch. Danach ist das Formular gesperrt.
+
+  Nachrichten: Klartextzeile plus Block ```gw mit JSON, siehe BEFUELLUNG.md in GhostWriter.
+  Aktionen: project.settings.update {fact_checking_default, typesetting: {page_size, font,
+            font_size, title_page, imprint, toc, toc_depth}}, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Formular für die Projekteinstellungen: feste Regeln, Faktencheck-Vorgabe und Buchsatz.</h2>
+<style>
+.gw-f label{display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
+.gw-f .hint{font-size:12px;color:var(--text-muted);font-weight:400}
+.gw-f select{width:100%;box-sizing:border-box;padding:9px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px}
+.gw-f select:focus{outline:none;border-color:var(--border-accent)}
+.gw-f .chk{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:400;margin:0;cursor:pointer}
+.gw-f .chk input{width:16px;height:16px;margin:0;accent-color:var(--text-accent)}
+.gw-sec{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px}
+.gw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--gap-md)}
+.gw-fx{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-size:13px}
+.gw-fx dt{color:var(--text-secondary)}
+.gw-fx dd{margin:0;color:var(--text-primary)}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+.gw-btn:disabled{opacity:0.4;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <form class="gw-f" id="gw-einstellungen" novalidate
+    data-fc="{{FACT_CHECK_DEFAULT}}" data-page="{{PAGE_SIZE}}" data-font="{{FONT}}" data-size="{{FONT_SIZE}}"
+    data-title="{{TITLE_PAGE}}" data-imprint="{{IMPRINT}}" data-toc="{{TOC}}" data-depth="{{TOC_DEPTH}}"
+    style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-lg)">
+    <div style="display:flex;align-items:center;gap:var(--gap-sm)">
+      <i class="ti ti-settings" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
+      <span style="font-size:16px;font-weight:500">Projekteinstellungen</span>
+    </div>
+
+    <div>
+      <div class="gw-sec">Feste Regeln</div>
+      <dl class="gw-fx" style="margin:0">
+        {{#FIXED}}
+        <dt>{{FIXED_LABEL}}</dt><dd>{{FIXED_VALUE}}</dd>
+        {{/FIXED}}
+      </dl>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:8px"><i class="ti ti-lock" aria-hidden="true"></i> Nicht hier änderbar. Abschwächen nur im Chat mit ausdrücklicher Bestätigung.</div>
+    </div>
+
+    <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <div class="gw-sec">Arbeitsweise</div>
+      <div class="gw-grid">
+        <div>
+          <label for="gw-fc">Faktencheck für neue Abschnitte</label>
+          <select id="gw-fc">
+            <option value="disabled">aus</option>
+            <option value="optional">optional</option>
+            <option value="requested">angefordert</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <div class="gw-sec">Buchsatz <span style="text-transform:none;letter-spacing:0">· gilt für PDF, DOCX und EPUB der nächsten Auflage</span></div>
+      <div class="gw-grid">
+        <div>
+          <label for="gw-page">Seitenformat</label>
+          <select id="gw-page">
+            <option value="a5">A5 (14,8 × 21 cm)</option>
+            <option value="12x19">12 × 19 cm</option>
+            <option value="13.5x21.5">13,5 × 21,5 cm</option>
+            <option value="a4">A4 (21 × 29,7 cm)</option>
+          </select>
+        </div>
+        <div>
+          <label for="gw-font">Schrift</label>
+          <select id="gw-font">
+            <option value="serif">Serifenschrift</option>
+            <option value="sans">Serifenlose Schrift</option>
+          </select>
+        </div>
+        <div>
+          <label for="gw-size">Schriftgröße</label>
+          <select id="gw-size">
+            <option value="10">10 pt</option>
+            <option value="10.5">10,5 pt</option>
+            <option value="11">11 pt</option>
+            <option value="11.5">11,5 pt</option>
+            <option value="12">12 pt</option>
+          </select>
+        </div>
+      </div>
+      <div class="gw-grid" style="margin-top:var(--gap-md);align-items:end">
+        <div>
+          <div style="font-size:13px;font-weight:500;margin-bottom:6px">Titelei</div>
+          <label class="chk"><input type="checkbox" id="gw-title"> Titelseite</label>
+          <label class="chk" style="margin-top:6px"><input type="checkbox" id="gw-imprint"> Impressum</label>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:500;margin-bottom:6px">Inhaltsverzeichnis</div>
+          <label class="chk"><input type="checkbox" id="gw-toc"> anzeigen</label>
+        </div>
+        <div>
+          <label for="gw-depth">Tiefe <span class="hint">des Inhaltsverzeichnisses</span></label>
+          <select id="gw-depth">
+            <option value="1">nur Kapitel</option>
+            <option value="2">Kapitel und Abschnitte</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)" disabled>Speichern</button>
+    </div>
+  </form>
+</div>
+<script>
+function gwSend(text,action,data){var p=Object.assign({action:action},data||{});sendPrompt(text+'\n\n```gw\n'+JSON.stringify(p)+'\n```');}
+(function(){
+  var f=document.getElementById('gw-einstellungen'),ds=f.dataset;
+  var $=function(id){return document.getElementById(id);};
+  function set(id,v){if(v)$(id).value=v;}
+  set('gw-fc',ds.fc);set('gw-page',ds.page);set('gw-font',ds.font);set('gw-size',ds.size);set('gw-depth',ds.depth);
+  $('gw-title').checked=ds.title==='true';$('gw-imprint').checked=ds.imprint==='true';$('gw-toc').checked=ds.toc==='true';
+  function data(){return {fact_checking_default:$('gw-fc').value,typesetting:{page_size:$('gw-page').value,font:$('gw-font').value,font_size:+$('gw-size').value,title_page:$('gw-title').checked,imprint:$('gw-imprint').checked,toc:$('gw-toc').checked,toc_depth:+$('gw-depth').value}};}
+  var start=JSON.stringify(data()),done=false;
+  function refresh(){$('gw-depth').disabled=done||!$('gw-toc').checked;$('gw-save').disabled=done||JSON.stringify(data())===start;}
+  f.addEventListener('change',refresh);
+  function lock(){done=true;f.querySelectorAll('input,select,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
+  $('gw-save').addEventListener('click',function(){
+    var d=data();
+    lock();
+    gwSend('Projekteinstellungen speichern','project.settings.update',d);
+  });
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Projekteinstellungen abgebrochen','form.cancel',{form:'project.settings.update'});});
+  refresh();
+})();
+</script>
