@@ -1,0 +1,79 @@
+<!--
+  Vorlage: Änderungen übernehmen (Bestätigung, siehe templates/ui/README.md)
+
+  Inline-Widget für den Chat. Wird über den Knopf „Änderungen übernehmen“
+  der Projektübersicht geöffnet. Regeln: START.md, „Schreiben ins
+  Repository“, Schritt 7.
+
+  Aufbau:
+  - Kopf: Merge-Symbol, Überschrift
+  - Satz: wie viele Änderungen in welchen Buch-Branch übernommen werden
+  - Liste der Änderungen (Commit-Nachricht, Datum, kurzer Commit)
+  - Hinweis: Übernehmen lässt sich nicht mit einem Klick rückgängig machen
+  - Abbrechen und Übernehmen
+
+  Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert):
+  - {{PENDING_TEXT}}     „1 Änderung“ bzw. „N Änderungen“
+  - {{PENDING_PR}}       Nummer des Pull Requests
+  - {{BOOK_BRANCH}}      Buch-Branch, in den übernommen wird, z. B. main
+  - {{WORK_BRANCH}}      Arbeits-Branch, z. B. ghostwriter/main
+  - {{HEAD_SHA}}         letzter Commit des Arbeits-Branchs (gelesener Stand)
+
+  Wiederholung pro Commit des Pull Requests, älteste zuerst, zwischen
+  {{#CHANGES}} und {{/CHANGES}}:
+  - {{CHANGE_MESSAGE}}   erste Zeile der Commit-Nachricht
+  - {{CHANGE_DATE}}      Datum und Uhrzeit, z. B. „31.10.2026, 23:12“
+  - {{CHANGE_SHA}}       kurzer Commit, 7 Zeichen
+
+  Verhalten:
+  - Übernehmen sendet changes.merge mit der Nummer des Pull Requests;
+    gw.js hängt den gelesenen Stand als expected_head_sha an. Der
+    Klick ist die ausdrückliche Bestätigung.
+  - Abbrechen sendet form.cancel. Danach ist das Formular gesperrt.
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: changes.merge {pull_request}, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
+  --font-mono), Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Bestätigung: {{PENDING_TEXT}} aus Pull Request #{{PENDING_PR}} in {{BOOK_BRANCH}} übernehmen.</h2>
+<style>
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+.gw-chg{display:flex;align-items:baseline;gap:var(--gap-md);padding:8px 12px;border-top:0.5px solid var(--border)}
+.gw-chg:first-child{border-top:none}
+.gw-meta{font-size:12px;color:var(--text-muted);white-space:nowrap}
+</style>
+<div style="padding:1rem 0">
+  <div id="gw-merge-form" data-pr="{{PENDING_PR}}" data-text="{{PENDING_TEXT}}" data-branch="{{BOOK_BRANCH}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="display:flex;align-items:center;gap:var(--gap-sm)">
+      <i class="ti ti-git-merge" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
+      <span style="font-size:16px;font-weight:500">Änderungen übernehmen</span>
+    </div>
+    <p style="margin:0;font-size:14px;line-height:1.6;color:var(--text-secondary)">{{PENDING_TEXT}} aus <span style="font-family:var(--font-mono);font-size:13px">{{WORK_BRANCH}}</span> werden in <span style="font-family:var(--font-mono);font-size:13px">{{BOOK_BRANCH}}</span> übernommen (Pull Request #{{PENDING_PR}}).</p>
+    <div style="border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2)">
+      {{#CHANGES}}
+      <div class="gw-chg"><span style="flex:1;min-width:0;font-size:14px;color:var(--text-primary)">{{CHANGE_MESSAGE}}</span><span class="gw-meta">{{CHANGE_DATE}}</span><span class="gw-meta" style="font-family:var(--font-mono)">{{CHANGE_SHA}}</span></div>
+      {{/CHANGES}}
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:var(--gap-sm);font-size:13px;line-height:1.5;color:var(--text-secondary)">
+      <i class="ti ti-info-circle" style="font-size:16px;margin-top:1px" aria-hidden="true"></i>
+      <span>Danach gehören die Änderungen zum Buch. Rückgängig machen geht nur mit einer neuen Änderung.</span>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">Übernehmen</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var f=document.getElementById('gw-merge-form');
+  var $=function(id){return document.getElementById(id);};
+  function lock(){f.querySelectorAll('button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
+  $('gw-save').addEventListener('click',function(){lock();gwSend(f.dataset.text+' übernehmen (Pull Request #'+f.dataset.pr+' in '+f.dataset.branch+')','changes.merge',{pull_request:Number(f.dataset.pr)});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Änderungen übernehmen abgebrochen','form.cancel',{form:'changes.merge'});});
+})();
+</script>

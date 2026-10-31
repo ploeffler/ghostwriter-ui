@@ -13,6 +13,8 @@
     Kapitelreihenfolge ändern, Neue Auflage erzeugen, Projekteinstellungen
   - neben "Buchprojekt": die aktuelle Auflage
   - Zeile darunter: Autor links, bisherige Gesamtkosten rechtsbündig
+  - nur bei offenen Änderungen: Hinweis mit Anzahl und Pull Request,
+    Knopf „Änderungen übernehmen“ (öffnet die Bestätigung)
   - Kurzbeschreibung als hervorgehobener Einleitungssatz
   - Trennlinie, Beschreibung als Fließtext
   - Trennlinie, Liste der Kapitel (Nummer, Titel, Kapitelkosten, Status);
@@ -41,6 +43,12 @@
   - {{CHAPTER_ID}}         stabile Kapitel-ID aus structure.chapters (für view.chapter)
   Gibt es noch keine Kapitel, entfällt der Abschnitt "Kapitel" ganz.
 
+  Offene Änderungen (Arbeits-Branch mit Pull Request, siehe START.md,
+  „Schreiben ins Repository“); fehlt PENDING_COUNT, entfällt der Hinweis:
+  - {{PENDING_COUNT}}      Anzahl der Commits im Pull Request
+  - {{PENDING_TEXT}}       „1 Änderung“ bzw. „N Änderungen“
+  - {{PENDING_PR}}         Nummer des Pull Requests
+
   Kosten (siehe docs/DATA-MODEL.md, Kostenmodell):
   - Währung ist project_currency aus workflow.yml (EUR), deutsches
     Zahlenformat mit zwei Nachkommastellen.
@@ -50,7 +58,7 @@
     im Tooltip ", enthält geschätzte Kosten" ergänzt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.chapter, chapter.edit.open, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open
+  Aktionen: view.chapter, chapter.edit.open, changes.merge.open, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -89,6 +97,11 @@
         <div style="font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:6px"><i class="ti ti-user" aria-hidden="true"></i>{{PROJECT_AUTHOR}}</div>
         <div style="font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;margin-left:auto" title="{{PROJECT_COST_HINT}}"><i class="ti ti-coins" aria-hidden="true"></i><span style="font-variant-numeric:tabular-nums">{{PROJECT_COST}}</span></div>
       </div>
+    </div>
+    <div data-gw-if="PENDING_COUNT" style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:10px 12px;border:0.5px solid var(--border-warning);border-radius:var(--radius);background:var(--bg-warning);color:var(--text-warning)">
+      <i class="ti ti-git-pull-request" style="font-size:18px" aria-hidden="true"></i>
+      <span style="flex:1;min-width:180px;font-size:14px">{{PENDING_TEXT}} noch nicht übernommen <span style="font-size:12px">· Pull Request #{{PENDING_PR}}</span></span>
+      <button type="button" class="gw-sq" id="gw-merge" data-p="Änderungen übernehmen" data-a="changes.merge.open" style="width:auto;height:36px;padding:0 14px;font-size:14px;gap:6px;color:var(--text-primary)"><i class="ti ti-git-merge" style="font-size:16px" aria-hidden="true"></i>Änderungen übernehmen</button>
     </div>
     <p style="margin:0;font-size:15px;line-height:1.6;color:var(--text-primary);border-left:2px solid var(--border-accent);border-radius:0;padding-left:var(--pad-md)">{{PROJECT_DESCRIPTION_SHORT}}</p>
     <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
