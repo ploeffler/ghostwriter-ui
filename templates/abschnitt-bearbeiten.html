@@ -58,7 +58,7 @@
   - Die Abschnittssteuerung sendet dieselben Nachrichten wie
     abschnittssteuerung.html.
 
-  Nachrichten: Klartextzeile plus Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
   Aktionen: view.chapter, view.section, run.start, section.update, form.cancel
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
@@ -186,7 +186,7 @@
   </div>
 </div>
 <script>
-function gwSend(text,action,data){var p=Object.assign({action:action},data||{});sendPrompt(text+'\n\n```gw\n'+JSON.stringify(p)+'\n```');}
+function gwSend(text,action,data){var d=data||{},k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 (function(){
   var wrap=document.getElementById('gw-abschnitt'),d=wrap.dataset;
   var ref='Abschnitt '+d.sectionNumber+' „'+d.sectionTitle+'“ (ID '+d.sectionId+')';

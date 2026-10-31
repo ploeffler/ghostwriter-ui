@@ -27,7 +27,7 @@
   - Ab 560 px Breite und darunter rutscht "Ghostwriting" unter
     "Recherche", die Steuerleiste bleibt rechts.
 
-  Nachrichten: Klartextzeile plus Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
   Aktionen: run.start {section_id, task: research|writing, mode: immediate|scheduled}
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
@@ -75,7 +75,7 @@
   </div>
 </div>
 <script>
-function gwSend(text,action,data){var p=Object.assign({action:action},data||{});sendPrompt(text+'\n\n```gw\n'+JSON.stringify(p)+'\n```');}
+function gwSend(text,action,data){var d=data||{},k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 (function(){
   var wrap=document.getElementById('gw-abschnittssteuerung');
   var ref='Abschnitt '+wrap.dataset.sectionNumber+' „'+wrap.dataset.sectionTitle+'“ (ID '+wrap.dataset.sectionId+')';

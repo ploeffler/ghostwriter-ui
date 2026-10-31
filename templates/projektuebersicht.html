@@ -49,7 +49,7 @@
   - Enthält eine Summe geschätzte Kosten, wird "≈ " vorangestellt und
     im Tooltip ", enthält geschätzte Kosten" ergänzt.
 
-  Nachrichten: Klartextzeile plus Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
   Aktionen: project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
@@ -104,6 +104,6 @@
   </div>
 </div>
 <script>
-function gwSend(text,action,data){var p=Object.assign({action:action},data||{});sendPrompt(text+'\n\n```gw\n'+JSON.stringify(p)+'\n```');}
+function gwSend(text,action,data){var d=data||{},k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 document.querySelectorAll('.gw-sq[data-p]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,b.dataset.args?JSON.parse(b.dataset.args):{});});});
 </script>
