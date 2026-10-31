@@ -20,11 +20,22 @@ RUNTIME = r'''
     });
     return fillText(t,d);
   }
+  var STATUS={planned:'geplant',in_progress:'in Arbeit',ready_for_assembly:'bereit zum Zusammenführen',assembly:'wird zusammengeführt',review:'Durchsicht',ready_for_approval:'bereit zur Freigabe',approved:'freigegeben',research:'Recherche',brainstorming:'Ideensammlung',ready_to_write:'bereit zum Schreiben',writing:'Schreiben',revision:'Überarbeitung',fact_check:'Faktencheck'};
+  function german(d){
+    var o={};
+    Object.keys(d).forEach(function(k){
+      var v=d[k];
+      if(Array.isArray(v))v=v.map(function(r){return r&&typeof r==='object'?german(r):r;});
+      else if(/_STATUS$/.test(k)&&Object.prototype.hasOwnProperty.call(STATUS,v))v=STATUS[v];
+      o[k]=v;
+    });
+    return o;
+  }
   function render(name,data,el){
     var t=T[name];
     if(!t)throw new Error('GhostWriter-Vorlage unbekannt: '+name);
     el=el||document.getElementById('gw');
-    data=data||{};
+    data=german(data||{});
     el.innerHTML=fill(t.html,data);
     el.querySelectorAll('[data-gw-if]').forEach(function(n){
       var v=data[n.getAttribute('data-gw-if')];
