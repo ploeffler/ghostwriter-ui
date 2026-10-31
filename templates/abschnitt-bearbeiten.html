@@ -1,0 +1,249 @@
+<!--
+  Vorlage: Abschnitt bearbeiten (Formular, siehe templates/ui/README.md)
+
+  Inline-Widget für den Chat. Zeigt einen einzelnen Abschnitt zur
+  Bearbeitung an. Die Felder entsprechen templates/section.md.
+
+  Aufbau:
+  - Kopf links: Kurztitel als Badge, Kapitel- und Abschnittsnummer, Titel
+  - Kopf rechts: Symbolleiste mit Zurück zum Kapitel, vorheriger und
+    nächster Abschnitt, Schloss zum Sperren/Entsperren
+  - Zeile darunter: Status und Anzahl offener Marker links,
+    Abschnittskosten rechtsbündig
+  - Ziel des Abschnitts und Kurzbeschreibung nebeneinander
+  - Offene Marker aus dem Manuskript
+  - Manuskript als Markdown
+  - Faktencheck und Freigaben nebeneinander
+  - Abschnittssteuerung (Aktionspanel) in kompakter Form
+  - Verwerfen und Speichern
+
+  Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert):
+  - {{PROJECT_TITLE_SHORT}}     project.title_short
+  - {{CHAPTER_NUMBER}}          sichtbare Kapitelnummer
+  - {{SECTION_ID}}              stabile Abschnitts-ID (sec-…)
+  - {{SECTION_NUMBER}}          sichtbare Nummer, z. B. 1.4
+  - {{SECTION_TITLE}}           Titel
+  - {{SECTION_STATUS}}          Status laut workflow.yml (sections.statuses)
+  - {{SECTION_COST}}            Abschnittssumme, formatiert, z. B. "0,42 €" oder "–"
+  - {{SECTION_COST_HINT}}       Tooltip, z. B. "Summe der Kosteneinträge"
+  - {{SECTION_GOAL}}            Ziel des Abschnitts
+  - {{SECTION_SUMMARY}}         Kurzbeschreibung
+  - {{SECTION_MANUSCRIPT}}      Manuskript als Markdown
+  - {{MARKER_COUNT_TEXT}}       z. B. "2 offene Marker" oder "keine offenen Marker"
+  - {{FACT_CHECK}}              disabled | optional | requested (workflow.yml)
+  - {{APPROVAL_WRITING}}        true | false (approvals.writing)
+  - {{APPROVAL_SECTION}}        true | false (approvals.section)
+  - {{CHAPTER_ID}}              stabile Kapitel-ID
+  - {{PREV_SECTION_ID}}         ID des vorherigen Abschnitts; leer = erster Abschnitt
+  - {{PREV_SECTION_PROMPT}}     z. B. 'Abschnitt 1.3 „…“ bearbeiten'
+  - {{NEXT_SECTION_ID}}         ID des nächsten Abschnitts; leer = letzter Abschnitt
+  - {{NEXT_SECTION_PROMPT}}     wie oben
+
+  Wiederholung pro offenem Marker zwischen {{#MARKERS}} und {{/MARKERS}}:
+  - {{MARKER_TYPE}}   anekdote | quelle | medizin | recht
+  - {{MARKER_LABEL}}  Platzhalter-Anekdote | Quelle prüfen | Medizin prüfen | Recht prüfen
+  Markerarten: siehe docs/DATA-MODEL.md, „Marker im Manuskript“.
+  - {{MARKER_TEXT}}   Hinweistext aus dem Marker im Manuskript
+  Gibt es keine Marker, entfällt der Bereich "Offene Marker" ganz.
+
+  Verhalten:
+  - "Zeitgesteuert" ist in v0.5 nicht verfügbar (workflow.yml,
+    product_roadmap.v0_5: ai_runs_scheduled_queue ausgeschlossen). Die
+    Option bleibt sichtbar, ist ausgegraut und trägt den Hinweis
+    "nach v0.5". Zum Freischalten in der Option data-available="true" setzen.
+  - Speichern sendet alle Felder samt Manuskript als Nachricht in den
+    Chat; Verwerfen meldet nur den Abbruch. Danach ist das Formular gesperrt.
+  - Das Schloss sperrt bzw. entsperrt alles unterhalb des Kopfs nur im
+    Widget; es sendet keine Nachricht.
+  - Die Abschnittssteuerung sendet dieselben Nachrichten wie
+    abschnittssteuerung.html.
+
+  Nachrichten: Klartextzeile plus Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: view.chapter, view.section, run.start, section.update, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
+  --font-mono), Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Abschnitt {{SECTION_NUMBER}} „{{SECTION_TITLE}}“ bearbeiten: Ziel, Kurzbeschreibung, offene Marker, Manuskript, Faktencheck, Freigaben und Abschnittssteuerung.</h2>
+<style>
+.gw-sq{width:40px;height:40px;flex:none;border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0}
+.gw-sq:hover:not(:disabled){border-color:var(--border-strong);color:var(--text-primary)}
+.gw-sq:disabled{opacity:0.35;cursor:default}
+.gw-sq.on{border-color:var(--border-warning);background:var(--bg-warning);color:var(--text-warning)}
+.gw-lbl{display:block;font-size:13px;font-weight:500;margin-bottom:4px}
+.gw-hint{font-size:12px;color:var(--text-muted);font-weight:400}
+.gw-in{width:100%;box-sizing:border-box;padding:9px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px;line-height:1.6;resize:vertical}
+.gw-in:focus{outline:none;border-color:var(--border-accent)}
+.gw-mk{display:flex;align-items:flex-start;gap:var(--gap-sm);padding:8px 10px;border-radius:var(--radius);font-size:13px;line-height:1.5;border:0.5px solid var(--border);background:var(--surface-2);color:var(--text-secondary)}
+.gw-mk-quelle{border-color:var(--border-warning);background:var(--bg-warning);color:var(--text-warning)}
+.gw-mk-medizin{border-color:var(--border-danger);background:var(--bg-danger);color:var(--text-danger)}
+.gw-mk-recht{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-mk-label{font-weight:500}
+.gw-mk-anekdote .gw-mk-label{color:var(--text-primary)}
+.gw-opt{display:flex;align-items:center;gap:var(--gap-sm);text-align:left;padding:10px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);cursor:pointer;font:inherit;width:100%}
+.gw-opt:hover:not(:disabled){border-color:var(--border-stronger)}
+.gw-opt.sel{border-color:var(--border-accent);background:var(--bg-accent)}
+.gw-card{border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);padding:var(--pad-md);display:flex;flex-direction:column;gap:var(--gap-sm);min-width:0}
+.gw-ico{width:36px;height:36px;flex:none;border:0.5px solid var(--border);border-radius:10px;background:var(--surface-1);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text-secondary)}
+.gw-chk{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+.gw-wrap.locked .gw-lockable{opacity:0.5;pointer-events:none}
+@media (max-width:560px){.gw-two{grid-template-columns:1fr!important}}
+.gw-opt[data-available="false"]{opacity:0.45;cursor:default}
+.gw-later{font-size:11px;color:var(--text-muted);margin-left:auto;white-space:nowrap}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-wrap" id="gw-abschnitt" data-section-id="{{SECTION_ID}}" data-section-number="{{SECTION_NUMBER}}" data-section-title="{{SECTION_TITLE}}" data-fact-check="{{FACT_CHECK}}" data-approval-writing="{{APPROVAL_WRITING}}" data-approval-section="{{APPROVAL_SECTION}}" data-chapter-id="{{CHAPTER_ID}}" data-prev="{{PREV_SECTION_PROMPT}}" data-prev-id="{{PREV_SECTION_ID}}" data-next="{{NEXT_SECTION_PROMPT}}" data-next-id="{{NEXT_SECTION_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div>
+      <div style="display:flex;align-items:flex-start;gap:var(--gap-md);flex-wrap:wrap-reverse">
+        <div style="flex:1;min-width:220px">
+          <div style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;margin-bottom:4px">
+            <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{PROJECT_TITLE_SHORT}}</span>
+            <span style="font-size:12px;color:var(--text-muted)">Kapitel {{CHAPTER_NUMBER}} · Abschnitt {{SECTION_NUMBER}}</span>
+          </div>
+          <div style="font-size:20px;font-weight:500;line-height:1.3">{{SECTION_TITLE}}</div>
+        </div>
+        <div style="display:flex;gap:var(--gap-sm);margin-left:auto">
+          <button type="button" class="gw-sq" data-p="Zurück zu Kapitel {{CHAPTER_NUMBER}}" data-a="view.chapter" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Zum Kapitel" aria-label="Zum Kapitel"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" id="gw-prev" title="Vorheriger Abschnitt" aria-label="Vorheriger Abschnitt"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" id="gw-next" title="Nächster Abschnitt" aria-label="Nächster Abschnitt"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" id="gw-lock" aria-pressed="false" title="Abschnitt sperren" aria-label="Abschnitt sperren"><i class="ti ti-lock-open" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--gap-md);flex-wrap:wrap;margin-top:8px">
+        <div style="font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap">
+          <span style="display:flex;align-items:center;gap:6px"><i class="ti ti-progress" aria-hidden="true"></i>{{SECTION_STATUS}}</span>
+          <span style="display:flex;align-items:center;gap:6px"><i class="ti ti-alert-triangle" aria-hidden="true"></i>{{MARKER_COUNT_TEXT}}</span>
+        </div>
+        <div style="font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;margin-left:auto" title="{{SECTION_COST_HINT}}"><i class="ti ti-coins" aria-hidden="true"></i><span style="font-variant-numeric:tabular-nums">{{SECTION_COST}}</span></div>
+      </div>
+    </div>
+
+    <div class="gw-lockable" style="display:flex;flex-direction:column;gap:var(--gap-md)">
+      <div class="gw-two" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-md);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+        <div>
+          <label class="gw-lbl" for="gw-goal">Ziel des Abschnitts</label>
+          <textarea class="gw-in" id="gw-goal" rows="3">{{SECTION_GOAL}}</textarea>
+        </div>
+        <div>
+          <label class="gw-lbl" for="gw-summary">Kurzbeschreibung</label>
+          <textarea class="gw-in" id="gw-summary" rows="3">{{SECTION_SUMMARY}}</textarea>
+        </div>
+      </div>
+
+      <div data-gw-if="MARKERS" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+        <div class="gw-lbl">Offene Marker</div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-xs)">
+          {{#MARKERS}}
+          <div class="gw-mk gw-mk-{{MARKER_TYPE}}"><i class="ti gw-mk-icon" data-type="{{MARKER_TYPE}}" style="font-size:16px;margin-top:2px" aria-hidden="true"></i><span style="flex:1"><span class="gw-mk-label">{{MARKER_LABEL}}</span> · {{MARKER_TEXT}}</span></div>
+          {{/MARKERS}}
+        </div>
+      </div>
+
+      <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+        <label class="gw-lbl" for="gw-ms">Manuskript <span class="gw-hint">Markdown</span></label>
+        <textarea class="gw-in" id="gw-ms" rows="14" style="font-family:var(--font-mono);font-size:13px">{{SECTION_MANUSCRIPT}}</textarea>
+      </div>
+
+      <div class="gw-two" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-md);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+        <div>
+          <label class="gw-lbl" for="gw-fc">Faktencheck</label>
+          <select id="gw-fc" class="gw-in" style="width:auto;padding:6px 10px">
+            <option value="disabled">aus</option>
+            <option value="optional">optional</option>
+            <option value="requested">angefordert</option>
+          </select>
+        </div>
+        <div>
+          <div class="gw-lbl">Freigaben</div>
+          <label class="gw-chk"><input type="checkbox" id="gw-apw"> Schreiben freigegeben</label>
+          <label class="gw-chk" style="margin-top:6px"><input type="checkbox" id="gw-aps"> Abschnitt freigegeben</label>
+        </div>
+      </div>
+
+      <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+        <div class="gw-lbl">Abschnittssteuerung</div>
+        <div class="gw-two" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-sm)">
+          <div class="gw-card" data-task="Recherche">
+            <div style="display:flex;align-items:center;gap:var(--gap-sm)"><div class="gw-ico"><i class="ti ti-search" aria-hidden="true"></i></div><div><div style="font-size:14px;font-weight:500">Recherche</div><div style="font-size:12px;color:var(--text-secondary)">Quellen finden und auswerten</div></div></div>
+            <button type="button" class="gw-opt" data-mode="zeitgesteuert" data-available="false"><i class="ti ti-clock" style="font-size:16px;color:var(--text-secondary)" aria-hidden="true"></i><span style="font-size:13px"><span style="font-weight:500">Zeitgesteuert</span> · Cloud-Warteschlange</span></button>
+            <button type="button" class="gw-opt" data-mode="sofort"><i class="ti ti-bolt" style="font-size:16px;color:var(--text-secondary)" aria-hidden="true"></i><span style="font-size:13px"><span style="font-weight:500">Sofort</span> · hier im Chat</span></button>
+          </div>
+          <div class="gw-card" data-task="Ghostwriting">
+            <div style="display:flex;align-items:center;gap:var(--gap-sm)"><div class="gw-ico"><i class="ti ti-feather" aria-hidden="true"></i></div><div><div style="font-size:14px;font-weight:500">Ghostwriting</div><div style="font-size:12px;color:var(--text-secondary)">Automated Content Generation</div></div></div>
+            <button type="button" class="gw-opt" data-mode="zeitgesteuert" data-available="false"><i class="ti ti-clock" style="font-size:16px;color:var(--text-secondary)" aria-hidden="true"></i><span style="font-size:13px"><span style="font-weight:500">Zeitgesteuert</span> · Cloud-Warteschlange</span></button>
+            <button type="button" class="gw-opt" data-mode="sofort"><i class="ti ti-bolt" style="font-size:16px;color:var(--text-secondary)" aria-hidden="true"></i><span style="font-size:13px"><span style="font-weight:500">Sofort</span> · hier im Chat</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+        <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Verwerfen</button>
+        <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">Speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var p=Object.assign({action:action},data||{});sendPrompt(text+'\n\n```gw\n'+JSON.stringify(p)+'\n```');}
+(function(){
+  var wrap=document.getElementById('gw-abschnitt'),d=wrap.dataset;
+  var ref='Abschnitt '+d.sectionNumber+' „'+d.sectionTitle+'“ (ID '+d.sectionId+')';
+  var $=function(id){return document.getElementById(id);};
+
+  var icons={anekdote:'ti-quote',quelle:'ti-book',medizin:'ti-stethoscope',recht:'ti-scale'};
+  wrap.querySelectorAll('.gw-mk-icon').forEach(function(i){i.classList.add(icons[i.dataset.type]||'ti-alert-triangle');});
+
+  $('gw-fc').value=d.factCheck||'optional';
+  $('gw-apw').checked=d.approvalWriting==='true';
+  $('gw-aps').checked=d.approvalSection==='true';
+
+  [['gw-prev',d.prev,d.prevId],['gw-next',d.next,d.nextId]].forEach(function(p){
+    var b=$(p[0]);
+    if(!p[2]){b.disabled=true;return;}
+    b.title=p[1];
+    b.addEventListener('click',function(){gwSend(p[1],'view.section',{section_id:p[2]});});
+  });
+  wrap.querySelectorAll('.gw-sq[data-p]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,b.dataset.args?JSON.parse(b.dataset.args):{});});});
+
+  var texts={
+    'Recherche|zeitgesteuert':'Recherche für '+ref+' zeitgesteuert als Job in die Cloud-Warteschlange übergeben',
+    'Recherche|sofort':ref+' jetzt sofort hier im Chat recherchieren',
+    'Ghostwriting|zeitgesteuert':'Ghostwriting für '+ref+' zeitgesteuert als Job in die Cloud-Warteschlange übergeben',
+    'Ghostwriting|sofort':ref+' jetzt sofort hier im Chat schreiben (Ghostwriting)'
+  };
+  wrap.querySelectorAll('.gw-opt[data-available="false"]').forEach(function(x){
+    x.disabled=true;x.title='Nicht verfügbar in v0.5';
+    var s=document.createElement('span');s.className='gw-later';s.textContent='nach v0.5';x.appendChild(s);
+  });
+  wrap.querySelectorAll('.gw-card').forEach(function(card){
+    var o=card.querySelectorAll('.gw-opt');
+    o.forEach(function(b){b.addEventListener('click',function(){
+      o.forEach(function(x){x.disabled=true;if(x===b)x.classList.add('sel');else x.style.opacity='0.45';});
+      gwSend(texts[card.dataset.task+'|'+b.dataset.mode],'run.start',{section_id:d.sectionId,task:card.dataset.task==='Recherche'?'research':'writing',mode:b.dataset.mode==='sofort'?'immediate':'scheduled'});
+    });});
+  });
+
+  var lock=$('gw-lock'),locked=false;
+  lock.addEventListener('click',function(){
+    locked=!locked;
+    wrap.classList.toggle('locked',locked);
+    lock.classList.toggle('on',locked);
+    lock.setAttribute('aria-pressed',String(locked));
+    var l=locked?'Abschnitt entsperren':'Abschnitt sperren';
+    lock.title=l;lock.setAttribute('aria-label',l);
+    lock.querySelector('i').className=locked?'ti ti-lock':'ti ti-lock-open';
+  });
+
+  function done(){wrap.querySelectorAll('.gw-lockable input,.gw-lockable textarea,.gw-lockable select,.gw-lockable button').forEach(function(x){x.disabled=true;});}
+  var fcText={disabled:'aus',optional:'optional',requested:'angefordert'};
+  $('gw-save').addEventListener('click',function(){
+    var data={section_id:d.sectionId,goal:$('gw-goal').value.trim(),summary:$('gw-summary').value.trim(),
+      fact_check:$('gw-fc').value,approvals:{writing:$('gw-apw').checked,section:$('gw-aps').checked},
+      manuscript:$('gw-ms').value};
+    done();gwSend(ref+' speichern (Faktencheck: '+fcText[data.fact_check]+')','section.update',data);
+  });
+  $('gw-cancel').addEventListener('click',function(){done();gwSend('Änderungen an '+ref+' verworfen','form.cancel',{form:'section.update',section_id:d.sectionId});});
+})();
+</script>

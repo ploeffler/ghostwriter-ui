@@ -1,0 +1,146 @@
+<!--
+  Vorlage: Kapitelansicht (Anzeige mit Symbolleiste, siehe templates/ui/README.md)
+
+  Inline-Widget für den Chat. Zeigt ein Kapitel mit allen Abschnitten.
+  Ein Klick auf einen Abschnitt öffnet ihn zur Bearbeitung
+  (abschnitt-bearbeiten.html).
+
+  Aufbau:
+  - Kopf links: Kurztitel als Badge, Kapitelnummer, Titel, optional Untertitel
+  - Kopf rechts: Symbolleiste mit Zur Projektübersicht, Kapitel bearbeiten,
+    Neuer Abschnitt, Abschnittsreihenfolge ändern
+  - Zeile darunter: Anzahl Abschnitte und offene Marker links,
+    Kapitelkosten rechtsbündig
+  - Trennlinie, Abschnittsliste mit Legende der Markerarten;
+    pro Abschnitt: Nummer, Titel, Marker, Kosten, Status
+  - Trennlinie, Hinweis zur Kapitelzusammenführung
+
+  Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert):
+  - {{PROJECT_TITLE_SHORT}}   project.title_short
+  - {{CHAPTER_ID}}            stabile Kapitel-ID
+  - {{CHAPTER_NUMBER}}        sichtbare Kapitelnummer
+  - {{CHAPTER_TITLE}}         Kapiteltitel
+  - {{CHAPTER_SUBTITLE}}      Untertitel; leer = Zeile entfällt
+  - {{SECTION_COUNT_TEXT}}    z. B. "9 Abschnitte"
+  - {{MARKER_COUNT_TEXT}}     z. B. "10 offene Marker" oder "keine offenen Marker"
+  - {{CHAPTER_COST}}          Summe der Abschnittssummen, formatiert, z. B. "1,18 €" oder "–"
+  - {{CHAPTER_COST_HINT}}     Tooltip, z. B. "Summe der Abschnittskosten"
+  - {{APPROVED_COUNT_TEXT}}   z. B. "0 von 9"
+
+  Wiederholung pro Abschnitt in Reihenfolge zwischen {{#SECTIONS}} und {{/SECTIONS}}:
+  - {{SECTION_ID}}        stabile Abschnitts-ID
+  - {{SECTION_NUMBER}}    sichtbare Nummer, z. B. 1.4
+  - {{SECTION_TITLE}}     Titel
+  - {{SECTION_STATUS}}    Status laut workflow.yml (sections.statuses)
+  - {{SECTION_COST}}      Abschnittssumme, formatiert, oder "–"
+  - {{MARKERS_ANEKDOTE}}  Anzahl offener Platzhalter-Anekdoten (0, 1, …)
+  - {{MARKERS_QUELLE}}    Anzahl offener Quellen-Prüfungen
+  - {{MARKERS_MEDIZIN}}   Anzahl offener Medizin-Prüfungen
+  - {{MARKERS_RECHT}}     Anzahl offener Rechts-Prüfungen
+  Markerarten: siehe docs/DATA-MODEL.md, „Marker im Manuskript“.
+  Gibt es noch keine Abschnitte, bleibt die Liste leer und das Skript
+  zeigt "Noch keine Abschnitte".
+
+  Kosten (siehe docs/DATA-MODEL.md): Abschnittssumme aus den Kosteneinträgen,
+  Kapitelsumme = Summe der Abschnittssummen. Enthält eine Summe geschätzte
+  Kosten, wird "≈ " vorangestellt.
+
+  Nachrichten: Klartextzeile plus Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: view.project, chapter.edit.open, section.create.open, section.reorder.open, view.section
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Kapitel {{CHAPTER_NUMBER}} „{{CHAPTER_TITLE}}“ mit allen Abschnitten, ihren offenen Markern, Kosten und Status.</h2>
+<style>
+.gw-sq{width:40px;height:40px;flex:none;border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0}
+.gw-sq:hover{border-color:var(--border-strong);color:var(--text-primary)}
+.gw-row{display:flex;align-items:center;gap:var(--gap-md);padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);cursor:pointer;text-align:left;font:inherit;width:100%}
+.gw-row:hover{border-color:var(--border-strong)}
+.gw-tag{font-size:11px;padding:1px 7px;border-radius:999px;white-space:nowrap;border:0.5px solid var(--border-warning);background:var(--bg-warning);color:var(--text-warning)}
+.gw-tag.med{border-color:var(--border-danger);background:var(--bg-danger);color:var(--text-danger)}
+.gw-tag.recht{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-tag.anek{border-color:var(--border);background:var(--surface-1);color:var(--text-secondary)}
+.gw-num{font-size:13px;color:var(--text-muted);min-width:28px;font-variant-numeric:tabular-nums}
+.gw-meta{font-size:12px;color:var(--text-muted)}
+@media (max-width:520px){.gw-tags{display:none!important}}
+</style>
+<div style="padding:1rem 0">
+  <div id="gw-kapitel" data-chapter-id="{{CHAPTER_ID}}" data-chapter-number="{{CHAPTER_NUMBER}}" data-chapter-title="{{CHAPTER_TITLE}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div>
+      <div style="display:flex;align-items:flex-start;gap:var(--gap-md);flex-wrap:wrap-reverse">
+        <div style="flex:1;min-width:220px">
+          <div style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;margin-bottom:4px">
+            <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{PROJECT_TITLE_SHORT}}</span>
+            <span style="font-size:12px;color:var(--text-muted)">Kapitel {{CHAPTER_NUMBER}}</span>
+          </div>
+          <div style="font-size:20px;font-weight:500;line-height:1.3">{{CHAPTER_TITLE}}</div>
+          <div id="gw-subtitle" style="font-size:14px;color:var(--text-secondary);font-style:italic;margin-top:2px">{{CHAPTER_SUBTITLE}}</div>
+        </div>
+        <div style="display:flex;gap:var(--gap-sm);margin-left:auto">
+          <button type="button" class="gw-sq" data-p="Zurück zur Projektübersicht" data-a="view.project" title="Zur Projektübersicht" aria-label="Zur Projektübersicht"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="Kapitel {{CHAPTER_NUMBER}} bearbeiten" data-a="chapter.edit.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Kapitel bearbeiten" aria-label="Kapitel bearbeiten"><i class="ti ti-edit" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="Neuen Abschnitt in Kapitel {{CHAPTER_NUMBER}} anlegen" data-a="section.create.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Neuer Abschnitt" aria-label="Neuer Abschnitt"><i class="ti ti-plus" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="Abschnittsreihenfolge in Kapitel {{CHAPTER_NUMBER}} ändern" data-a="section.reorder.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Abschnittsreihenfolge ändern" aria-label="Abschnittsreihenfolge ändern"><i class="ti ti-arrows-sort" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--gap-md);flex-wrap:wrap;margin-top:8px">
+        <div style="font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap">
+          <span style="display:flex;align-items:center;gap:6px"><i class="ti ti-list-numbers" aria-hidden="true"></i>{{SECTION_COUNT_TEXT}}</span>
+          <span style="display:flex;align-items:center;gap:6px"><i class="ti ti-alert-triangle" aria-hidden="true"></i>{{MARKER_COUNT_TEXT}}</span>
+        </div>
+        <div style="font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;margin-left:auto" title="{{CHAPTER_COST_HINT}}"><i class="ti ti-coins" aria-hidden="true"></i><span style="font-variant-numeric:tabular-nums">{{CHAPTER_COST}}</span></div>
+      </div>
+    </div>
+    <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;color:var(--text-muted)">Abschnitte</span>
+        <span style="font-size:12px;color:var(--text-muted);display:flex;gap:6px;flex-wrap:wrap"><span class="gw-tag anek">Anekdote</span><span class="gw-tag">Quelle</span><span class="gw-tag med">Medizin</span><span class="gw-tag recht">Recht</span></span>
+      </div>
+      <div id="gw-sections" style="display:flex;flex-direction:column;gap:var(--gap-xs)">
+        {{#SECTIONS}}
+        <button type="button" class="gw-row" data-id="{{SECTION_ID}}" data-number="{{SECTION_NUMBER}}" data-title="{{SECTION_TITLE}}" data-anekdote="{{MARKERS_ANEKDOTE}}" data-quelle="{{MARKERS_QUELLE}}" data-medizin="{{MARKERS_MEDIZIN}}" data-recht="{{MARKERS_RECHT}}"><span class="gw-num">{{SECTION_NUMBER}}</span><span style="flex:1;min-width:0;font-size:14px;font-weight:500">{{SECTION_TITLE}}</span><span class="gw-tags" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end"></span><span class="gw-meta" style="min-width:32px;text-align:right" title="Kosten">{{SECTION_COST}}</span><span class="gw-meta">{{SECTION_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
+        {{/SECTIONS}}
+      </div>
+    </div>
+    <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md);display:flex;align-items:center;gap:var(--gap-sm);font-size:13px;color:var(--text-secondary)">
+      <i class="ti ti-info-circle" aria-hidden="true"></i>Kapitelzusammenführung erst möglich, wenn alle Abschnitte freigegeben sind ({{APPROVED_COUNT_TEXT}}).
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var p=Object.assign({action:action},data||{});sendPrompt(text+'\n\n```gw\n'+JSON.stringify(p)+'\n```');}
+(function(){
+  var wrap=document.getElementById('gw-kapitel');
+  var sub=document.getElementById('gw-subtitle');
+  if(!sub.textContent.trim())sub.remove();
+
+  var list=document.getElementById('gw-sections');
+  var rows=list.querySelectorAll('.gw-row');
+  if(!rows.length){
+    var p=document.createElement('div');
+    p.className='gw-meta';p.style.padding='8px 0';
+    p.textContent='Noch keine Abschnitte';
+    list.appendChild(p);
+  }
+  rows.forEach(function(r){
+    var n=function(k){return parseInt(r.dataset[k],10)||0;};
+    var box=r.querySelector('.gw-tags'),add=function(cls,label,c){
+      if(!c)return;
+      var s=document.createElement('span');s.className='gw-tag'+(cls?' '+cls:'');
+      s.textContent=label+(c>1?' ×'+c:'');box.appendChild(s);
+    };
+    add('anek','Anekdote',n('anekdote'));
+    add('','Quelle',n('quelle'));
+    add('med','Medizin',n('medizin'));
+    add('recht','Recht',n('recht'));
+    if(!box.children.length){
+      box.innerHTML='<span class="gw-meta" style="display:flex;align-items:center;gap:4px"><i class="ti ti-check" aria-hidden="true"></i>keine Marker</span>';
+    }
+    r.addEventListener('click',function(){gwSend('Abschnitt '+r.dataset.number+' „'+r.dataset.title+'“ bearbeiten','view.section',{section_id:r.dataset.id});});
+  });
+
+  wrap.querySelectorAll('.gw-sq[data-p]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,b.dataset.args?JSON.parse(b.dataset.args):{});});});
+})();
+</script>

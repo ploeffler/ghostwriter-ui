@@ -1,0 +1,100 @@
+<!--
+  Vorlage: Neues Kapitel anlegen (Formular, siehe templates/ui/README.md)
+
+  Inline-Widget für den Chat. Wird über den Symbol-Knopf "Neues Kapitel
+  anlegen" der Projektübersicht geöffnet. Die Felder entsprechen
+  templates/chapter-README.md.
+
+  Aufbau:
+  - Kopf: Plus-Symbol, Überschrift
+  - Titel (Pflichtfeld)
+  - Kurzbeschreibung
+  - Ziel des Kapitels
+  - Position in der Kapitelreihenfolge
+  - Abbrechen und Kapitel anlegen
+
+  Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert):
+  Wiederholung pro Position zwischen {{#POSITIONS}} und {{/POSITIONS}},
+  in dieser Reihenfolge: "Am Anfang (vor Kapitel 1)", dann
+  "Nach Kapitel <n> „<Titel>“" für jedes Kapitel; die letzte Position
+  lautet "Am Ende (nach Kapitel <n> „<Titel>“)". Ohne Kapitel gibt es
+  nur die Position "Als erstes Kapitel".
+  - {{POSITION_LABEL}}     Text der Position, wird auch gesendet
+  - {{POSITION_SELECTED}}  "selected" für die Vorauswahl (Standard: am Ende), sonst leer
+
+  Verhalten:
+  - Kapitel anlegen prüft, dass ein Titel eingegeben ist, und sendet
+    sonst alle Felder als Nachricht in den Chat. Leere Felder werden als
+    "(leer)" gesendet und dürfen vorläufig offenbleiben (START.md).
+  - Abbrechen meldet nur den Abbruch. Danach ist das Formular gesperrt.
+  - Ein Kapitel braucht mindestens einen Abschnitt (START.md); den legt
+    man danach in der Kapitelansicht an.
+
+  Nachrichten: Klartextzeile plus Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: chapter.create {title, summary, goal, position: Index der Auswahl, 0 = am Anfang}, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Formular zum Anlegen eines neuen Kapitels: Titel, Kurzbeschreibung, Ziel des Kapitels und Position.</h2>
+<style>
+.gw-f label{display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
+.gw-f .hint{font-size:12px;color:var(--text-muted);font-weight:400}
+.gw-f input,.gw-f textarea,.gw-f select{width:100%;box-sizing:border-box;padding:9px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px}
+.gw-f input:focus,.gw-f textarea:focus,.gw-f select:focus{outline:none;border-color:var(--border-accent)}
+.gw-f textarea{resize:vertical;line-height:1.6}
+.gw-err{font-size:13px;color:var(--text-danger);margin-top:4px}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+</style>
+<div style="padding:1rem 0">
+  <form class="gw-f" id="gw-kapitel-anlegen" novalidate style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="display:flex;align-items:center;gap:var(--gap-sm)">
+      <i class="ti ti-plus" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
+      <span style="font-size:16px;font-weight:500">Neues Kapitel anlegen</span>
+    </div>
+    <div>
+      <label for="gw-title">Titel</label>
+      <input id="gw-title" placeholder="Titel des Kapitels">
+      <div class="gw-err" id="gw-title-err" hidden>Bitte einen Titel eingeben.</div>
+    </div>
+    <div>
+      <label for="gw-summary">Kurzbeschreibung <span class="hint">kurze Zusammenfassung des Kapitels</span></label>
+      <textarea id="gw-summary" rows="2"></textarea>
+    </div>
+    <div>
+      <label for="gw-goal">Ziel des Kapitels <span class="hint">was soll der Leser danach verstanden haben?</span></label>
+      <textarea id="gw-goal" rows="2"></textarea>
+    </div>
+    <div>
+      <label for="gw-pos">Position</label>
+      <select id="gw-pos">
+        {{#POSITIONS}}
+        <option {{POSITION_SELECTED}}>{{POSITION_LABEL}}</option>
+        {{/POSITIONS}}
+      </select>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">Kapitel anlegen</button>
+    </div>
+  </form>
+</div>
+<script>
+function gwSend(text,action,data){var p=Object.assign({action:action},data||{});sendPrompt(text+'\n\n```gw\n'+JSON.stringify(p)+'\n```');}
+(function(){
+  var f=document.getElementById('gw-kapitel-anlegen');
+  var $=function(id){return document.getElementById(id);};
+  var t=$('gw-title'),e=$('gw-title-err');
+  t.addEventListener('input',function(){e.hidden=true;});
+  function lock(){f.querySelectorAll('input,textarea,select,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
+  $('gw-save').addEventListener('click',function(){
+    if(!t.value.trim()){e.hidden=false;t.focus();return;}
+    var v=function(id){return $(id).value.trim()||'(leer)';};
+    lock();
+    var s=$('gw-pos');
+    gwSend('Neues Kapitel anlegen: '+$('gw-title').value.trim(),'chapter.create',{title:$('gw-title').value.trim(),summary:$('gw-summary').value.trim(),goal:$('gw-goal').value.trim(),position:s.selectedIndex,position_label:s.value});
+  });
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Neues Kapitel anlegen abgebrochen','form.cancel',{form:'chapter.create'});});
+})();
+</script>

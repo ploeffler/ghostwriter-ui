@@ -1,0 +1,118 @@
+<!--
+  Vorlage: Neue Auflage erzeugen (Formular, siehe templates/ui/README.md)
+
+  Inline-Widget für den Chat. Wird über den Symbol-Knopf "Neue Auflage
+  erzeugen" der Projektübersicht geöffnet. Regeln: book_releases in
+  workflow.yml und docs/WORKFLOW-MODEL.md.
+
+  Aufbau:
+  - Kopf: Bücher-Symbol, Überschrift
+  - Feste Angaben (nicht bearbeitbar): Auflage, Name, Tag, Formate
+  - Erscheinungsdatum (Pflichtfeld)
+  - Anmerkungen (optional)
+  - Hinweis, falls nicht alle Kapitel freigegeben sind
+  - Abbrechen und Erzeugen
+
+  Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert):
+  - {{EDITION_NUMBER}}         nächste Auflage: project.current_edition + 1
+  - {{EDITION_NAME}}           name_pattern, z. B. "ADHS im Erwachsenenleben – Auflage 1"
+  - {{EDITION_TAG}}            tag_pattern, z. B. "adhs-im-erwachsenenleben-auflage-1"
+  - {{EDITION_DATE_DEFAULT}}   Vorschlag für das Erscheinungsdatum, YYYY-MM-DD (heute)
+  - {{APPROVAL_WARNING_TEXT}}  z. B. "Bisher sind 3 von 5 Kapiteln freigegeben; nur diese
+                               kommen in die Auflage." Leer = alle Kapitel freigegeben,
+                               der Hinweis entfällt.
+
+  Wiederholung pro Format zwischen {{#FORMATS}} und {{/FORMATS}}
+  (book_releases.assets, in v0.5: PDF, DOCX, EPUB):
+  - {{FORMAT_LABEL}}  z. B. "PDF"
+
+  Verhalten:
+  - Erzeugen prüft, dass ein Erscheinungsdatum gewählt ist, und sendet
+    sonst Name, Tag, Datum, Formate und Anmerkungen als Nachricht in
+    den Chat. Abbrechen meldet nur den Abbruch. Danach ist das
+    Formular gesperrt.
+  - Release Notes sind Pflicht (book_releases.release_notes_required).
+    Die Anmerkungen gehen in die Release Notes ein. Bleiben sie leer,
+    werden die Release Notes aus den Änderungen seit der letzten
+    Auflage zusammengestellt und vor dem Erzeugen zur Freigabe gezeigt.
+  - Nur freigegebene Manuskriptinhalte kommen in die Auflage
+    (book_releases.approval).
+
+  Nachrichten: Klartextzeile plus Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: edition.create {name, tag, date, formats, notes}, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
+  --font-mono), Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Formular zum Erzeugen von {{EDITION_NAME}}: Erscheinungsdatum und Anmerkungen.</h2>
+<style>
+.gw-f label{display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
+.gw-f .hint{font-size:12px;color:var(--text-muted);font-weight:400}
+.gw-f input,.gw-f textarea{width:100%;box-sizing:border-box;padding:9px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px}
+.gw-f input:focus,.gw-f textarea:focus{outline:none;border-color:var(--border-accent)}
+.gw-f textarea{resize:vertical;line-height:1.6}
+.gw-err{font-size:13px;color:var(--text-danger);margin-top:4px}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+.gw-key{font-size:13px;color:var(--text-muted)}
+.gw-ro{font-size:14px;color:var(--text-primary)}
+.gw-pill{font-size:12px;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border);background:var(--surface-2);color:var(--text-secondary)}
+</style>
+<div style="padding:1rem 0">
+  <form class="gw-f" id="gw-auflage" novalidate data-name="{{EDITION_NAME}}" data-tag="{{EDITION_TAG}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="display:flex;align-items:center;gap:var(--gap-sm)">
+      <i class="ti ti-books" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
+      <span style="font-size:16px;font-weight:500">Neue Auflage erzeugen</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:6px var(--gap-md);align-items:baseline;padding:var(--pad-md);border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2)">
+      <span class="gw-key">Auflage</span><span class="gw-ro" style="font-weight:500">{{EDITION_NUMBER}}</span>
+      <span class="gw-key">Name</span><span class="gw-ro">{{EDITION_NAME}}</span>
+      <span class="gw-key">Tag</span><span class="gw-ro" style="font-family:var(--font-mono);font-size:13px">{{EDITION_TAG}}</span>
+      <span class="gw-key">Formate</span><span id="gw-formats" style="display:flex;gap:6px;flex-wrap:wrap">
+        {{#FORMATS}}
+        <span class="gw-pill">{{FORMAT_LABEL}}</span>
+        {{/FORMATS}}
+      </span>
+    </div>
+
+    <div>
+      <label for="gw-date">Erscheinungsdatum</label>
+      <input type="date" id="gw-date" value="{{EDITION_DATE_DEFAULT}}" style="width:auto">
+      <div class="gw-err" id="gw-date-err" hidden>Bitte ein Erscheinungsdatum wählen.</div>
+    </div>
+    <div>
+      <label for="gw-notes">Anmerkungen <span class="hint">optional, erscheinen in den Release Notes</span></label>
+      <textarea id="gw-notes" rows="4" placeholder="z. B. Was ist neu oder korrigiert gegenüber der vorigen Auflage?"></textarea>
+    </div>
+
+    <div id="gw-warning" style="display:flex;align-items:flex-start;gap:var(--gap-sm);padding:10px 12px;border:0.5px solid var(--border-warning);border-radius:var(--radius);background:var(--bg-warning);color:var(--text-warning);font-size:13px;line-height:1.5">
+      <i class="ti ti-alert-triangle" style="font-size:16px;margin-top:1px" aria-hidden="true"></i>
+      <span id="gw-warning-text">{{APPROVAL_WARNING_TEXT}}</span>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">Erzeugen</button>
+    </div>
+  </form>
+</div>
+<script>
+function gwSend(text,action,data){var p=Object.assign({action:action},data||{});sendPrompt(text+'\n\n```gw\n'+JSON.stringify(p)+'\n```');}
+(function(){
+  var f=document.getElementById('gw-auflage');
+  var $=function(id){return document.getElementById(id);};
+  if(!$('gw-warning-text').textContent.trim())$('gw-warning').remove();
+  var d=$('gw-date'),e=$('gw-date-err');
+  d.addEventListener('input',function(){e.hidden=true;});
+  function lock(){f.querySelectorAll('input,textarea,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
+  $('gw-save').addEventListener('click',function(){
+    if(!d.value){e.hidden=false;d.focus();return;}
+    var formats=[].map.call($('gw-formats').querySelectorAll('.gw-pill'),function(p){return p.textContent.trim();}).join(', ');
+    var notes=$('gw-notes').value.trim()||'(keine – Release Notes aus den Änderungen seit der letzten Auflage zusammenstellen)';
+    lock();
+    gwSend('Neue Auflage erzeugen: '+f.dataset.name,'edition.create',{name:f.dataset.name,tag:f.dataset.tag,date:d.value,formats:formats.split(', '),notes:$('gw-notes').value.trim()});
+  });
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Neue Auflage erzeugen abgebrochen','form.cancel',{form:'edition.create'});});
+})();
+</script>

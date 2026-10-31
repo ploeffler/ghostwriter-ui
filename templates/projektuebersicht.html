@@ -1,0 +1,109 @@
+<!--
+  Vorlage: Projektübersicht (Hauptvorlage)
+
+  Hauptvorlage für die Ausgabe des Buchprojekts im Chat. Zeigt die
+  Eckdaten des gesamten Projekts, die bisherigen Kosten und die Kapitel.
+  Anzeige mit Symbolleiste: Die Symbol-Knöpfe senden per sendPrompt()
+  eine Nachricht in den Chat.
+
+  Aufbau:
+  - Kopf links: Kurztitel als Badge, Titel
+  - Kopf rechts: Symbolleiste mit quadratischen Symbol-Knöpfen:
+    Projektdaten bearbeiten, Neues Kapitel anlegen,
+    Kapitelreihenfolge ändern, Neue Auflage erzeugen, Projekteinstellungen
+  - neben "Buchprojekt": die aktuelle Auflage
+  - Zeile darunter: Autor links, bisherige Gesamtkosten rechtsbündig
+  - Kurzbeschreibung als hervorgehobener Einleitungssatz
+  - Trennlinie, Beschreibung als Fließtext
+  - Trennlinie, Liste mit Links zu den Kapiteln
+    (Nummer, Titel, Kapitelkosten, Status)
+
+  Platzhalter (vor der Ausgabe ersetzen):
+  - {{PROJECT_TITLE}}              project.title (bzw. working_title, solange kein Titel feststeht)
+  - {{PROJECT_TITLE_SHORT}}        project.title_short
+  - {{PROJECT_AUTHOR}}             project.author
+  - {{PROJECT_DESCRIPTION_SHORT}}  project.description_short
+  - {{PROJECT_DESCRIPTION}}        project.description
+  - {{PROJECT_COST}}               bisherige Gesamtkosten, formatiert, z. B. "1,60 €"
+  - {{PROJECT_COST_HINT}}          Tooltip, z. B. "Bisherige Gesamtkosten"
+  - {{PROJECT_EDITION_TEXT}}       aus project.current_edition: "Auflage 2", bei 0 "noch keine Auflage"
+                                   (siehe book_releases in workflow.yml)
+
+  Wiederholung pro Kapitel in Reihenfolge der Struktur:
+  Der Block zwischen {{#CHAPTERS}} und {{/CHAPTERS}} wird für jedes
+  Kapitel einmal ausgegeben; die Marker selbst werden entfernt.
+  - {{CHAPTER_NUMBER}}     sichtbare Kapitelnummer
+  - {{CHAPTER_TITLE}}      Kapiteltitel
+  - {{CHAPTER_COST}}       Summe der Abschnittskosten, formatiert
+  - {{CHAPTER_COST_HINT}}  Tooltip, z. B. "Summe der Abschnittskosten"
+  - {{CHAPTER_STATUS}}     Kapitelstatus, z. B. planned
+  - {{CHAPTER_URL}}        Link zur Kapitelübersicht im Repository:
+                           https://github.com/<OWNER>/<REPO>/blob/<BRANCH>/chapters/<CHAPTER_ID>/README.md
+  Gibt es noch keine Kapitel, entfällt der Abschnitt "Kapitel" ganz.
+
+  Kosten (siehe docs/DATA-MODEL.md, Kostenmodell):
+  - Währung ist project_currency aus workflow.yml (EUR), deutsches
+    Zahlenformat mit zwei Nachkommastellen.
+  - Kapitelkosten = Summe der Abschnittssummen des Kapitels.
+  - Gesamtkosten = Summe der Kapitelsummen plus projektweite Kosten.
+  - Enthält eine Summe geschätzte Kosten, wird "≈ " vorangestellt und
+    im Tooltip ", enthält geschätzte Kosten" ergänzt.
+
+  Nachrichten: Klartextzeile plus Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Projektübersicht für „{{PROJECT_TITLE}}“ von {{PROJECT_AUTHOR}} mit bisherigen Kosten und Links zu den Kapiteln.</h2>
+<style>
+.gw-ch{display:flex;align-items:center;gap:var(--gap-md);padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);text-decoration:none}
+.gw-ch:hover{border-color:var(--border-strong)}
+.gw-sq{width:40px;height:40px;flex:none;border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0}
+.gw-sq:hover{border-color:var(--border-strong);color:var(--text-primary)}
+.gw-cost{font-size:13px;color:var(--text-secondary);font-variant-numeric:tabular-nums;min-width:64px;text-align:right}
+</style>
+<div style="padding:1rem 0">
+  <div style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div>
+      <div style="display:flex;align-items:flex-start;gap:var(--gap-md);flex-wrap:wrap-reverse">
+        <div style="flex:1;min-width:220px">
+          <div style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;margin-bottom:4px">
+            <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{PROJECT_TITLE_SHORT}}</span>
+            <span style="font-size:12px;color:var(--text-muted)">Buchprojekt · {{PROJECT_EDITION_TEXT}}</span>
+          </div>
+          <div style="font-size:20px;font-weight:500;line-height:1.3;color:var(--text-primary)">{{PROJECT_TITLE}}</div>
+        </div>
+        <div style="display:flex;gap:var(--gap-sm);margin-left:auto">
+          <button type="button" class="gw-sq" data-p="Projektdaten bearbeiten" data-a="project.edit" title="Projektdaten bearbeiten" aria-label="Projektdaten bearbeiten"><i class="ti ti-edit" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="Neues Kapitel anlegen" data-a="chapter.create.open" title="Neues Kapitel anlegen" aria-label="Neues Kapitel anlegen"><i class="ti ti-plus" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="Kapitelreihenfolge ändern" data-a="chapter.reorder.open" title="Kapitelreihenfolge ändern" aria-label="Kapitelreihenfolge ändern"><i class="ti ti-arrows-sort" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="Neue Auflage erzeugen" data-a="edition.create.open" title="Neue Auflage erzeugen" aria-label="Neue Auflage erzeugen"><i class="ti ti-books" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="Projekteinstellungen anzeigen" data-a="project.settings.open" title="Projekteinstellungen" aria-label="Projekteinstellungen"><i class="ti ti-settings" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--gap-md);flex-wrap:wrap;margin-top:6px">
+        <div style="font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:6px"><i class="ti ti-user" aria-hidden="true"></i>{{PROJECT_AUTHOR}}</div>
+        <div style="font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;margin-left:auto" title="{{PROJECT_COST_HINT}}"><i class="ti ti-coins" aria-hidden="true"></i><span style="font-variant-numeric:tabular-nums">{{PROJECT_COST}}</span></div>
+      </div>
+    </div>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:var(--text-primary);border-left:2px solid var(--border-accent);border-radius:0;padding-left:var(--pad-md)">{{PROJECT_DESCRIPTION_SHORT}}</p>
+    <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Beschreibung</div>
+      <p style="margin:0;font-size:14px;line-height:1.7;color:var(--text-secondary)">{{PROJECT_DESCRIPTION}}</p>
+    </div>
+    <div data-gw-if="CHAPTERS" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Kapitel</div>
+      <div style="display:flex;flex-direction:column;gap:var(--gap-xs)">
+        {{#CHAPTERS}}
+        <a class="gw-ch" href="{{CHAPTER_URL}}"><span style="font-size:13px;color:var(--text-muted);min-width:20px">{{CHAPTER_NUMBER}}</span><span style="flex:1;font-size:14px;font-weight:500">{{CHAPTER_TITLE}}</span><span class="gw-cost" title="{{CHAPTER_COST_HINT}}">{{CHAPTER_COST}}</span><span style="font-size:12px;color:var(--text-muted)">{{CHAPTER_STATUS}}</span><i class="ti ti-external-link" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></a>
+        {{/CHAPTERS}}
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var p=Object.assign({action:action},data||{});sendPrompt(text+'\n\n```gw\n'+JSON.stringify(p)+'\n```');}
+document.querySelectorAll('.gw-sq[data-p]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,b.dataset.args?JSON.parse(b.dataset.args):{});});});
+</script>
