@@ -16,7 +16,8 @@
   - Kurzbeschreibung als hervorgehobener Einleitungssatz
   - Trennlinie, Beschreibung als Fließtext
   - Trennlinie, Liste der Kapitel (Nummer, Titel, Kapitelkosten, Status);
-    ein Klick öffnet die Kapitelansicht im Chat
+    ein Klick öffnet die Kapitelansicht im Chat, der Stift rechts daneben
+    das Formular „Kapitel bearbeiten“
 
   Platzhalter (vor der Ausgabe ersetzen):
   - {{PROJECT_TITLE}}              project.title (bzw. working_title, solange kein Titel feststeht)
@@ -49,7 +50,7 @@
     im Tooltip ", enthält geschätzte Kosten" ergänzt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.chapter, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open
+  Aktionen: view.chapter, chapter.edit.open, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -61,6 +62,8 @@
 .gw-ch:hover{border-color:var(--border-strong)}
 .gw-sq{width:40px;height:40px;flex:none;border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0}
 .gw-sq:hover{border-color:var(--border-strong);color:var(--text-primary)}
+.gw-ed{width:42px;flex:none;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text-secondary);cursor:pointer;padding:0}
+.gw-ed:hover{border-color:var(--border-strong);color:var(--text-primary)}
 .gw-cost{font-size:13px;color:var(--text-secondary);font-variant-numeric:tabular-nums;min-width:64px;text-align:right}
 </style>
 <div style="padding:1rem 0">
@@ -96,7 +99,7 @@
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Kapitel</div>
       <div style="display:flex;flex-direction:column;gap:var(--gap-xs)">
         {{#CHAPTERS}}
-        <button type="button" class="gw-ch" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" data-title="{{CHAPTER_TITLE}}"><span style="font-size:13px;color:var(--text-muted);min-width:20px">{{CHAPTER_NUMBER}}</span><span style="flex:1;font-size:14px;font-weight:500">{{CHAPTER_TITLE}}</span><span class="gw-cost" title="{{CHAPTER_COST_HINT}}">{{CHAPTER_COST}}</span><span style="font-size:12px;color:var(--text-muted)">{{CHAPTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
+        <div style="display:flex;gap:var(--gap-xs);min-width:0"><button type="button" class="gw-ch" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" data-title="{{CHAPTER_TITLE}}"><span style="font-size:13px;color:var(--text-muted);min-width:20px">{{CHAPTER_NUMBER}}</span><span style="flex:1;font-size:14px;font-weight:500">{{CHAPTER_TITLE}}</span><span class="gw-cost" title="{{CHAPTER_COST_HINT}}">{{CHAPTER_COST}}</span><span style="font-size:12px;color:var(--text-muted)">{{CHAPTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button><button type="button" class="gw-ed" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" title="Kapitel {{CHAPTER_NUMBER}} bearbeiten" aria-label="Kapitel {{CHAPTER_NUMBER}} bearbeiten"><i class="ti ti-edit" aria-hidden="true"></i></button></div>
         {{/CHAPTERS}}
       </div>
     </div>
@@ -106,4 +109,5 @@
 function gwSend(text,action,data){var d=data||{},k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 document.querySelectorAll('.gw-sq[data-p]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,b.dataset.args?JSON.parse(b.dataset.args):{});});});
 document.querySelectorAll('.gw-ch[data-id]').forEach(function(r){r.addEventListener('click',function(){gwSend('Kapitel '+r.dataset.number+' „'+r.dataset.title+'“ öffnen','view.chapter',{chapter_id:r.dataset.id});});});
+document.querySelectorAll('.gw-ed[data-id]').forEach(function(b){b.addEventListener('click',function(){gwSend('Kapitel '+b.dataset.number+' bearbeiten','chapter.edit.open',{chapter_id:b.dataset.id});});});
 </script>
