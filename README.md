@@ -14,6 +14,7 @@ Der Assistent gibt statt der fertigen Ansicht nur eine Ladezeile und die Daten a
 
 - `GW.render(name, data, element?)` befüllt die Vorlage `templates/<name>.html` mit `data` und startet ihr Skript. Ohne `element` wird `#gw` verwendet.
 - Die Datenfelder sind die Platzhalter der Vorlage; Wiederholblöcke (`{{#SECTIONS}}`) sind Arrays. Welche Felder woher kommen, steht in GhostWriter unter `templates/ui/BEFUELLUNG.md`.
+- `HEAD_SHA` in den Daten ist der Commit, aus dem gelesen wurde. `gw.js` hängt ihn an jede schreibende Aktion (`….update`, `….create` außer `edition.create`, `….reorder`, `changes.merge`) als `expected_head_sha` an, damit der Assistent vor dem Schreiben prüfen kann, ob sich die Dateien inzwischen geändert haben.
 - Statuswerte in Feldern auf `_STATUS` (z. B. `writing`) zeigt `gw.js` deutsch an (`Schreiben`); unbekannte Werte bleiben, wie sie sind.
 - Bereiche mit `data-gw-if="NAME"` entfallen, wenn `NAME` fehlt oder leer ist.
 - Klicks senden über `sendPrompt` eine Textzeile plus einen Block `gw` mit JSON in den Chat.
