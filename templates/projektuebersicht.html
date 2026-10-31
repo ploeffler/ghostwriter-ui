@@ -15,8 +15,8 @@
   - Zeile darunter: Autor links, bisherige Gesamtkosten rechtsbündig
   - Kurzbeschreibung als hervorgehobener Einleitungssatz
   - Trennlinie, Beschreibung als Fließtext
-  - Trennlinie, Liste mit Links zu den Kapiteln
-    (Nummer, Titel, Kapitelkosten, Status)
+  - Trennlinie, Liste der Kapitel (Nummer, Titel, Kapitelkosten, Status);
+    ein Klick öffnet die Kapitelansicht im Chat
 
   Platzhalter (vor der Ausgabe ersetzen):
   - {{PROJECT_TITLE}}              project.title (bzw. working_title, solange kein Titel feststeht)
@@ -37,8 +37,7 @@
   - {{CHAPTER_COST}}       Summe der Abschnittskosten, formatiert
   - {{CHAPTER_COST_HINT}}  Tooltip, z. B. "Summe der Abschnittskosten"
   - {{CHAPTER_STATUS}}     Kapitelstatus, z. B. planned
-  - {{CHAPTER_URL}}        Link zur Kapitelübersicht im Repository:
-                           https://github.com/<OWNER>/<REPO>/blob/<BRANCH>/chapters/<CHAPTER_ID>/README.md
+  - {{CHAPTER_ID}}         stabile Kapitel-ID aus structure.chapters (für view.chapter)
   Gibt es noch keine Kapitel, entfällt der Abschnitt "Kapitel" ganz.
 
   Kosten (siehe docs/DATA-MODEL.md, Kostenmodell):
@@ -50,15 +49,15 @@
     im Tooltip ", enthält geschätzte Kosten" ergänzt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open
+  Aktionen: view.chapter, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Projektübersicht für „{{PROJECT_TITLE}}“ von {{PROJECT_AUTHOR}} mit bisherigen Kosten und Links zu den Kapiteln.</h2>
+<h2 class="sr-only">Projektübersicht für „{{PROJECT_TITLE}}“ von {{PROJECT_AUTHOR}} mit bisherigen Kosten und den Kapiteln; ein Klick öffnet die Kapitelansicht.</h2>
 <style>
-.gw-ch{display:flex;align-items:center;gap:var(--gap-md);padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);text-decoration:none}
+.gw-ch{display:flex;align-items:center;gap:var(--gap-md);padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);cursor:pointer;text-align:left;font:inherit;width:100%}
 .gw-ch:hover{border-color:var(--border-strong)}
 .gw-sq{width:40px;height:40px;flex:none;border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0}
 .gw-sq:hover{border-color:var(--border-strong);color:var(--text-primary)}
@@ -97,7 +96,7 @@
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Kapitel</div>
       <div style="display:flex;flex-direction:column;gap:var(--gap-xs)">
         {{#CHAPTERS}}
-        <a class="gw-ch" href="{{CHAPTER_URL}}"><span style="font-size:13px;color:var(--text-muted);min-width:20px">{{CHAPTER_NUMBER}}</span><span style="flex:1;font-size:14px;font-weight:500">{{CHAPTER_TITLE}}</span><span class="gw-cost" title="{{CHAPTER_COST_HINT}}">{{CHAPTER_COST}}</span><span style="font-size:12px;color:var(--text-muted)">{{CHAPTER_STATUS}}</span><i class="ti ti-external-link" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></a>
+        <button type="button" class="gw-ch" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" data-title="{{CHAPTER_TITLE}}"><span style="font-size:13px;color:var(--text-muted);min-width:20px">{{CHAPTER_NUMBER}}</span><span style="flex:1;font-size:14px;font-weight:500">{{CHAPTER_TITLE}}</span><span class="gw-cost" title="{{CHAPTER_COST_HINT}}">{{CHAPTER_COST}}</span><span style="font-size:12px;color:var(--text-muted)">{{CHAPTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
         {{/CHAPTERS}}
       </div>
     </div>
@@ -106,4 +105,5 @@
 <script>
 function gwSend(text,action,data){var d=data||{},k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 document.querySelectorAll('.gw-sq[data-p]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,b.dataset.args?JSON.parse(b.dataset.args):{});});});
+document.querySelectorAll('.gw-ch[data-id]').forEach(function(r){r.addEventListener('click',function(){gwSend('Kapitel '+r.dataset.number+' „'+r.dataset.title+'“ öffnen','view.chapter',{chapter_id:r.dataset.id});});});
 </script>
