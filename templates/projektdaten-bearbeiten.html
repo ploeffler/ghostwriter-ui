@@ -89,10 +89,10 @@ function gwSend(text,action,data){var p=Object.assign({action:action},data||{});
   function lock(){f.querySelectorAll('input,textarea,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
   $('gw-save').addEventListener('click',function(){
     if(!t.value.trim()){e.hidden=false;t.focus();return;}
-    var v=function(id){return $(id).value.trim()||'(leer)';};
+    var g=function(id){return $(id).value.trim();};
+    var d={title:g('gw-title'),title_short:g('gw-short'),author:g('gw-author'),description_short:g('gw-dshort'),description:g('gw-desc')};
     lock();
-    var t=function(id){return $(id).value.trim();};
-    gwSend('Projektdaten speichern: '+t('gw-title'),'project.update',{title:t('gw-title'),title_short:t('gw-short'),author:t('gw-author'),description_short:t('gw-dshort'),description:t('gw-desc')});
+    gwSend('Projektdaten speichern: '+d.title,'project.update',d);
   });
   $('gw-cancel').addEventListener('click',function(){lock();gwSend('Projektdaten bearbeiten abgebrochen','form.cancel',{form:'project.update'});});
 })();
