@@ -33,7 +33,7 @@ RUNTIME = r'''
   }
   var head='';
   function withHead(action,d){
-    var writes=(/\.(update|create|reorder)$/.test(action)&&action!=='edition.create')||action==='changes.merge';
+    var writes=(/\.(update|create|reorder)$/.test(action)&&action!=='edition.create')||action==='changes.merge'||action==='approval.confirm';
     if(!head||!writes||Object.prototype.hasOwnProperty.call(d,'expected_head_sha'))return d;
     var o={};Object.keys(d).forEach(function(k){o[k]=d[k];});o.expected_head_sha=head;return o;
   }

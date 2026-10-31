@@ -20,6 +20,9 @@
   - {{CHAPTER_ID}}            stabile Kapitel-ID
   - {{CHAPTER_NUMBER}}        sichtbare Kapitelnummer
   - {{CHAPTER_TITLE}}         Kapiteltitel
+  - {{CHAPTER_APPROVABLE}}    nicht leer, wenn das Kapitel freigegeben werden kann
+                             (Status ready_for_approval, alle Abschnitte approved);
+                             sonst leer, dann fehlt der Knopf „Kapitel freigeben“
   - {{CHAPTER_SUBTITLE}}      Untertitel; leer = Zeile entfällt
   - {{SECTION_COUNT_TEXT}}    z. B. "9 Abschnitte"
   - {{MARKER_COUNT_TEXT}}     z. B. "10 offene Marker" oder "keine offenen Marker"
@@ -46,7 +49,7 @@
   Kosten, wird "≈ " vorangestellt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.project, chapter.edit.open, section.create.open, section.reorder.open, view.section
+  Aktionen: view.project, chapter.edit.open, section.create.open, section.reorder.open, approval.open, view.section
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -83,6 +86,7 @@
           <button type="button" class="gw-sq" data-p="Kapitel {{CHAPTER_NUMBER}} bearbeiten" data-a="chapter.edit.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Kapitel bearbeiten" aria-label="Kapitel bearbeiten"><i class="ti ti-edit" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Neuen Abschnitt in Kapitel {{CHAPTER_NUMBER}} anlegen" data-a="section.create.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Neuer Abschnitt" aria-label="Neuer Abschnitt"><i class="ti ti-plus" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Abschnittsreihenfolge in Kapitel {{CHAPTER_NUMBER}} ändern" data-a="section.reorder.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Abschnittsreihenfolge ändern" aria-label="Abschnittsreihenfolge ändern"><i class="ti ti-arrows-sort" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-gw-if="CHAPTER_APPROVABLE" data-p="Freigabe für Kapitel {{CHAPTER_NUMBER}} „{{CHAPTER_TITLE}}“ bestätigen" data-a="approval.open" data-args='{"kind":"chapter","chapter_id":"{{CHAPTER_ID}}"}' title="Kapitel freigeben" aria-label="Kapitel freigeben"><i class="ti ti-circle-check" aria-hidden="true"></i></button>
         </div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--gap-md);flex-wrap:wrap;margin-top:8px">

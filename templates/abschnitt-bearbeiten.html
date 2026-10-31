@@ -13,7 +13,8 @@
   - Ziel des Abschnitts und Kurzbeschreibung nebeneinander
   - Offene Marker aus dem Manuskript
   - Manuskript als Markdown
-  - Faktencheck und Freigaben nebeneinander
+  - Faktencheck und Freigaben nebeneinander; Freigaben nur als Anzeige mit
+    Knopf „Freigeben“ bzw. „Zurücknehmen“, der die Bestätigung öffnet
   - Abschnittssteuerung (Aktionspanel) in kompakter Form
   - Verwerfen und Speichern
 
@@ -51,15 +52,19 @@
     product_roadmap.v0_5: ai_runs_scheduled_queue ausgeschlossen). Die
     Option bleibt sichtbar, ist ausgegraut und trägt den Hinweis
     "nach v0.5". Zum Freischalten in der Option data-available="true" setzen.
-  - Speichern sendet alle Felder samt Manuskript als Nachricht in den
-    Chat; Verwerfen meldet nur den Abbruch. Danach ist das Formular gesperrt.
+  - Speichern sendet Ziel, Kurzbeschreibung, Faktencheck und Manuskript
+    als Nachricht in den Chat, aber keine Freigaben; Verwerfen meldet nur
+    den Abbruch.
+  - Freigaben ändern sich nie beim Speichern. Die Knöpfe neben den
+    Freigaben senden approval.open; erst die Bestätigung
+    (freigabe-bestaetigen.html) erteilt oder nimmt eine Freigabe zurück. Danach ist das Formular gesperrt.
   - Das Schloss sperrt bzw. entsperrt alles unterhalb des Kopfs nur im
     Widget; es sendet keine Nachricht.
   - Die Abschnittssteuerung sendet dieselben Nachrichten wie
     abschnittssteuerung.html.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.chapter, view.section, run.start, section.update, form.cancel
+  Aktionen: view.chapter, view.section, run.start, section.update, approval.open, form.cancel
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
@@ -86,7 +91,10 @@
 .gw-opt.sel{border-color:var(--border-accent);background:var(--bg-accent)}
 .gw-card{border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);padding:var(--pad-md);display:flex;flex-direction:column;gap:var(--gap-sm);min-width:0}
 .gw-ico{width:36px;height:36px;flex:none;border:0.5px solid var(--border);border-radius:10px;background:var(--surface-1);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text-secondary)}
-.gw-chk{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.gw-apr{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-secondary)}
+.gw-apr.on{color:var(--text-success)}
+.gw-mini{margin-left:auto;padding:4px 10px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:transparent;color:var(--text-primary);font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+.gw-mini:hover:not(:disabled){background:var(--surface-1)}
 .gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
 .gw-wrap.locked .gw-lockable{opacity:0.5;pointer-events:none}
 @media (max-width:560px){.gw-two{grid-template-columns:1fr!important}}
@@ -156,9 +164,9 @@
           </select>
         </div>
         <div>
-          <div class="gw-lbl">Freigaben</div>
-          <label class="gw-chk"><input type="checkbox" id="gw-apw"> Schreiben freigegeben</label>
-          <label class="gw-chk" style="margin-top:6px"><input type="checkbox" id="gw-aps"> Abschnitt freigegeben</label>
+          <div class="gw-lbl">Freigaben <span class="gw-hint">nur mit Bestätigung</span></div>
+          <div class="gw-apr" data-kind="writing"><i class="ti" aria-hidden="true"></i><span></span><button type="button" class="gw-mini"></button></div>
+          <div class="gw-apr" data-kind="section" style="margin-top:6px"><i class="ti" aria-hidden="true"></i><span></span><button type="button" class="gw-mini"></button></div>
         </div>
       </div>
 
@@ -196,8 +204,19 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   wrap.querySelectorAll('.gw-mk-icon').forEach(function(i){i.classList.add(icons[i.dataset.type]||'ti-alert-triangle');});
 
   $('gw-fc').value=d.factCheck||'optional';
-  $('gw-apw').checked=d.approvalWriting==='true';
-  $('gw-aps').checked=d.approvalSection==='true';
+  var apr={writing:{on:d.approvalWriting==='true',yes:'Schreiben freigegeben',no:'Schreiben nicht freigegeben',grant:'Schreibfreigabe für ',revoke:'Schreibfreigabe zurücknehmen für '},
+    section:{on:d.approvalSection==='true',yes:'Abschnitt freigegeben',no:'Abschnitt nicht freigegeben',grant:'Freigabe für ',revoke:'Freigabe zurücknehmen für '}};
+  wrap.querySelectorAll('.gw-apr').forEach(function(row){
+    var a=apr[row.dataset.kind],b=row.querySelector('button');
+    row.classList.toggle('on',a.on);
+    row.querySelector('i').className='ti '+(a.on?'ti-circle-check':'ti-circle-dashed');
+    row.querySelector('span').textContent=a.on?a.yes:a.no;
+    b.textContent=a.on?'Zurücknehmen':'Freigeben';
+    b.addEventListener('click',function(){
+      var data={kind:row.dataset.kind,section_id:d.sectionId};if(a.on)data.revoke=true;
+      gwSend((a.on?a.revoke:a.grant)+ref+' bestätigen','approval.open',data);
+    });
+  });
 
   [['gw-prev',d.prev,d.prevId],['gw-next',d.next,d.nextId]].forEach(function(p){
     var b=$(p[0]);
@@ -240,7 +259,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var fcText={disabled:'aus',optional:'optional',requested:'angefordert'};
   $('gw-save').addEventListener('click',function(){
     var data={section_id:d.sectionId,goal:$('gw-goal').value.trim(),summary:$('gw-summary').value.trim(),
-      fact_check:$('gw-fc').value,approvals:{writing:$('gw-apw').checked,section:$('gw-aps').checked},
+      fact_check:$('gw-fc').value,
       manuscript:$('gw-ms').value};
     done();gwSend(ref+' speichern (Faktencheck: '+fcText[data.fact_check]+')','section.update',data);
   });

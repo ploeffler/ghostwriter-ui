@@ -1,0 +1,99 @@
+<!--
+  Vorlage: Freigabe bestätigen (Bestätigung, siehe templates/ui/README.md)
+
+  Inline-Widget für den Chat. Wird über die Knöpfe „Freigeben“ bzw.
+  „Zurücknehmen“ im Abschnittsformular oder „Kapitel freigeben“ in der
+  Kapitelansicht geöffnet (approval.open). Eine Freigabe entsteht nur
+  hier, nie beim Speichern eines Formulars (GhostWriter #10). Regeln:
+  START.md, „Freigaben“.
+
+  Aufbau:
+  - Kopf: Symbol, Überschrift (z. B. „Abschnitt freigeben“)
+  - Was freigegeben wird und welcher Stand (kurzer Commit)
+  - Prüfpunkte: erfüllt, Hinweis oder Hindernis
+  - Satz, was die Bestätigung bewirkt
+  - Abbrechen und Bestätigen; bei einem Hindernis ist Bestätigen
+    gesperrt und nennt den Grund
+
+  Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert):
+  - {{APPROVAL_KIND}}      writing | section | chapter
+  - {{APPROVAL_REVOKE}}    „true“ beim Zurücknehmen, sonst leer
+  - {{APPROVAL_TITLE}}     z. B. „Abschnitt freigeben“, „Schreibfreigabe zurücknehmen“
+  - {{APPROVAL_BUTTON}}    Beschriftung des Bestätigen-Knopfs, z. B. „Freigeben“
+  - {{APPROVAL_EFFECT}}    Satz, was passiert, z. B. „Status wird ‚freigegeben‘ …“
+  - {{TARGET_ID}}          section_id bzw. chapter_id
+  - {{TARGET_LABEL}}       z. B. „Abschnitt 8.2 „Warum ausgerechnet …““
+  - {{HEAD_SHA}}           gelesener Stand; gw.js schickt ihn als expected_head_sha
+  - {{HEAD_SHORT}}         derselbe Commit, 7 Zeichen
+
+  Wiederholung pro Prüfpunkt zwischen {{#CHECKS}} und {{/CHECKS}}:
+  - {{CHECK_STATE}}        ok | warn | block
+  - {{CHECK_TEXT}}         z. B. „Manuskript vorhanden (412 Wörter)“
+
+  Verhalten:
+  - Bestätigen sendet approval.confirm mit kind, section_id bzw.
+    chapter_id und revoke (nur beim Zurücknehmen); gw.js hängt
+    expected_head_sha an. Abbrechen sendet form.cancel.
+  - Gibt es einen Prüfpunkt „block“, bleibt Bestätigen gesperrt.
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: approval.confirm {kind, section_id | chapter_id, revoke?}, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
+  --font-mono), Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Bestätigung: {{APPROVAL_TITLE}} für {{TARGET_LABEL}}.</h2>
+<style>
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+.gw-btn:disabled{opacity:0.45;cursor:default}
+.gw-ck{display:flex;align-items:flex-start;gap:8px;font-size:14px;line-height:1.5;color:var(--text-secondary)}
+.gw-ck[data-state="ok"]{color:var(--text-success)}
+.gw-ck[data-state="warn"]{color:var(--text-warning)}
+.gw-ck[data-state="block"]{color:var(--text-danger)}
+</style>
+<div style="padding:1rem 0">
+  <div id="gw-freigabe" data-kind="{{APPROVAL_KIND}}" data-revoke="{{APPROVAL_REVOKE}}" data-id="{{TARGET_ID}}" data-label="{{TARGET_LABEL}}" data-title="{{APPROVAL_TITLE}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="display:flex;align-items:center;gap:var(--gap-sm)">
+      <i class="ti ti-circle-check" id="gw-icon" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
+      <span style="font-size:16px;font-weight:500">{{APPROVAL_TITLE}}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:6px var(--gap-md);align-items:baseline;padding:var(--pad-md);border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2)">
+      <span style="font-size:13px;color:var(--text-muted)">Betrifft</span><span style="font-size:14px;color:var(--text-primary)">{{TARGET_LABEL}}</span>
+      <span style="font-size:13px;color:var(--text-muted)">Stand</span><span style="font-size:13px;font-family:var(--font-mono);color:var(--text-primary)">{{HEAD_SHORT}}</span>
+    </div>
+    <div data-gw-if="CHECKS" style="display:flex;flex-direction:column;gap:6px">
+      {{#CHECKS}}
+      <div class="gw-ck" data-state="{{CHECK_STATE}}"><i class="ti" style="font-size:16px;margin-top:2px" aria-hidden="true"></i><span>{{CHECK_TEXT}}</span></div>
+      {{/CHECKS}}
+    </div>
+    <p style="margin:0;font-size:14px;line-height:1.6;color:var(--text-secondary)">{{APPROVAL_EFFECT}}</p>
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <span id="gw-blocked" style="font-size:13px;color:var(--text-danger);margin-right:auto" hidden>Erst die rot markierten Punkte erledigen.</span>
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{APPROVAL_BUTTON}}</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var f=document.getElementById('gw-freigabe'),d=f.dataset;
+  var $=function(id){return document.getElementById(id);};
+  var icons={ok:'ti-circle-check',warn:'ti-alert-triangle',block:'ti-circle-x'};
+  var blocked=false;
+  f.querySelectorAll('.gw-ck').forEach(function(c){c.querySelector('i').classList.add(icons[c.dataset.state]||'ti-point');if(c.dataset.state==='block')blocked=true;});
+  if(d.revoke==='true')$('gw-icon').className='ti ti-arrow-back-up';
+  if(blocked){$('gw-save').disabled=true;$('gw-blocked').hidden=false;}
+  function lock(){f.querySelectorAll('button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
+  $('gw-save').addEventListener('click',function(){
+    if(blocked)return;
+    var data={kind:d.kind};data[d.kind==='chapter'?'chapter_id':'section_id']=d.id;if(d.revoke==='true')data.revoke=true;
+    lock();gwSend(d.title+': '+d.label+' (bestätigt)','approval.confirm',data);
+  });
+  $('gw-cancel').addEventListener('click',function(){
+    var data={form:'approval.confirm'};data[d.kind==='chapter'?'chapter_id':'section_id']=d.id;
+    lock();gwSend(d.title+' abgebrochen','form.cancel',data);
+  });
+})();
+</script>
