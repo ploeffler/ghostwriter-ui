@@ -8,7 +8,7 @@ Der Assistent gibt statt der fertigen Ansicht nur eine Ladezeile und die Daten a
 
 ```html
 <div id="gw"></div>
-<script src="https://cdn.jsdelivr.net/gh/ploeffler/ghostwriter-ui@<commit>/dist/gw.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ploeffler/ghostwriter-ui@<commit>/dist/gw.min.js"></script>
 <script>GW.render("kapitelansicht", { "CHAPTER_TITLE": "…", "SECTIONS": [ … ] })</script>
 ```
 
