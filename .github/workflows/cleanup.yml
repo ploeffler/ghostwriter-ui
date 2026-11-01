@@ -1,0 +1,49 @@
+name: Branches aufräumen
+
+# Löscht erledigte Arbeits-Branches mit einem Klick (Actions → Branches aufräumen
+# → Run workflow). Gelöscht wird nur ein Branch, dessen Pull Request gemergt ist
+# und der seitdem keinen neuen Commit hat; Muster siehe PATTERN. Alles andere
+# bleibt. Mit „Nur anzeigen“ wird nichts gelöscht, nur aufgelistet.
+# Die offenen Löschaufgaben stehen im Issue „Löschaufgaben“.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Nur anzeigen, nichts löschen'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Erledigte Branches löschen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          R: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+          DRY: ${{ inputs.dry_run }}
+          PATTERN: '^(feat|fix|docs|ui|chore)/|^ghostwriter/auflage-[0-9]+$'
+        run: |
+          deleted=0; kept=0
+          echo "## Branches aufräumen" >> "$GITHUB_STEP_SUMMARY"
+          [ "$DRY" = "true" ] && echo "_Nur anzeigen – nichts gelöscht._" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          for b in $(gh api "repos/$R/branches" --paginate --jq '.[].name' | grep -E "$PATTERN" || true); do
+            sha=$(gh api "repos/$R/branches/$b" --jq .commit.sha)
+            pr=$(gh api "repos/$R/pulls?state=closed&head=$OWNER:$b&per_page=100" \
+                 --jq "[.[] | select(.merged_at != null and .head.sha == \"$sha\")][0].number // empty")
+            if [ -n "$pr" ]; then
+              if [ "$DRY" != "true" ]; then gh api -X DELETE "repos/$R/git/refs/heads/$b" >/dev/null; fi
+              echo "- 🗑️ \`$b\` (Pull Request #$pr gemergt)" >> "$GITHUB_STEP_SUMMARY"; deleted=$((deleted+1))
+            else
+              echo "- ⏸️ \`$b\` bleibt (kein gemergter Pull Request auf diesem Stand)" >> "$GITHUB_STEP_SUMMARY"; kept=$((kept+1))
+            fi
+          done
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Gelöscht: $deleted · geblieben: $kept" | tee -a "$GITHUB_STEP_SUMMARY"
