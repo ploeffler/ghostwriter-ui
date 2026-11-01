@@ -13,8 +13,12 @@
     letzten Kapitelrecherche einen Vorschlag, steht er darunter mit dem Knopf
     „Vorschlag übernehmen“ (setzt nur das Feld, speichert nicht)
   - nur nach einer Recherche: Ergebnis der letzten Kapitelrecherche (kurz)
-  - Recherche: Fragestellung (Pflicht), Schwerpunkte (optional), zuständiger
-    Dienst und bisherige Läufe, Knopf „Recherche starten“
+  - Recherche: Häkchen „Ziel des Kapitels suchen“ (dann ist die Fragestellung
+    optional), Fragestellung, Schwerpunkte (optional); Zusammenhang: vorheriges
+    und nächstes Kapitel mit Titel und Kurzbeschreibung, je ein Schieberegler
+    für die Gewichtung (0 nicht berücksichtigen, 1 abgrenzen, 2 anschließen,
+    3 stark einbeziehen); fehlt ein Nachbarkapitel, entfällt sein Regler;
+    zuständiger Dienst und bisherige Läufe, Knopf „Recherche starten“
   - Abbrechen und Speichern
 
   Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert):
@@ -25,6 +29,12 @@
   - {{CHAPTER_SUMMARY}}       Kurzbeschreibung (ebenso)
   - {{RESEARCH_QUESTION}}     Vorschlag bzw. letzte Fragestellung; leer = Platzhaltertext
   - {{RESEARCH_SCOPE}}        letzte Schwerpunkte; leer = Platzhaltertext
+  - {{GOAL_SEARCH}}           "true" = Häkchen „Ziel des Kapitels suchen“ gesetzt (Vorgabe, wenn das Ziel leer ist)
+  - {{PREV_CHAPTER}}          nicht leer, wenn es ein vorheriges Kapitel gibt; sonst entfällt sein Bereich
+  - {{PREV_CHAPTER_LABEL}}    z. B. "Kapitel 1 · Endlich eine Erklärung"
+  - {{PREV_CHAPTER_SUMMARY}}  Kurzbeschreibung des vorherigen Kapitels; leer = „noch offen“
+  - {{PREV_WEIGHT}}           Gewichtung 0–3 (letzter Lauf, sonst 2)
+  - {{NEXT_CHAPTER}}, {{NEXT_CHAPTER_LABEL}}, {{NEXT_CHAPTER_SUMMARY}}, {{NEXT_WEIGHT}}  ebenso für das nächste Kapitel
   - {{RESEARCH_PROVIDER_TEXT}} z. B. "Recherche über: aktueller Chat"
   - {{RUN_COUNT_TEXT}}        z. B. "noch keine Kapitelrecherche" oder "2 Läufe, zuletzt am 01.11.2026"
   - {{LAST_RUN}}              nicht leer, wenn es ein Ergebnis gibt; sonst entfällt der Ergebnisbereich
@@ -34,7 +44,7 @@
   - {{SUGGESTED_SUMMARY}}     Vorschlag für die Kurzbeschreibung; leer = kein Vorschlag
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: chapter.research.start {chapter_id, question, scope, goal, summary},
+  Aktionen: chapter.research.start {chapter_id, question, scope, goal_search, weight_prev, weight_next, goal, summary},
             chapter.texts.update {chapter_id, goal, summary}, form.cancel
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
@@ -54,6 +64,15 @@
 .gw-sug{margin-top:6px;padding:8px 10px;border:0.5px dashed var(--border-accent);border-radius:var(--radius);background:var(--surface-2);font-size:13px;line-height:1.5;color:var(--text-secondary);display:flex;gap:var(--gap-sm);align-items:flex-start}
 .gw-sug span{flex:1;white-space:pre-line}
 .gw-link{border:none;background:none;padding:0;font:inherit;font-size:12px;color:var(--text-accent);cursor:pointer;white-space:nowrap}
+.gw-ctx{padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2)}
+.gw-ctx .t{font-size:13px;font-weight:500}
+.gw-ctx .d{font-size:13px;color:var(--text-secondary);line-height:1.5;margin-top:2px;white-space:pre-line}
+.gw-ctx .d:empty::before{content:'Kurzbeschreibung noch offen';color:var(--text-muted);font-style:italic}
+.gw-rng{display:flex;align-items:center;gap:var(--gap-sm);margin-top:8px;font-size:12px;color:var(--text-secondary)}
+.gw-rng input{flex:1;padding:0;border:none;background:none}
+.gw-rng output{min-width:150px;text-align:right}
+.gw-chk{display:flex;align-items:center;gap:8px;font-size:14px}
+.gw-chk input{width:auto}
 .gw-two{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-md)}
 @media (max-width:560px){.gw-two{grid-template-columns:1fr}}
 </style>
@@ -87,14 +106,30 @@
 
     <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md);display:flex;flex-direction:column;gap:var(--gap-md)">
       <div class="gw-sec" style="margin:0">Recherche für das ganze Kapitel</div>
+      <label class="gw-chk"><input type="checkbox" id="gw-goalsearch" data-v="{{GOAL_SEARCH}}"> Ziel des Kapitels suchen <span class="hint">Vorschlag für Ziel und Kurzbeschreibung aus dem Zusammenhang des Buchs</span></label>
       <div>
-        <label for="gw-question">Fragestellung</label>
+        <label for="gw-question">Fragestellung <span class="hint" id="gw-q-hint">optional, wenn das Ziel gesucht wird</span></label>
         <textarea id="gw-question" rows="2" placeholder="Was soll für dieses Kapitel geklärt werden?">{{RESEARCH_QUESTION}}</textarea>
-        <div class="gw-err" id="gw-question-err" hidden>Bitte eine Fragestellung eingeben.</div>
+        <div class="gw-err" id="gw-question-err" hidden>Bitte eine Fragestellung eingeben oder „Ziel des Kapitels suchen“ anhaken.</div>
       </div>
       <div>
         <label for="gw-scope">Schwerpunkte <span class="hint">optional, z. B. Zielgruppe, Zeitraum, Quellenart</span></label>
         <input id="gw-scope" value="{{RESEARCH_SCOPE}}">
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:500;margin-bottom:6px">Zusammenhang <span class="hint">wie stark die Nachbarkapitel einfließen</span></div>
+        <div style="display:flex;flex-direction:column;gap:var(--gap-sm)">
+          <div class="gw-ctx" data-gw-if="PREV_CHAPTER">
+            <div class="t"><i class="ti ti-arrow-up" aria-hidden="true"></i> Vorheriges: {{PREV_CHAPTER_LABEL}}</div>
+            <div class="d">{{PREV_CHAPTER_SUMMARY}}</div>
+            <div class="gw-rng"><input type="range" id="gw-wprev" min="0" max="3" step="1" value="{{PREV_WEIGHT}}" aria-label="Gewichtung vorheriges Kapitel"><output id="gw-wprev-out"></output></div>
+          </div>
+          <div class="gw-ctx" data-gw-if="NEXT_CHAPTER">
+            <div class="t"><i class="ti ti-arrow-down" aria-hidden="true"></i> Nächstes: {{NEXT_CHAPTER_LABEL}}</div>
+            <div class="d">{{NEXT_CHAPTER_SUMMARY}}</div>
+            <div class="gw-rng"><input type="range" id="gw-wnext" min="0" max="3" step="1" value="{{NEXT_WEIGHT}}" aria-label="Gewichtung nächstes Kapitel"><output id="gw-wnext-out"></output></div>
+          </div>
+        </div>
       </div>
       <div style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap">
         <div style="flex:1;min-width:200px;font-size:12px;color:var(--text-muted);line-height:1.5">{{RESEARCH_PROVIDER_TEXT}} · {{RUN_COUNT_TEXT}}. Die Recherche speichert einen eigenen Lauf; Ziel und Kurzbeschreibung ändern sich erst beim Speichern.</div>
@@ -116,14 +151,20 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var id=f.dataset.chapter,num=f.dataset.num;
   ['gw-sug-goal','gw-sug-summary'].forEach(function(s){var n=$(s);if(!n.firstChild.textContent.trim())n.remove();});
   f.querySelectorAll('.gw-link').forEach(function(b){b.addEventListener('click',function(){var t=$(b.dataset.to);t.value=b.previousSibling.textContent.trim();t.focus();});});
-  var q=$('gw-question'),qe=$('gw-question-err');
+  var q=$('gw-question'),qe=$('gw-question-err'),gs=$('gw-goalsearch');
   q.addEventListener('input',function(){qe.hidden=true;});
   var g=function(k){return $(k).value.trim();};
+  gs.checked=gs.dataset.v==='true';
+  function hint(){$('gw-q-hint').hidden=!gs.checked;if(gs.checked)qe.hidden=true;}
+  gs.addEventListener('change',hint);hint();
+  var W=['nicht berücksichtigen','abgrenzen','anschließen','stark einbeziehen'];
+  function w(id){var n=$(id);return n?+n.value:0;}
+  ['gw-wprev','gw-wnext'].forEach(function(id){var n=$(id);if(!n)return;var o=$(id+'-out');function u(){o.textContent=n.value+' · '+W[+n.value];}n.addEventListener('input',u);u();});
   function lock(){f.querySelectorAll('input,textarea,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
   $('gw-research').addEventListener('click',function(){
-    if(!g('gw-question')){qe.hidden=false;q.focus();return;}
+    if(!gs.checked&&!g('gw-question')){qe.hidden=false;q.focus();return;}
     lock();
-    gwSend('Kapitelrecherche für Kapitel '+num+' starten','chapter.research.start',{chapter_id:id,question:g('gw-question'),scope:g('gw-scope'),goal:g('gw-goal'),summary:g('gw-summary')});
+    gwSend('Kapitelrecherche für Kapitel '+num+' starten'+(gs.checked?' (Ziel suchen)':''),'chapter.research.start',{chapter_id:id,question:g('gw-question'),scope:g('gw-scope'),goal_search:gs.checked,weight_prev:w('gw-wprev'),weight_next:w('gw-wnext'),goal:g('gw-goal'),summary:g('gw-summary')});
   });
   $('gw-save').addEventListener('click',function(){
     lock();
