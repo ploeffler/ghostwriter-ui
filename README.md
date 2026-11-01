@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-wortmarke-dark.svg">
+    <img src="assets/logo-wortmarke.svg" alt="GhostWriter" height="72">
+  </picture>
+</p>
+
 # GhostWriter UI
 
 Darstellungscode für die Chat-Ansichten von [GhostWriter](https://github.com/ploeffler/GhostWriter): Projektübersicht, Kapitelansicht, Abschnittsformular, Abschnittssteuerung und die Formulare. Dieses Repository enthält **keine Buchinhalte**; die Daten kommen zur Laufzeit aus dem Chat.
