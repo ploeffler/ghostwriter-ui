@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-wortmarke-dark.svg">
+    <img src="assets/logo-wortmarke.svg" alt="GhostWriter" height="72">
+  </picture>
+</p>
+
 # GhostWriter UI
 
 Darstellungscode für die Chat-Ansichten von [GhostWriter](https://github.com/ploeffler/GhostWriter): Projektübersicht, Kapitelansicht, Abschnittsformular, Abschnittssteuerung und die Formulare. Dieses Repository enthält **keine Buchinhalte**; die Daten kommen zur Laufzeit aus dem Chat.
@@ -30,3 +37,7 @@ python3 build.py
 ```
 
 Die Version steht in `VERSION`.
+
+---
+
+<p align="right"><sub>Entwickelt mit Unterstützung von Claude (Anthropic) · <a href="https://claude.ai">claude.ai</a></sub>&nbsp;&nbsp;<picture><source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg"><img src="assets/logo.svg" alt="GhostWriter" height="22" align="absmiddle"></picture></p>
