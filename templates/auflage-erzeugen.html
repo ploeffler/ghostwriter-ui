@@ -11,7 +11,7 @@
   - Erscheinungsdatum (Pflichtfeld)
   - Anmerkungen (optional)
   - Hinweis, falls nicht alle Kapitel freigegeben sind
-  - Abbrechen und Erzeugen
+  - Probedruck (links), Abbrechen und Erzeugen
 
   Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert):
   - {{EDITION_NUMBER}}         nächste Auflage: project.current_edition + 1
@@ -39,7 +39,7 @@
     (book_releases.approval).
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: edition.create {name, tag, date, formats, notes}, form.cancel
+  Aktionen: edition.create {name, tag, date, formats, notes}, edition.proof (Probedruck des aktuellen Stands, keine Auflage), form.cancel
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
@@ -92,6 +92,7 @@
     </div>
 
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-proof" title="PDF des aktuellen Stands mit allen Abschnitten und hervorgehobenen Markern, ohne Veröffentlichung" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-secondary);margin-right:auto;display:inline-flex;align-items:center;gap:6px"><i class="ti ti-printer" aria-hidden="true"></i>Probedruck</button>
       <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
       <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">Erzeugen</button>
     </div>
@@ -114,5 +115,6 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     gwSend('Neue Auflage erzeugen: '+f.dataset.name,'edition.create',{name:f.dataset.name,tag:f.dataset.tag,date:d.value,formats:formats.split(', '),notes:$('gw-notes').value.trim()});
   });
   $('gw-cancel').addEventListener('click',function(){lock();gwSend('Neue Auflage erzeugen abgebrochen','form.cancel',{form:'edition.create'});});
+  $('gw-proof').addEventListener('click',function(){lock();gwSend('Probedruck erstellen','edition.proof',{});});
 })();
 </script>
