@@ -27,6 +27,17 @@
   - {{SERVICE_AVAILABLE}}    „true“, wenn in ai_providers.available, sonst leer
   - {{SERVICE_GUIDE_URL}}    Link „Anleitung“: wie man den Dienst mit GhostWriter nutzt
   - {{SERVICE_WEBSITE_URL}}  Link „Website“ des Anbieters; leer = Link entfällt
+  Einstellungen je Dienst (ai_providers.services.<id>), nur bei eigenen
+  Diensten sichtbar:
+  - {{SERVICE_ACCESS_OPTIONS}} mögliche Zugänge, kommagetrennt: app | api |
+                             local | cli | web | github (erster = Vorgabe)
+  - {{SERVICE_ACCESS}}       gewählter Zugang
+  - {{SERVICE_MODEL}}        Modellname, leer = Standard des Dienstes (nur llm)
+  - {{SERVICE_GITHUB}}       „true“, wenn für diese App der GitHub-Connector
+                             eingerichtet ist (nur llm mit Zugang app)
+  - {{SERVICE_PLAN}}         Tarif, Freitext
+  - {{SERVICE_COST}}         Kosten pro Monat in Euro, leer = unbekannt
+  - {{SERVICE_MEMO}}         eigene Notiz
 
   Wiederholung pro Aufgabe zwischen {{#ROLES}} und {{/ROLES}}:
   - {{ROLE_ID}}       default | research | brainstorming | writing | revision
@@ -35,13 +46,21 @@
   - {{ROLE_HINT}}     kurzer Hinweis oder leer
   - {{ROLE_VALUE}}    aktuelle Zuteilung (Dienst-ID, chat, manual oder leer)
 
+  Weitere Platzhalter:
+  - {{CONNECTOR_GUIDE_URL}}  Link zur Anleitung „GhostWriter mit GitHub verbinden“
+
   Verhalten:
   - Haken setzen oder entfernen aktualisiert die Auswahl der Aufgaben
     sofort. Fällt ein zugeteilter Dienst weg, steht die Aufgabe wieder
     auf „wie Standard“ (Standard selbst auf „Aktueller Chat“).
-  - Speichern sendet project.providers.update mit available, roles,
-    queue_agent und search_tools (alle eigenen Recherchequellen); gw.js
-    hängt expected_head_sha an. Abbrechen sendet form.cancel.
+  - „Einstellungen“ klappt je eigenem Dienst Zugang, Modell, „Mit GitHub
+    verbunden“, Tarif, Kosten pro Monat und Notiz auf; zugeklappt steht
+    eine Kurzfassung unter dem Dienst.
+  - Speichern sendet project.providers.update mit available, services
+    (Einstellungen der eigenen Dienste), roles, queue_agent und
+    search_tools (alle eigenen Recherchequellen); gw.js hängt
+    expected_head_sha an. Ungültige Kosten verhindern das Speichern.
+    Abbrechen sendet form.cancel.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
   Aktionen: project.providers.update, form.cancel
@@ -65,6 +84,16 @@
 .gw-role select{width:100%;padding:7px 10px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px}
 .gw-role .gw-hint{grid-column:2}
 .gw-list{display:flex;flex-direction:column;gap:var(--gap-xs)}
+.gw-w{display:flex;flex-direction:column}
+.gw-sum{font-size:12px;color:var(--text-secondary);padding:4px 10px 0 36px}
+.gw-tog{margin-left:36px;align-self:flex-start;border:none;background:none;padding:4px 0;font:inherit;font-size:13px;color:var(--text-accent);cursor:pointer;display:flex;align-items:center;gap:4px}
+.gw-set{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr);gap:8px var(--gap-md);align-items:center;margin:4px 0 6px 36px;padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-1)}
+.gw-w [hidden]{display:none!important}
+.gw-set label{font-size:13px;color:var(--text-secondary)}
+.gw-set input[type=text],.gw-set input[type=number],.gw-set select{width:100%;box-sizing:border-box;padding:6px 10px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px}
+.gw-set .full{grid-column:2}
+.gw-err{font-size:12px;color:var(--text-danger)}
+@media (max-width:520px){.gw-set{grid-template-columns:1fr;margin-left:0}.gw-set .full{grid-column:1}.gw-sum,.gw-tog{margin-left:0;padding-left:0}}
 details.gw-more summary{cursor:pointer;font-size:14px;font-weight:500;color:var(--text-primary);padding:4px 0}
 @media (max-width:520px){.gw-role{grid-template-columns:1fr}.gw-role .gw-hint{grid-column:1}}
 </style>
@@ -104,7 +133,7 @@ details.gw-more summary{cursor:pointer;font-size:14px;font-weight:500;color:var(
 
     <div id="gw-pool" hidden>
       {{#SERVICES}}
-      <div class="gw-svc" data-id="{{SERVICE_ID}}" data-group="{{SERVICE_GROUP}}" data-roles="{{SERVICE_ROLES}}" data-available="{{SERVICE_AVAILABLE}}" data-name="{{SERVICE_NAME}}"><input type="checkbox" id="gw-s-{{SERVICE_ID}}"><label for="gw-s-{{SERVICE_ID}}" style="min-width:0;cursor:pointer"><span class="nm">{{SERVICE_NAME}}</span><br><span class="nt">{{SERVICE_NOTE}}</span></label><span class="lk"><a href="{{SERVICE_GUIDE_URL}}" target="_blank" rel="noopener"><i class="ti ti-book" style="font-size:14px" aria-hidden="true"></i>Anleitung</a><a href="{{SERVICE_WEBSITE_URL}}" data-gw-web target="_blank" rel="noopener"><i class="ti ti-external-link" style="font-size:14px" aria-hidden="true"></i>Website</a></span></div>
+      <div class="gw-w" data-id="{{SERVICE_ID}}" data-group="{{SERVICE_GROUP}}" data-roles="{{SERVICE_ROLES}}" data-available="{{SERVICE_AVAILABLE}}" data-name="{{SERVICE_NAME}}" data-access-options="{{SERVICE_ACCESS_OPTIONS}}" data-access="{{SERVICE_ACCESS}}" data-github="{{SERVICE_GITHUB}}"><div class="gw-svc"><input type="checkbox" id="gw-s-{{SERVICE_ID}}"><label for="gw-s-{{SERVICE_ID}}" style="min-width:0;cursor:pointer"><span class="nm">{{SERVICE_NAME}}</span><br><span class="nt">{{SERVICE_NOTE}}</span></label><span class="lk"><a href="{{SERVICE_GUIDE_URL}}" target="_blank" rel="noopener"><i class="ti ti-book" style="font-size:14px" aria-hidden="true"></i>Anleitung</a><a href="{{SERVICE_WEBSITE_URL}}" data-gw-web target="_blank" rel="noopener"><i class="ti ti-external-link" style="font-size:14px" aria-hidden="true"></i>Website</a></span></div><div class="gw-sum"></div><button type="button" class="gw-tog" aria-expanded="false"><i class="ti ti-adjustments" aria-hidden="true"></i><span>Einstellungen</span></button><div class="gw-set" hidden><label for="gw-a-{{SERVICE_ID}}">Zugang</label><select id="gw-a-{{SERVICE_ID}}" class="s-access"></select><label class="llm" for="gw-m-{{SERVICE_ID}}">Modell</label><input class="llm s-model" type="text" id="gw-m-{{SERVICE_ID}}" value="{{SERVICE_MODEL}}" placeholder="leer = Standard des Dienstes"><label class="gh" for="gw-g-{{SERVICE_ID}}">Mit GitHub verbunden</label><span class="gh" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)"><input type="checkbox" class="s-github" id="gw-g-{{SERVICE_ID}}" style="width:16px;height:16px;margin:0"><a href="{{CONNECTOR_GUIDE_URL}}" target="_blank" rel="noopener" style="color:var(--text-accent);text-decoration:none">Anleitung</a></span><label for="gw-p-{{SERVICE_ID}}">Tarif</label><input class="s-plan" type="text" id="gw-p-{{SERVICE_ID}}" value="{{SERVICE_PLAN}}" placeholder="z. B. Plus, Pro, kostenlos"><label for="gw-c-{{SERVICE_ID}}">Kosten pro Monat</label><span style="display:flex;align-items:center;gap:6px"><input class="s-cost" type="number" min="0" step="0.01" id="gw-c-{{SERVICE_ID}}" value="{{SERVICE_COST}}" placeholder="unbekannt" style="max-width:120px"><span style="font-size:13px;color:var(--text-secondary)">€</span></span><span class="gw-err full s-cost-err" hidden>Bitte eine Zahl ab 0 eintragen oder leer lassen.</span><label for="gw-n-{{SERVICE_ID}}">Notiz</label><input class="s-note" type="text" id="gw-n-{{SERVICE_ID}}" value="{{SERVICE_MEMO}}" placeholder="z. B. nur für Recherche"></div></div>
       {{/SERVICES}}
     </div>
 
@@ -119,15 +148,36 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
 (function(){
   var f=document.getElementById('gw-dienste');
   var $=function(id){return document.getElementById(id);};
-  var svcs=[].slice.call($('gw-pool').querySelectorAll('.gw-svc'));
+  var AX={app:'Chat-App oder Website',api:'API-Schlüssel',local:'auf meinem Rechner',cli:'Kommandozeile',web:'über die Websuche (kostenlos)',github:'in GitHub zugewiesen'};
+  var svcs=[].slice.call($('gw-pool').querySelectorAll('.gw-w'));
+  function q(s,c){return s.querySelector(c);}
+  function summary(s){
+    var a=q(s,'.s-access').value,p=[AX[a]||a],llm=s.dataset.group==='llm';
+    if(llm)p.push('Modell: '+(q(s,'.s-model').value.trim()||'Standard'));
+    if(llm&&a==='app')p.push(q(s,'.s-github').checked?'mit GitHub verbunden':'nicht mit GitHub verbunden');
+    if(q(s,'.s-plan').value.trim())p.push('Tarif: '+q(s,'.s-plan').value.trim());
+    var c=q(s,'.s-cost').value;if(c!==''&&Number(c)>=0)p.push(Number(c).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' € / Monat');
+    if(q(s,'.s-note').value.trim())p.push(q(s,'.s-note').value.trim());
+    q(s,'.gw-sum').textContent=p.join(' · ');
+    s.querySelectorAll('.gh').forEach(function(x){x.hidden=!(llm&&a==='app');});
+  }
+  function showSettings(s,on){q(s,'.gw-sum').hidden=!on;q(s,'.gw-tog').hidden=!on;if(!on){q(s,'.gw-set').hidden=true;q(s,'.gw-tog').setAttribute('aria-expanded','false');}}
   svcs.forEach(function(s){
+    var sel=q(s,'.s-access');
+    s.dataset.accessOptions.split(',').forEach(function(o){var x=document.createElement('option');x.value=o;x.textContent=AX[o]||o;sel.appendChild(x);});
+    sel.value=s.dataset.access;if(sel.options.length<2)sel.disabled=true;
+    q(s,'.s-github').checked=s.dataset.github==='true';
+    if(s.dataset.group!=='llm')s.querySelectorAll('.llm').forEach(function(x){x.remove();});
+    q(s,'.gw-tog').addEventListener('click',function(){var st=q(s,'.gw-set'),open=st.hidden;st.hidden=!open;this.setAttribute('aria-expanded',String(open));});
+    s.querySelectorAll('.gw-set input,.gw-set select').forEach(function(x){x.addEventListener('input',function(){q(s,'.s-cost-err').hidden=true;summary(s);});x.addEventListener('change',function(){summary(s);});});
+    summary(s);
     var w=s.querySelector('[data-gw-web]');if(w&&!w.getAttribute('href'))w.remove();
-    var cb=s.querySelector('input');cb.checked=s.dataset.available==='true';
-    (cb.checked?$('gw-mine'):$('gw-more-'+s.dataset.group)).appendChild(s);
-    cb.addEventListener('change',function(){(cb.checked?$('gw-mine'):$('gw-more-'+s.dataset.group)).appendChild(s);refresh();});
+    var cb=q(s,'.gw-svc input');cb.checked=s.dataset.available==='true';
+    (cb.checked?$('gw-mine'):$('gw-more-'+s.dataset.group)).appendChild(s);showSettings(s,cb.checked);
+    cb.addEventListener('change',function(){(cb.checked?$('gw-mine'):$('gw-more-'+s.dataset.group)).appendChild(s);showSettings(s,cb.checked);refresh();});
   });
   var roles=[].slice.call(f.querySelectorAll('.gw-role'));
-  function mine(){return svcs.filter(function(s){return s.querySelector('input').checked;});}
+  function mine(){return svcs.filter(function(s){return q(s,'.gw-svc input').checked;});}
   function opt(sel,value,label){var o=document.createElement('option');o.value=value;o.textContent=label;sel.appendChild(o);}
   function refresh(){
     var m=mine();
@@ -154,7 +204,16 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   refresh();
   function lock(){f.querySelectorAll('input,select,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
   $('gw-save').addEventListener('click',function(){
-    var m=mine(),out={available:m.map(function(s){return s.dataset.id;}),roles:{},queue_agent:'manual',
+    var m=mine(),bad=null,services={};
+    m.forEach(function(s){
+      var c=q(s,'.s-cost').value,cn=c===''?null:Number(c);
+      if(c!==''&&!(cn>=0)){bad=bad||s;q(s,'.s-cost-err').hidden=false;q(s,'.gw-set').hidden=false;}
+      var o={access:q(s,'.s-access').value,plan:q(s,'.s-plan').value.trim(),monthly_cost:cn,note:q(s,'.s-note').value.trim()};
+      if(s.dataset.group==='llm'){o.model=q(s,'.s-model').value.trim();o.github_connected=o.access==='app'&&q(s,'.s-github').checked;}
+      services[s.dataset.id]=o;
+    });
+    if(bad){q(bad,'.s-cost').focus();return;}
+    var out={available:m.map(function(s){return s.dataset.id;}),services:services,roles:{},queue_agent:'manual',
       search_tools:m.filter(function(s){return s.dataset.group==='search';}).map(function(s){return s.dataset.id;})};
     roles.forEach(function(r){var v=r.querySelector('select').value;if(r.dataset.role==='queue_processing')out.queue_agent=v;else out.roles[r.dataset.role]=v;});
     lock();
