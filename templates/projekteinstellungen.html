@@ -14,6 +14,7 @@
   - Faktencheck-Vorgabe für neue Abschnitte
   - Buchsatz: Seitenformat, Schrift, Schriftgröße, Titelei (Titelseite, Impressum),
     Inhaltsverzeichnis mit Tiefe
+  - Änderungen: gespeicherte Änderungen sofort übernehmen ja/nein (changes.auto_merge)
   - Updates: automatisch einspielen ja/nein, installierte Version (docs/UPDATES.md)
   - Abbrechen und Speichern
 
@@ -25,6 +26,7 @@
   - {{TITLE_PAGE}}, {{IMPRINT}}, {{TOC}}  typesetting.title_page, .imprint, .toc als true/false
   - {{TOC_DEPTH}}           typesetting.toc_depth: 1 (Kapitel) | 2 (Kapitel und Abschnitte)
   - {{UPDATES_AUTO}}        updates.auto als true/false (fehlt = true)
+  - {{CHANGES_AUTO_MERGE}}  changes.auto_merge als true/false (fehlt = false)
   - {{GW_VERSION_TEXT}}     installierte Programmversion, z. B. „GhostWriter 0.3.0 · aktualisiert am 01.11.2026“
   - {{GW_UPDATE_HINT}}      Hinweis, z. B. Workflow-Dateien ohne Token nicht aktualisiert; leer = entfällt
   Fehlt typesetting in ghostwriter.yml, gelten die Vorgaben aus docs/DATA-MODEL.md.
@@ -40,7 +42,7 @@
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe BEFUELLUNG.md in GhostWriter.
   Aktionen: project.settings.update {fact_checking_default, typesetting: {page_size, font,
-            font_size, title_page, imprint, toc, toc_depth}, updates: {auto}}, form.cancel
+            font_size, title_page, imprint, toc, toc_depth}, updates: {auto}, changes: {auto_merge}}, form.cancel
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -65,7 +67,7 @@
 <div style="padding:1rem 0">
   <form class="gw-f" id="gw-einstellungen" novalidate
     data-fc="{{FACT_CHECK_DEFAULT}}" data-page="{{PAGE_SIZE}}" data-font="{{FONT}}" data-size="{{FONT_SIZE}}"
-    data-title="{{TITLE_PAGE}}" data-imprint="{{IMPRINT}}" data-toc="{{TOC}}" data-depth="{{TOC_DEPTH}}" data-upd="{{UPDATES_AUTO}}"
+    data-title="{{TITLE_PAGE}}" data-imprint="{{IMPRINT}}" data-toc="{{TOC}}" data-depth="{{TOC_DEPTH}}" data-upd="{{UPDATES_AUTO}}" data-merge="{{CHANGES_AUTO_MERGE}}"
     style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-lg)">
     <div style="display:flex;align-items:center;gap:var(--gap-sm)">
       <i class="ti ti-settings" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
@@ -147,6 +149,12 @@
     </div>
 
     <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <div class="gw-sec">Änderungen</div>
+      <label class="chk"><input type="checkbox" id="gw-merge"> Gespeicherte Änderungen sofort übernehmen</label>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:6px;line-height:1.5">Jede Änderung steht dann gleich im Buch, ohne den Schritt „Änderungen übernehmen“. Freigaben und Auflagen brauchen weiterhin ihre eigene Bestätigung.</div>
+    </div>
+
+    <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <div class="gw-sec">Updates</div>
       <label class="chk"><input type="checkbox" id="gw-upd"> Neue GhostWriter-Versionen automatisch einspielen</label>
       <div style="font-size:12px;color:var(--text-muted);margin-top:6px;line-height:1.5">{{GW_VERSION_TEXT}}. Ersetzt werden nur Programmdateien, nie Kapitel, Texte oder Einstellungen; vorher wird geprüft. Täglich durch die Action „GhostWriter aktualisieren“.</div>
@@ -166,9 +174,9 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var $=function(id){return document.getElementById(id);};
   function set(id,v){if(v)$(id).value=v;}
   set('gw-fc',ds.fc);set('gw-page',ds.page);set('gw-font',ds.font);set('gw-size',ds.size);set('gw-depth',ds.depth);
-  $('gw-title').checked=ds.title==='true';$('gw-imprint').checked=ds.imprint==='true';$('gw-toc').checked=ds.toc==='true';$('gw-upd').checked=ds.upd!=='false';
+  $('gw-title').checked=ds.title==='true';$('gw-imprint').checked=ds.imprint==='true';$('gw-toc').checked=ds.toc==='true';$('gw-upd').checked=ds.upd!=='false';$('gw-merge').checked=ds.merge==='true';
   if(!$('gw-upd-hint').textContent.trim())$('gw-upd-hint').remove();
-  function data(){return {fact_checking_default:$('gw-fc').value,typesetting:{page_size:$('gw-page').value,font:$('gw-font').value,font_size:+$('gw-size').value,title_page:$('gw-title').checked,imprint:$('gw-imprint').checked,toc:$('gw-toc').checked,toc_depth:+$('gw-depth').value},updates:{auto:$('gw-upd').checked}};}
+  function data(){return {fact_checking_default:$('gw-fc').value,typesetting:{page_size:$('gw-page').value,font:$('gw-font').value,font_size:+$('gw-size').value,title_page:$('gw-title').checked,imprint:$('gw-imprint').checked,toc:$('gw-toc').checked,toc_depth:+$('gw-depth').value},updates:{auto:$('gw-upd').checked},changes:{auto_merge:$('gw-merge').checked}};}
   var start=JSON.stringify(data()),done=false;
   function refresh(){$('gw-depth').disabled=done||!$('gw-toc').checked;$('gw-save').disabled=done||JSON.stringify(data())===start;}
   f.addEventListener('change',refresh);
