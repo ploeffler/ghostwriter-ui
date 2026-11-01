@@ -1,6 +1,6 @@
-/* GhostWriter UI 0.20.0 – gebaut aus templates/*.html mit build.py, nicht von Hand ändern */
+/* GhostWriter UI 0.21.0 – gebaut aus templates/*.html mit build.py, nicht von Hand ändern */
 (function(){
-  var VERSION="0.20.0";
+  var VERSION="0.21.0";
   var T={};
   T["abschnitt-anlegen"]={html:"<h2 class=\"sr-only\">Formular zum Anlegen eines neuen Abschnitts in Kapitel {{CHAPTER_NUMBER}}: Titel, Ziel, Kurzbeschreibung, Faktencheck und Position.</h2>\n<style>\n.gw-f label{display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}\n.gw-f .hint{font-size:12px;color:var(--text-muted);font-weight:400}\n.gw-f input,.gw-f textarea,.gw-f select{width:100%;box-sizing:border-box;padding:9px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px}\n.gw-f input:focus,.gw-f textarea:focus,.gw-f select:focus{outline:none;border-color:var(--border-accent)}\n.gw-f textarea{resize:vertical;line-height:1.6}\n.gw-err{font-size:13px;color:var(--text-danger);margin-top:4px}\n.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}\n</style>\n<div style=\"padding:1rem 0\">\n  <form class=\"gw-f\" id=\"gw-abschnitt-anlegen\" data-chapter=\"{{CHAPTER_ID}}\" data-num=\"{{CHAPTER_NUMBER}}\" data-fc=\"{{FACT_CHECK_DEFAULT}}\" novalidate style=\"border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)\">\n    <div style=\"display:flex;align-items:center;gap:var(--gap-sm)\">\n      <i class=\"ti ti-plus\" style=\"font-size:18px;color:var(--text-secondary)\" aria-hidden=\"true\"></i>\n      <span style=\"font-size:16px;font-weight:500\">Neuer Abschnitt in Kapitel {{CHAPTER_NUMBER}}</span>\n      <span style=\"font-size:13px;color:var(--text-secondary);margin-left:auto\">{{CHAPTER_TITLE}}</span>\n    </div>\n    <div>\n      <label for=\"gw-title\">Titel</label>\n      <input id=\"gw-title\" placeholder=\"Titel des Abschnitts\">\n      <div class=\"gw-err\" id=\"gw-title-err\" hidden>Bitte einen Titel eingeben.</div>\n    </div>\n    <div>\n      <label for=\"gw-goal\">Ziel des Abschnitts <span class=\"hint\">was soll dieser Abschnitt leisten?</span></label>\n      <textarea id=\"gw-goal\" rows=\"2\"></textarea>\n    </div>\n    <div>\n      <label for=\"gw-summary\">Kurzbeschreibung <span class=\"hint\">worum es geht</span></label>\n      <textarea id=\"gw-summary\" rows=\"2\"></textarea>\n    </div>\n    <div style=\"display:flex;gap:var(--gap-md);flex-wrap:wrap\">\n      <div style=\"flex:1 1 160px\">\n        <label for=\"gw-fc\">Faktencheck</label>\n        <select id=\"gw-fc\">\n          <option value=\"disabled\">aus</option>\n          <option value=\"optional\">optional</option>\n          <option value=\"requested\">angefordert</option>\n        </select>\n      </div>\n      <div style=\"flex:2 1 240px\">\n        <label for=\"gw-pos\">Position</label>\n        <select id=\"gw-pos\">\n          {{#POSITIONS}}\n          <option {{POSITION_SELECTED}}>{{POSITION_LABEL}}</option>\n          {{/POSITIONS}}\n        </select>\n      </div>\n    </div>\n    <div style=\"display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)\">\n      <button type=\"button\" class=\"gw-btn\" id=\"gw-cancel\" style=\"border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)\">Abbrechen</button>\n      <button type=\"button\" class=\"gw-btn\" id=\"gw-save\" style=\"border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)\">Abschnitt anlegen</button>\n    </div>\n  </form>\n</div>\n",run:function(){
 function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
@@ -172,6 +172,63 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   });
   $('gw-cancel').addEventListener('click',function(){lock();gwSend('Neue Auflage erzeugen abgebrochen','form.cancel',{form:'edition.create'});});
   $('gw-proof').addEventListener('click',function(){var b=$('gw-proof');b.disabled=true;b.lastChild.textContent='Probedruck angefordert';gwSend('Probedruck erstellen','edition.proof',{});});
+})();
+
+}};
+  T["auswahl"]={html:"<h2 class=\"sr-only\">{{TITLE}}: Fragen mit Antwortkarten; zu jeder Frage eine Karte wählen oder eine eigene Antwort eingeben.</h2>\n<style>\n.gw-a .q{display:flex;flex-direction:column;gap:8px}\n.gw-a .q+.q{border-top:0.5px solid var(--border);padding-top:var(--pad-md)}\n.gw-a .chip{align-self:flex-start;font-size:11px;font-weight:500;letter-spacing:0.03em;text-transform:uppercase;color:var(--text-secondary);background:var(--surface-2);border:0.5px solid var(--border);border-radius:999px;padding:2px 8px}\n.gw-a .qt{font-size:15px;font-weight:500;line-height:1.4}\n.gw-a .qh{font-size:12px;color:var(--text-muted)}\n.gw-a .opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}\n.gw-a .opt{position:relative;text-align:left;padding:10px 12px 10px 36px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:56px}\n.gw-a .opt:hover{border-color:var(--border-accent)}\n.gw-a .opt:focus-visible{outline:2px solid var(--border-accent);outline-offset:1px}\n.gw-a .opt[aria-checked=\"true\"],.gw-a .opt[aria-pressed=\"true\"]{border-color:var(--text-accent);background:var(--bg-accent,var(--surface-2));box-shadow:inset 0 0 0 1px var(--text-accent)}\n.gw-a .opt .mk{position:absolute;left:12px;top:12px;width:14px;height:14px;border:1.5px solid var(--border-strong);border-radius:50%;box-sizing:border-box}\n.gw-a .opt.multi .mk{border-radius:3px}\n.gw-a .opt[aria-checked=\"true\"] .mk,.gw-a .opt[aria-pressed=\"true\"] .mk{border-color:var(--text-accent);background:var(--text-accent);box-shadow:inset 0 0 0 2px var(--surface-2)}\n.gw-a .opt .l{font-size:14px;font-weight:500;line-height:1.3}\n.gw-a .opt .d{font-size:12px;color:var(--text-secondary);line-height:1.4}\n.gw-a .opt .d:empty{display:none}\n.gw-a .rec{display:none;align-self:flex-start;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-accent);margin-top:3px}\n.gw-a .opt.is-rec .rec{display:inline}\n.gw-a .other{width:100%;box-sizing:border-box;padding:8px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px}\n.gw-a .other:focus{outline:none;border-color:var(--border-accent)}\n.gw-err{font-size:13px;color:var(--text-danger)}\n.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}\n.gw-btn:disabled{opacity:0.4;cursor:default}\n</style>\n<div style=\"padding:1rem 0\">\n  <form class=\"gw-a\" id=\"gw-auswahl\" data-step=\"{{STEP}}\" novalidate style=\"border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)\">\n    <div>\n      <div style=\"display:flex;align-items:center;gap:var(--gap-sm)\">\n        <i class=\"ti ti-list-check\" style=\"font-size:18px;color:var(--text-secondary)\" aria-hidden=\"true\"></i>\n        <span style=\"font-size:16px;font-weight:500\">{{TITLE}}</span>\n      </div>\n      <div data-gw-if=\"SUBTITLE\" style=\"font-size:14px;color:var(--text-secondary);margin-top:2px\">{{SUBTITLE}}</div>\n    </div>\n\n    {{#QUESTIONS}}\n    <div class=\"q\" data-q=\"{{Q_INDEX}}\" data-key=\"{{Q_KEY}}\" data-multi=\"{{Q_MULTI}}\">\n      <span class=\"chip\">{{Q_HEADER}}</span>\n      <div class=\"qt\" id=\"gw-qt-{{Q_INDEX}}\">{{Q_TEXT}}</div>\n      <div class=\"qh\"></div>\n      <div class=\"opts\" aria-labelledby=\"gw-qt-{{Q_INDEX}}\"></div>\n      <input class=\"other\" type=\"text\" placeholder=\"Andere Antwort (optional)\" aria-label=\"Andere Antwort\">\n      <div class=\"gw-err\" hidden>Bitte eine Antwort wählen oder eingeben.</div>\n    </div>\n    {{/QUESTIONS}}\n\n    <div id=\"gw-optpool\" hidden>\n      {{#OPTIONS}}\n      <button type=\"button\" class=\"opt\" data-q=\"{{OPT_Q}}\" data-value=\"{{OPT_VALUE}}\" data-rec=\"{{OPT_RECOMMENDED}}\" data-sel=\"{{OPT_SELECTED}}\"><span class=\"mk\" aria-hidden=\"true\"></span><span class=\"l\">{{OPT_LABEL}}</span><span class=\"d\">{{OPT_DESC}}</span><span class=\"rec\">Empfohlen</span></button>\n      {{/OPTIONS}}\n    </div>\n\n    <div style=\"border-top:0.5px solid var(--border);padding-top:var(--pad-md);display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap\">\n      <div style=\"flex:1;min-width:200px;font-size:12px;color:var(--text-muted);line-height:1.5\">{{NOTE}}</div>\n      <button type=\"button\" class=\"gw-btn\" id=\"gw-skip\" data-gw-if=\"SKIPPABLE\" style=\"border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)\">Überspringen</button>\n      <button type=\"button\" class=\"gw-btn\" id=\"gw-next\" style=\"border:none;background:var(--text-primary);color:var(--surface-1);display:inline-flex;align-items:center;gap:6px\">Weiter<i class=\"ti ti-arrow-right\" aria-hidden=\"true\"></i></button>\n    </div>\n  </form>\n</div>\n",run:function(){
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var f=document.getElementById('gw-auswahl'),step=f.dataset.step;
+  var qs=[].slice.call(f.querySelectorAll('.q'));
+  var pool=document.getElementById('gw-optpool');
+  // Antworten aus dem flachen Block den Fragen zuordnen
+  [].slice.call(pool.querySelectorAll('.opt')).forEach(function(o){
+    var q=f.querySelector('.q[data-q="'+o.dataset.q+'"]');
+    if(!q)return;
+    var multi=q.dataset.multi==='1';
+    var d=o.querySelector('.d');if(/^\{\{/.test(d.textContent))d.textContent='';   // fehlendes OPT_DESC
+    if(o.dataset.rec==='1')o.classList.add('is-rec');
+    if(multi){o.classList.add('multi');o.setAttribute('aria-pressed',o.dataset.sel==='1'?'true':'false');}
+    else{o.setAttribute('role','radio');o.setAttribute('aria-checked',o.dataset.sel==='1'?'true':'false');}
+    q.querySelector('.opts').appendChild(o);
+  });
+  pool.remove();
+  qs.forEach(function(q){
+    var multi=q.dataset.multi==='1',opts=q.querySelector('.opts'),other=q.querySelector('.other'),err=q.querySelector('.gw-err');
+    q.querySelector('.qh').textContent=multi?'Mehrere Antworten möglich':'Eine Antwort wählen';
+    if(!multi)opts.setAttribute('role','radiogroup');
+    opts.addEventListener('click',function(e){
+      var o=e.target.closest('.opt');if(!o)return;
+      err.hidden=true;
+      if(multi){o.setAttribute('aria-pressed',o.getAttribute('aria-pressed')==='true'?'false':'true');return;}
+      var on=o.getAttribute('aria-checked')==='true';
+      opts.querySelectorAll('.opt').forEach(function(x){x.setAttribute('aria-checked','false');});
+      if(!on){o.setAttribute('aria-checked','true');other.value='';}
+    });
+    other.addEventListener('input',function(){
+      err.hidden=true;
+      if(!multi&&other.value.trim())opts.querySelectorAll('.opt').forEach(function(x){x.setAttribute('aria-checked','false');});
+    });
+  });
+  function chosen(q){return [].filter.call(q.querySelectorAll('.opt'),function(o){return o.getAttribute('aria-checked')==='true'||o.getAttribute('aria-pressed')==='true';});}
+  function lock(){f.querySelectorAll('input,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
+  document.getElementById('gw-next').addEventListener('click',function(){
+    var answers={},lines=[],bad=null;
+    qs.forEach(function(q){
+      var multi=q.dataset.multi==='1',sel=chosen(q),txt=q.querySelector('.other').value.trim(),key=q.dataset.key,v,shown;
+      if(!sel.length&&!txt){q.querySelector('.gw-err').hidden=false;bad=bad||q;return;}
+      if(multi){v=sel.map(function(o){return o.dataset.value;});if(txt)v.push({other:txt});shown=sel.map(function(o){return o.querySelector('.l').textContent;}).concat(txt?[txt]:[]).join(', ');}
+      else if(sel.length){v=sel[0].dataset.value;shown=sel[0].querySelector('.l').textContent;}
+      else{v={other:txt};shown=txt;}
+      answers[key]=v;
+      lines.push(q.querySelector('.chip').textContent+': '+shown);
+    });
+    if(bad){(bad.querySelector('.opt')||bad.querySelector('.other')).focus();return;}
+    lock();
+    gwSend(lines.join('\n'),'wizard.answer',{step:step,answers:answers});
+  });
+  var sk=document.getElementById('gw-skip');
+  if(sk)sk.addEventListener('click',function(){lock();gwSend('Diesen Schritt überspringen','wizard.skip',{step:step});});
 })();
 
 }};
