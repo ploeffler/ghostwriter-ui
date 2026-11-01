@@ -51,7 +51,7 @@
       <i class="ti ti-git-merge" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
       <span style="font-size:16px;font-weight:500">Änderungen übernehmen</span>
     </div>
-    <p style="margin:0;font-size:14px;line-height:1.6;color:var(--text-secondary)">{{PENDING_TEXT}} aus <span style="font-family:var(--font-mono);font-size:13px">{{WORK_BRANCH}}</span> werden in <span style="font-family:var(--font-mono);font-size:13px">{{BOOK_BRANCH}}</span> übernommen (Pull Request #{{PENDING_PR}}).</p>
+    <p style="margin:0;font-size:14px;line-height:1.6;color:var(--text-secondary)">In <span style="font-family:var(--font-mono);font-size:13px">{{BOOK_BRANCH}}</span> übernehmen: {{PENDING_TEXT}} aus <span style="font-family:var(--font-mono);font-size:13px">{{WORK_BRANCH}}</span> (Pull Request #{{PENDING_PR}}).</p>
     <div style="border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2)">
       {{#CHANGES}}
       <div class="gw-chg"><span style="flex:1;min-width:0;font-size:14px;color:var(--text-primary)">{{CHANGE_MESSAGE}}</span><span class="gw-meta">{{CHANGE_DATE}}</span><span class="gw-meta" style="font-family:var(--font-mono)">{{CHANGE_SHA}}</span></div>

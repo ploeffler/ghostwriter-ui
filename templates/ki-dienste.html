@@ -13,8 +13,8 @@
     Dienste, die zur Aufgabe passen, dazu „Aktueller Chat“ bzw. „wie
     Standard“; bei der Warteschlange eigene Agenten und „manuell“
   - „Weitere Dienste hinzufügen“ (aufklappbar), gruppiert in Chat-Apps
-    und Sprachmodelle, Recherchequellen, Agenten; je Dienst ein Link zur
-    Anleitung bzw. Website
+    und Sprachmodelle, Recherchequellen, Agenten; je Dienst die Links
+    „Anleitung“ (Nutzung mit GhostWriter) und „Website“ (Anbieter)
   - Abbrechen und Speichern
 
   Wiederholung pro Dienst zwischen {{#SERVICES}} und {{/SERVICES}}:
@@ -25,8 +25,8 @@
                              bei agent „queue_processing“)
   - {{SERVICE_NOTE}}         kurzer Hinweis, z. B. „US · mit Websuche“
   - {{SERVICE_AVAILABLE}}    „true“, wenn in ai_providers.available, sonst leer
-  - {{SERVICE_SETUP_URL}}    Anleitung (setup) oder Website (url)
-  - {{SERVICE_SETUP_LABEL}}  „Anleitung“ bzw. „Website“
+  - {{SERVICE_GUIDE_URL}}    Link „Anleitung“: wie man den Dienst mit GhostWriter nutzt
+  - {{SERVICE_WEBSITE_URL}}  Link „Website“ des Anbieters; leer = Link entfällt
 
   Wiederholung pro Aufgabe zwischen {{#ROLES}} und {{/ROLES}}:
   - {{ROLE_ID}}       default | research | brainstorming | writing | revision
@@ -59,7 +59,8 @@
 .gw-svc input{flex:none;width:16px;height:16px;margin:0}
 .gw-svc .nm{font-size:14px;color:var(--text-primary)}
 .gw-svc .nt{font-size:12px;color:var(--text-muted)}
-.gw-svc a{margin-left:auto;font-size:13px;white-space:nowrap;color:var(--text-accent);text-decoration:none;display:flex;align-items:center;gap:4px}
+.gw-svc .lk{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.gw-svc a{font-size:13px;white-space:nowrap;color:var(--text-accent);text-decoration:none;display:flex;align-items:center;gap:4px}
 .gw-role{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr);gap:4px var(--gap-md);align-items:center}
 .gw-role select{width:100%;padding:7px 10px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px}
 .gw-role .gw-hint{grid-column:2}
@@ -74,7 +75,7 @@ details.gw-more summary{cursor:pointer;font-size:14px;font-weight:500;color:var(
         <i class="ti ti-robot" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
         <span style="font-size:16px;font-weight:500">KI-Dienste</span>
       </div>
-      <p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:var(--text-secondary)">Fang mit dem an, was du schon hast. Weitere Dienste kannst du jederzeit hier ergänzen; der Link daneben führt zur Einrichtung.</p>
+      <p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:var(--text-secondary)">Fang mit dem an, was du schon hast. Weitere Dienste kannst du jederzeit hier ergänzen; „Anleitung“ zeigt, wie du sie mit GhostWriter nutzt.</p>
     </div>
 
     <div>
@@ -103,7 +104,7 @@ details.gw-more summary{cursor:pointer;font-size:14px;font-weight:500;color:var(
 
     <div id="gw-pool" hidden>
       {{#SERVICES}}
-      <div class="gw-svc" data-id="{{SERVICE_ID}}" data-group="{{SERVICE_GROUP}}" data-roles="{{SERVICE_ROLES}}" data-available="{{SERVICE_AVAILABLE}}" data-name="{{SERVICE_NAME}}"><input type="checkbox" id="gw-s-{{SERVICE_ID}}"><label for="gw-s-{{SERVICE_ID}}" style="min-width:0;cursor:pointer"><span class="nm">{{SERVICE_NAME}}</span><br><span class="nt">{{SERVICE_NOTE}}</span></label><a href="{{SERVICE_SETUP_URL}}" target="_blank" rel="noopener">{{SERVICE_SETUP_LABEL}}<i class="ti ti-external-link" style="font-size:14px" aria-hidden="true"></i></a></div>
+      <div class="gw-svc" data-id="{{SERVICE_ID}}" data-group="{{SERVICE_GROUP}}" data-roles="{{SERVICE_ROLES}}" data-available="{{SERVICE_AVAILABLE}}" data-name="{{SERVICE_NAME}}"><input type="checkbox" id="gw-s-{{SERVICE_ID}}"><label for="gw-s-{{SERVICE_ID}}" style="min-width:0;cursor:pointer"><span class="nm">{{SERVICE_NAME}}</span><br><span class="nt">{{SERVICE_NOTE}}</span></label><span class="lk"><a href="{{SERVICE_GUIDE_URL}}" target="_blank" rel="noopener"><i class="ti ti-book" style="font-size:14px" aria-hidden="true"></i>Anleitung</a><a href="{{SERVICE_WEBSITE_URL}}" data-gw-web target="_blank" rel="noopener"><i class="ti ti-external-link" style="font-size:14px" aria-hidden="true"></i>Website</a></span></div>
       {{/SERVICES}}
     </div>
 
@@ -120,6 +121,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var $=function(id){return document.getElementById(id);};
   var svcs=[].slice.call($('gw-pool').querySelectorAll('.gw-svc'));
   svcs.forEach(function(s){
+    var w=s.querySelector('[data-gw-web]');if(w&&!w.getAttribute('href'))w.remove();
     var cb=s.querySelector('input');cb.checked=s.dataset.available==='true';
     (cb.checked?$('gw-mine'):$('gw-more-'+s.dataset.group)).appendChild(s);
     cb.addEventListener('change',function(){(cb.checked?$('gw-mine'):$('gw-more-'+s.dataset.group)).appendChild(s);refresh();});
