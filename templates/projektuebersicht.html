@@ -31,6 +31,8 @@
   - {{PROJECT_COST_HINT}}          Tooltip, z. B. "Bisherige Gesamtkosten"
   - {{PROJECT_EDITION_TEXT}}       aus project.current_edition: "Auflage 2", bei 0 "noch keine Auflage"
                                    (siehe book_releases in workflow.yml)
+  - {{CREDIT_TEXT}}, {{CREDIT_URL}} Hinweis „Entwickelt mit Unterstützung von Claude (Anthropic)“ aus
+                                   templates/branding.yml, klein unter der Karte; leer = entfällt
 
   Wiederholung pro Kapitel in Reihenfolge der Struktur:
   Der Block zwischen {{#CHAPTERS}} und {{/CHAPTERS}} wird für jedes
@@ -128,6 +130,7 @@
       </div>
     </div>
   </div>
+  <div data-gw-if="CREDIT_TEXT" style="margin-top:8px;text-align:center;font-size:11px;color:var(--text-muted)"><a href="{{CREDIT_URL}}" style="color:inherit;text-decoration:none">{{CREDIT_TEXT}}</a></div>
 </div>
 <script>
 function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
