@@ -11,6 +11,10 @@
     Neuer Abschnitt, Abschnittsreihenfolge ändern
   - Zeile darunter: Anzahl Abschnitte und offene Marker links,
     Kapitelkosten rechtsbündig
+  - Trennlinie, Ziel des Kapitels und Kurzbeschreibung nebeneinander als
+    reiner Ausgabetext; leer = „noch offen“. Ganz rechts ein Knopf, der das
+    Formular „Kapitelrecherche“ öffnet (chapter.research.open): Ziel und
+    Kurzbeschreibung ändern und eine Recherche für das Kapitel starten
   - Trennlinie, Abschnittsliste mit Legende der Markerarten;
     pro Abschnitt: Nummer, Titel, Marker, Kosten, Status
   - Trennlinie, Hinweis zur Kapitelzusammenführung
@@ -24,6 +28,8 @@
                              (Status ready_for_approval, alle Abschnitte approved);
                              sonst leer, dann fehlt der Knopf „Kapitel freigeben“
   - {{CHAPTER_SUBTITLE}}      Untertitel; leer = Zeile entfällt
+  - {{CHAPTER_GOAL}}          Ziel des Kapitels (Kapitel-README, „## Ziel des Kapitels“); leer = „noch offen“
+  - {{CHAPTER_SUMMARY}}       Kurzbeschreibung (Kapitel-README, „## Kurzbeschreibung“); leer = „noch offen“
   - {{SECTION_COUNT_TEXT}}    z. B. "9 Abschnitte"
   - {{MARKER_COUNT_TEXT}}     z. B. "10 offene Marker" oder "keine offenen Marker"
   - {{CHAPTER_COST}}          Summe der Abschnittssummen, formatiert, z. B. "1,18 €" oder "–"
@@ -49,7 +55,7 @@
   Kosten, wird "≈ " vorangestellt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.project, chapter.edit.open, section.create.open, section.reorder.open, approval.open, view.section
+  Aktionen: view.project, chapter.edit.open, section.create.open, section.reorder.open, approval.open, chapter.research.open, view.section
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -68,6 +74,10 @@
 .gw-num{font-size:13px;color:var(--text-muted);min-width:28px;font-variant-numeric:tabular-nums}
 .gw-meta{font-size:12px;color:var(--text-muted)}
 @media (max-width:520px){.gw-tags{display:none!important}}
+.gw-lbl{display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px}
+.gw-txt{font-size:14px;line-height:1.6;color:var(--text-primary);white-space:pre-line;margin:0}
+.gw-txt:empty::before{content:'noch offen';color:var(--text-muted);font-style:italic}
+@media (max-width:560px){.gw-two{grid-template-columns:1fr!important}}
 </style>
 <div style="padding:1rem 0">
   <div id="gw-kapitel" data-chapter-id="{{CHAPTER_ID}}" data-chapter-number="{{CHAPTER_NUMBER}}" data-chapter-title="{{CHAPTER_TITLE}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
@@ -96,6 +106,13 @@
         </div>
         <div style="font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;margin-left:auto" title="{{CHAPTER_COST_HINT}}"><i class="ti ti-coins" aria-hidden="true"></i><span style="font-variant-numeric:tabular-nums">{{CHAPTER_COST}}</span></div>
       </div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:var(--gap-md);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <div class="gw-two" style="flex:1;min-width:0;display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-md)">
+        <div><span class="gw-lbl">Ziel des Kapitels</span><p class="gw-txt">{{CHAPTER_GOAL}}</p></div>
+        <div><span class="gw-lbl">Kurzbeschreibung</span><p class="gw-txt">{{CHAPTER_SUMMARY}}</p></div>
+      </div>
+      <button type="button" class="gw-sq" data-p="Kapitelrecherche für Kapitel {{CHAPTER_NUMBER}} öffnen" data-a="chapter.research.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Ziel und Kurzbeschreibung ändern, Kapitelrecherche" aria-label="Ziel und Kurzbeschreibung ändern, Kapitelrecherche"><i class="ti ti-file-search" aria-hidden="true"></i></button>
     </div>
     <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
