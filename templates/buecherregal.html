@@ -1,0 +1,112 @@
+<!--
+  Vorlage: Bücherregal (Ansicht, siehe templates/ui/README.md in GhostWriter, Issue #37)
+
+  Inline-Widget für den Chat. Startseite einer Bibliothek (mehrere Bücher in
+  einem Repository, je Buch ein Branch buch/<slug>). Erscheint, wenn der
+  Benutzer den Link auf das Repository ohne Branch bzw. auf den
+  Standard-Branch schickt, oder über „Zum Bücherregal“ in der Projektübersicht.
+
+  Aufbau:
+  - Kopf: Regal-Symbol, „Bücherregal“, Name des Repositorys, Anzahl Bücher,
+    Knopf „Neues Buch“
+  - je Buch eine Karte: Kurztitel als Chip, Titel, Autor, Status
+    (eingerichtet | im Aufbau), Fortschrittsbalken der freigegebenen Abschnitte,
+    Auflage, KI-API-Kosten, Hinweis auf offene Änderungen, zuletzt geändert;
+    Klick auf die Karte bzw. „Öffnen“ zeigt die Projektübersicht des Buchs,
+    bei „im Aufbau“ geht dort der Einstiegsdialog weiter
+  - ohne Bücher: kurzer Hinweis und nur „Neues Buch“
+
+  Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert):
+  - {{LIBRARY_NAME}}          owner/repo
+  - {{BOOK_COUNT_TEXT}}       z. B. "2 Bücher", "1 Buch"
+  - {{EMPTY}}                 nicht leer, wenn es noch kein Buch gibt (Hinweis erscheint)
+  - {{UPDATED_TEXT}}          Stand der Übersicht, z. B. "Stand: 01.11.2026, 21:40"; leer = entfällt
+  Wiederholung zwischen {{#BOOKS}} und {{/BOOKS}}:
+  - {{BOOK_BRANCH}}           Buch-Branch, z. B. "buch/adhs-im-erwachsenenleben"
+  - {{BOOK_TITLE}}            Titel (bzw. Arbeitstitel)
+  - {{BOOK_TITLE_SHORT}}      Kurztitel
+  - {{BOOK_AUTHOR_TEXT}}      z. B. "von Max Mustermann"; leer = entfällt
+  - {{BOOK_STATE}}            ready | setup (setzt Farbe und Knopftext)
+  - {{BOOK_STATE_TEXT}}       "eingerichtet" | "im Aufbau"
+  - {{BOOK_PROGRESS}}         0–100, Anteil freigegebener Abschnitte
+  - {{BOOK_PROGRESS_TEXT}}    z. B. "12 von 48 Abschnitten freigegeben · 2 von 6 Kapiteln"
+  - {{BOOK_EDITION_TEXT}}     "Auflage 2" | "noch keine Auflage"
+  - {{BOOK_COST}}             KI-API-Kosten, z. B. "≈ 4,77 €"
+  - {{BOOK_PENDING_TEXT}}     z. B. "3 Änderungen offen"; leer = entfällt
+  - {{BOOK_UPDATED_TEXT}}     z. B. "zuletzt geändert am 01.11.2026"
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert`, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: library.book.open {branch}, library.book.create.open
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Bücherregal {{LIBRARY_NAME}}: {{BOOK_COUNT_TEXT}}. Ein Buch öffnen oder ein neues anlegen.</h2>
+<style>
+.gw-shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:var(--gap-md)}
+.gw-book{text-align:left;font:inherit;color:var(--text-primary);border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:var(--pad-md);display:flex;flex-direction:column;gap:6px;cursor:pointer;border-left:4px solid var(--text-accent)}
+.gw-book:hover{border-color:var(--border-strong);border-left-color:var(--text-accent)}
+.gw-book:focus-visible{outline:2px solid var(--border-accent);outline-offset:1px}
+.gw-book[data-state="setup"]{border-left-color:var(--border-strong);border-left-style:dashed}
+.gw-book .chip{align-self:flex-start;font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-book .t{font-size:16px;font-weight:500;line-height:1.3}
+.gw-book .a{font-size:13px;color:var(--text-secondary)}
+.gw-book .a:empty{display:none}
+.gw-book .st{font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.gw-book .st b{font-weight:500;color:var(--text-secondary)}
+.gw-book .bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden}
+.gw-book .bar span{display:block;height:100%;background:var(--text-accent)}
+.gw-book .pend{font-size:12px;color:var(--text-accent)}
+.gw-book .pend:empty{display:none}
+.gw-book .open{margin-top:auto;padding-top:4px;align-self:flex-end;font-size:13px;font-weight:500;color:var(--text-accent);display:inline-flex;align-items:center;gap:4px}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+</style>
+<div style="padding:1rem 0">
+  <div id="gw-regal" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="display:flex;align-items:flex-start;gap:var(--gap-md);flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div style="display:flex;align-items:center;gap:var(--gap-sm)">
+          <i class="ti ti-books" style="font-size:20px;color:var(--text-secondary)" aria-hidden="true"></i>
+          <span style="font-size:20px;font-weight:500">Bücherregal</span>
+        </div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:2px">{{LIBRARY_NAME}} · {{BOOK_COUNT_TEXT}}</div>
+      </div>
+      <button type="button" class="gw-btn" id="gw-newbook" style="border:none;background:var(--text-primary);color:var(--surface-1);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-plus" aria-hidden="true"></i>Neues Buch</button>
+    </div>
+
+    <div data-gw-if="EMPTY" style="font-size:14px;color:var(--text-secondary);line-height:1.6;padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">Hier steht noch kein Buch. Mit „Neues Buch“ legst du eins an; danach führt dich der Einstiegsdialog bis zur Gliederung.</div>
+
+    <div class="gw-shelf">
+      {{#BOOKS}}
+      <button type="button" class="gw-book" data-branch="{{BOOK_BRANCH}}" data-title="{{BOOK_TITLE_SHORT}}" data-state="{{BOOK_STATE}}">
+        <span class="chip">{{BOOK_TITLE_SHORT}}</span>
+        <span class="t">{{BOOK_TITLE}}</span>
+        <span class="a">{{BOOK_AUTHOR_TEXT}}</span>
+        <span class="st"><b>{{BOOK_STATE_TEXT}}</b> · {{BOOK_EDITION_TEXT}} · KI-API-Kosten {{BOOK_COST}}</span>
+        <span class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{BOOK_PROGRESS}}" aria-label="Freigegebene Abschnitte"><span style="width:{{BOOK_PROGRESS}}%"></span></span>
+        <span class="st">{{BOOK_PROGRESS_TEXT}}</span>
+        <span class="pend">{{BOOK_PENDING_TEXT}}</span>
+        <span class="st">{{BOOK_UPDATED_TEXT}} · <code style="font-size:11px">{{BOOK_BRANCH}}</code></span>
+        <span class="open"><span class="ol">Öffnen</span><i class="ti ti-arrow-right" aria-hidden="true"></i></span>
+      </button>
+      {{/BOOKS}}
+    </div>
+
+    <div data-gw-if="UPDATED_TEXT" style="font-size:12px;color:var(--text-muted);text-align:right">{{UPDATED_TEXT}}</div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var r=document.getElementById('gw-regal');
+  r.querySelectorAll('.gw-book').forEach(function(b){
+    var setup=b.dataset.state==='setup';
+    if(setup)b.querySelector('.ol').textContent='Einrichtung fortsetzen';
+    b.addEventListener('click',function(){
+      gwSend((setup?'Einrichtung von „':'Buch „')+b.dataset.title+'“ '+(setup?'fortsetzen':'öffnen'),'library.book.open',{branch:b.dataset.branch});
+    });
+  });
+  document.getElementById('gw-newbook').addEventListener('click',function(){gwSend('Neues Buch anlegen','library.book.create.open',{});});
+})();
+</script>
