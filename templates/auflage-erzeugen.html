@@ -110,11 +110,10 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   $('gw-save').addEventListener('click',function(){
     if(!d.value){e.hidden=false;d.focus();return;}
     var formats=[].map.call($('gw-formats').querySelectorAll('.gw-pill'),function(p){return p.textContent.trim();}).join(', ');
-    var notes=$('gw-notes').value.trim()||'(keine – Release Notes aus den Änderungen seit der letzten Auflage zusammenstellen)';
     lock();
     gwSend('Neue Auflage erzeugen: '+f.dataset.name,'edition.create',{name:f.dataset.name,tag:f.dataset.tag,date:d.value,formats:formats.split(', '),notes:$('gw-notes').value.trim()});
   });
   $('gw-cancel').addEventListener('click',function(){lock();gwSend('Neue Auflage erzeugen abgebrochen','form.cancel',{form:'edition.create'});});
-  $('gw-proof').addEventListener('click',function(){lock();gwSend('Probedruck erstellen','edition.proof',{});});
+  $('gw-proof').addEventListener('click',function(){var b=$('gw-proof');b.disabled=true;b.lastChild.textContent='Probedruck angefordert';gwSend('Probedruck erstellen','edition.proof',{});});
 })();
 </script>
