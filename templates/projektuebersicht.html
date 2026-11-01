@@ -10,7 +10,7 @@
   - Kopf links: Kurztitel als Badge, Titel
   - Kopf rechts: Symbolleiste mit quadratischen Symbol-Knöpfen:
     Projektdaten bearbeiten, Neues Kapitel anlegen,
-    Kapitelreihenfolge ändern, Neue Auflage erzeugen, Projekteinstellungen
+    Kapitelreihenfolge ändern, Neue Auflage erzeugen, KI-Dienste, Projekteinstellungen
   - neben "Buchprojekt": die aktuelle Auflage
   - Zeile darunter: Autor links, bisherige Gesamtkosten rechtsbündig
   - nur bei offenen Änderungen: Hinweis mit Anzahl und Pull Request,
@@ -58,7 +58,7 @@
     im Tooltip ", enthält geschätzte Kosten" ergänzt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.chapter, chapter.edit.open, changes.merge.open, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open
+  Aktionen: view.chapter, chapter.edit.open, changes.merge.open, project.providers.open, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -90,6 +90,7 @@
           <button type="button" class="gw-sq" data-p="Neues Kapitel anlegen" data-a="chapter.create.open" title="Neues Kapitel anlegen" aria-label="Neues Kapitel anlegen"><i class="ti ti-plus" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Kapitelreihenfolge ändern" data-a="chapter.reorder.open" title="Kapitelreihenfolge ändern" aria-label="Kapitelreihenfolge ändern"><i class="ti ti-arrows-sort" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Neue Auflage erzeugen" data-a="edition.create.open" title="Neue Auflage erzeugen" aria-label="Neue Auflage erzeugen"><i class="ti ti-books" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="KI-Dienste anzeigen" data-a="project.providers.open" title="KI-Dienste" aria-label="KI-Dienste"><i class="ti ti-robot" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Projekteinstellungen anzeigen" data-a="project.settings.open" title="Projekteinstellungen" aria-label="Projekteinstellungen"><i class="ti ti-settings" aria-hidden="true"></i></button>
         </div>
       </div>
