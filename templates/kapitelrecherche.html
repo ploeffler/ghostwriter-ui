@@ -13,7 +13,12 @@
     letzten Kapitelrecherche einen Vorschlag, steht er darunter mit dem Knopf
     „Vorschlag übernehmen“ (setzt nur das Feld, speichert nicht)
   - nur nach einer Recherche: Ergebnis der letzten Kapitelrecherche (kurz)
-  - Recherche: Häkchen „Ziel des Kapitels suchen“ (dann ist die Fragestellung
+  - nur wenn der letzte Lauf Abschnitte vorschlägt: Liste der vorgeschlagenen
+    neuen Abschnitte mit Häkchen und Knopf „Ausgewählte Abschnitte anlegen“;
+    vorhandene Abschnitte bleiben unverändert, neue kommen ans Ende
+  - Recherche: Aufgabe als Häkchen-Gruppe mit höchstens einer Auswahl
+    (Ziel des Kapitels recherchieren | Abschnitte erstellen | Kurzbeschreibung
+    erstellen; keine = nur die Fragestellung; mit Aufgabe ist die Fragestellung
     optional), Fragestellung, Schwerpunkte (optional); Zusammenhang: vorheriges
     und nächstes Kapitel mit Titel und Kurzbeschreibung, je ein Schieberegler
     für die Gewichtung (0 nicht berücksichtigen, 1 abgrenzen, 2 anschließen,
@@ -29,7 +34,8 @@
   - {{CHAPTER_SUMMARY}}       Kurzbeschreibung (ebenso)
   - {{RESEARCH_QUESTION}}     Vorschlag bzw. letzte Fragestellung; leer = Platzhaltertext
   - {{RESEARCH_SCOPE}}        letzte Schwerpunkte; leer = Platzhaltertext
-  - {{GOAL_SEARCH}}           "true" = Häkchen „Ziel des Kapitels suchen“ gesetzt (Vorgabe, wenn das Ziel leer ist)
+  - {{RESEARCH_TASK}}         gewählte Aufgabe: goal | sections | summary | leer (nur Fragestellung)
+  - {{SECTION_COUNT}}         Zahl der vorhandenen Abschnitte des Kapitels
   - {{PREV_CHAPTER}}          nicht leer, wenn es ein vorheriges Kapitel gibt; sonst entfällt sein Bereich
   - {{PREV_CHAPTER_LABEL}}    z. B. "Kapitel 1 · Endlich eine Erklärung"
   - {{PREV_CHAPTER_SUMMARY}}  Kurzbeschreibung des vorherigen Kapitels; leer = „noch offen“
@@ -42,9 +48,14 @@
   - {{LAST_RUN_TEXT}}         kurze Zusammenfassung des Ergebnisses (wenige Sätze, kein Buchtext)
   - {{SUGGESTED_GOAL}}        Vorschlag für das Ziel; leer = kein Vorschlag
   - {{SUGGESTED_SUMMARY}}     Vorschlag für die Kurzbeschreibung; leer = kein Vorschlag
+  - {{SECTIONS_NOTE}}         z. B. "Das Kapitel hat schon 9 Abschnitte. Sie bleiben unverändert; ausgewählte neue kommen ans Ende."
+  Wiederholung zwischen {{#SUGGESTED_SECTIONS}} und {{/SUGGESTED_SECTIONS}} (leer = Bereich entfällt):
+  - {{SUG_TITLE}}             Titel des vorgeschlagenen Abschnitts
+  - {{SUG_SUMMARY}}           Kurzbeschreibung (ein Satz)
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: chapter.research.start {chapter_id, question, scope, goal_search, weight_prev, weight_next, goal, summary},
+  Aktionen: chapter.research.start {chapter_id, task, question, scope, weight_prev, weight_next, goal, summary},
+            chapter.sections.add {chapter_id, sections: [{title, summary}]},
             chapter.texts.update {chapter_id, goal, summary}, form.cancel
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
@@ -104,13 +115,32 @@
       <div style="font-size:14px;line-height:1.6;white-space:pre-line">{{LAST_RUN_TEXT}}</div>
     </div>
 
+    <div data-gw-if="SUGGESTED_SECTIONS" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <div class="gw-sec">Vorgeschlagene Abschnitte ({{LAST_RUN_ID}})</div>
+      <div id="gw-sugsec" style="display:flex;flex-direction:column;gap:6px">
+        {{#SUGGESTED_SECTIONS}}
+        <label class="gw-chk" style="align-items:flex-start"><input type="checkbox" data-title="{{SUG_TITLE}}" data-summary="{{SUG_SUMMARY}}" style="margin-top:3px"><span><span style="font-weight:500">{{SUG_TITLE}}</span><br><span style="font-size:13px;color:var(--text-secondary)">{{SUG_SUMMARY}}</span></span></label>
+        {{/SUGGESTED_SECTIONS}}
+      </div>
+      <div style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;margin-top:10px">
+        <div style="flex:1;min-width:200px;font-size:12px;color:var(--text-muted);line-height:1.5">{{SECTIONS_NOTE}}</div>
+        <button type="button" class="gw-btn" id="gw-addsec" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-plus" aria-hidden="true"></i>Ausgewählte Abschnitte anlegen</button>
+      </div>
+      <div class="gw-err" id="gw-addsec-err" hidden>Bitte mindestens einen Abschnitt anhaken.</div>
+    </div>
+
     <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md);display:flex;flex-direction:column;gap:var(--gap-md)">
       <div class="gw-sec" style="margin:0">Recherche für das ganze Kapitel</div>
-      <label class="gw-chk"><input type="checkbox" id="gw-goalsearch" data-v="{{GOAL_SEARCH}}"> Ziel des Kapitels suchen <span class="hint">Vorschlag für Ziel und Kurzbeschreibung aus dem Zusammenhang des Buchs</span></label>
+      <div id="gw-task" data-v="{{RESEARCH_TASK}}" role="group" aria-label="Aufgabe der Recherche (höchstens eine)" style="display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:13px;font-weight:500">Aufgabe <span class="hint">höchstens eine; ohne Auswahl nur die Fragestellung</span></div>
+        <label class="gw-chk"><input type="checkbox" value="goal"> Ziel des Kapitels recherchieren</label>
+        <label class="gw-chk"><input type="checkbox" value="sections"> Abschnitte erstellen <span class="hint">schlägt Abschnitte vor; angelegt wird erst nach Auswahl</span></label>
+        <label class="gw-chk"><input type="checkbox" value="summary"> Kurzbeschreibung erstellen</label>
+      </div>
       <div>
-        <label for="gw-question">Fragestellung <span class="hint" id="gw-q-hint">optional, wenn das Ziel gesucht wird</span></label>
+        <label for="gw-question">Fragestellung <span class="hint" id="gw-q-hint">optional, wenn eine Aufgabe gewählt ist</span></label>
         <textarea id="gw-question" rows="2" placeholder="Was soll für dieses Kapitel geklärt werden?">{{RESEARCH_QUESTION}}</textarea>
-        <div class="gw-err" id="gw-question-err" hidden>Bitte eine Fragestellung eingeben oder „Ziel des Kapitels suchen“ anhaken.</div>
+        <div class="gw-err" id="gw-question-err" hidden>Bitte eine Fragestellung eingeben oder eine Aufgabe wählen.</div>
       </div>
       <div>
         <label for="gw-scope">Schwerpunkte <span class="hint">optional, z. B. Zielgruppe, Zeitraum, Quellenart</span></label>
@@ -151,20 +181,31 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var id=f.dataset.chapter,num=f.dataset.num;
   ['gw-sug-goal','gw-sug-summary'].forEach(function(s){var n=$(s);if(!n.firstChild.textContent.trim())n.remove();});
   f.querySelectorAll('.gw-link').forEach(function(b){b.addEventListener('click',function(){var t=$(b.dataset.to);t.value=b.previousSibling.textContent.trim();t.focus();});});
-  var q=$('gw-question'),qe=$('gw-question-err'),gs=$('gw-goalsearch');
+  var q=$('gw-question'),qe=$('gw-question-err'),tg=$('gw-task'),tasks=tg.querySelectorAll('input');
   q.addEventListener('input',function(){qe.hidden=true;});
   var g=function(k){return $(k).value.trim();};
-  gs.checked=gs.dataset.v==='true';
-  function hint(){$('gw-q-hint').hidden=!gs.checked;if(gs.checked)qe.hidden=true;}
-  gs.addEventListener('change',hint);hint();
+  function task(){var t='';tasks.forEach(function(x){if(x.checked)t=x.value;});return t;}
+  function hint(){$('gw-q-hint').hidden=!task();if(task())qe.hidden=true;}
+  tasks.forEach(function(x){x.checked=x.value===tg.dataset.v;x.addEventListener('change',function(){if(x.checked)tasks.forEach(function(o){if(o!==x)o.checked=false;});hint();});});
+  hint();
+  var TN={goal:'Ziel recherchieren',sections:'Abschnitte erstellen',summary:'Kurzbeschreibung erstellen'};
+  var add=$('gw-addsec');
+  if(add)add.addEventListener('click',function(){
+    var sel=[].filter.call($('gw-sugsec').querySelectorAll('input'),function(x){return x.checked;}).map(function(x){return {title:x.dataset.title,summary:x.dataset.summary};});
+    if(!sel.length){$('gw-addsec-err').hidden=false;return;}
+    lock();
+    gwSend(sel.length+(sel.length===1?' Abschnitt':' Abschnitte')+' in Kapitel '+num+' anlegen','chapter.sections.add',{chapter_id:id,sections:sel});
+  });
+  if($('gw-sugsec'))$('gw-sugsec').addEventListener('change',function(){$('gw-addsec-err').hidden=true;});
   var W=['nicht berücksichtigen','abgrenzen','anschließen','stark einbeziehen'];
   function w(id){var n=$(id);return n?+n.value:0;}
   ['gw-wprev','gw-wnext'].forEach(function(id){var n=$(id);if(!n)return;var o=$(id+'-out');function u(){o.textContent=n.value+' · '+W[+n.value];}n.addEventListener('input',u);u();});
   function lock(){f.querySelectorAll('input,textarea,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
   $('gw-research').addEventListener('click',function(){
-    if(!gs.checked&&!g('gw-question')){qe.hidden=false;q.focus();return;}
+    var t=task();
+    if(!t&&!g('gw-question')){qe.hidden=false;q.focus();return;}
     lock();
-    gwSend('Kapitelrecherche für Kapitel '+num+' starten'+(gs.checked?' (Ziel suchen)':''),'chapter.research.start',{chapter_id:id,question:g('gw-question'),scope:g('gw-scope'),goal_search:gs.checked,weight_prev:w('gw-wprev'),weight_next:w('gw-wnext'),goal:g('gw-goal'),summary:g('gw-summary')});
+    gwSend('Kapitelrecherche für Kapitel '+num+' starten'+(t?' ('+TN[t]+')':''),'chapter.research.start',{chapter_id:id,task:t,question:g('gw-question'),scope:g('gw-scope'),weight_prev:w('gw-wprev'),weight_next:w('gw-wnext'),goal:g('gw-goal'),summary:g('gw-summary')});
   });
   $('gw-save').addEventListener('click',function(){
     lock();
