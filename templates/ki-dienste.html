@@ -38,6 +38,16 @@
   - {{SERVICE_PLAN}}         Tarif, Freitext
   - {{SERVICE_COST}}         Kosten pro Monat in Euro, leer = unbekannt
   - {{SERVICE_MEMO}}         eigene Notiz
+  API-Schlüssel (nur bei Zugang „API-Schlüssel“ sichtbar). Der Schlüssel selbst
+  wird nie im Formular eingegeben; er liegt als GitHub-Secret im Repository,
+  GhostWriter speichert nur den Namen des Secrets:
+  - {{SERVICE_SECRET}}         Name des Secrets (ai_providers.services.<id>.api_key_secret,
+                               sonst Vorschlag aus providers.yml)
+  - {{SERVICE_SECRET_DEFAULT}} Vorschlag aus providers.yml (api_key_secret)
+  - {{SERVICE_SECRET_ALT}}     alternatives Secret, z. B. CLAUDE_CODE_OAUTH_TOKEN; leer = keins
+  - {{SERVICE_KEY_URL}}        Seite des Anbieters zum Erstellen des Schlüssels
+  - {{SERVICE_SECRET_STATE}}   ok | alt (nur das alternative Secret) | missing | leer (unbekannt),
+                               aus ghostwriter-index.json
 
   Wiederholung pro Aufgabe zwischen {{#ROLES}} und {{/ROLES}}:
   - {{ROLE_ID}}       default | research | brainstorming | writing | revision
@@ -48,18 +58,26 @@
 
   Weitere Platzhalter:
   - {{CONNECTOR_GUIDE_URL}}  Link zur Anleitung „GhostWriter mit GitHub verbinden“
+  - {{SECRETS_URL}}          Seite „New repository secret“ des Repositorys
+  - {{KEYS_GUIDE_URL}}       Anleitung „API-Schlüssel als GitHub-Secret“
 
   Verhalten:
   - Haken setzen oder entfernen aktualisiert die Auswahl der Aufgaben
     sofort. Fällt ein zugeteilter Dienst weg, steht die Aufgabe wieder
     auf „wie Standard“ (Standard selbst auf „Aktueller Chat“).
-  - „Einstellungen“ klappt je eigenem Dienst Zugang, Modell, „Mit GitHub
-    verbunden“, Tarif, Kosten pro Monat und Notiz auf; zugeklappt steht
-    eine Kurzfassung unter dem Dienst.
+  - „Einstellungen“ steht direkt neben dem Namen und klappt je eigenem
+    Dienst Zugang, Modell, „Mit GitHub verbunden“, API-Schlüssel (Secret),
+    Tarif, Kosten pro Monat und Notiz auf; zugeklappt steht eine Kurzfassung
+    unter dem Dienst.
+  - Zugang „API-Schlüssel“: Name des Secrets, Status (hinterlegt / fehlt /
+    unbekannt) und die Schritte „Schlüssel erstellen“ (Anbieter) und „In
+    GitHub hinterlegen“. Zugang „Chat-App“: Hinweis, dass kein Schlüssel
+    nötig ist.
   - Speichern sendet project.providers.update mit available, services
-    (Einstellungen der eigenen Dienste), roles, queue_agent und
+    (Einstellungen der eigenen Dienste, bei API-Zugang mit api_key_secret), roles, queue_agent und
     search_tools (alle eigenen Recherchequellen); gw.js hängt
-    expected_head_sha an. Ungültige Kosten verhindern das Speichern.
+    expected_head_sha an. Ungültige Kosten oder Secret-Namen verhindern
+    das Speichern.
     Abbrechen sendet form.cancel.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
@@ -86,14 +104,23 @@
 .gw-list{display:flex;flex-direction:column;gap:var(--gap-xs)}
 .gw-w{display:flex;flex-direction:column}
 .gw-sum{font-size:12px;color:var(--text-secondary);padding:4px 10px 0 36px}
-.gw-tog{margin-left:36px;align-self:flex-start;border:none;background:none;padding:4px 0;font:inherit;font-size:13px;color:var(--text-accent);cursor:pointer;display:flex;align-items:center;gap:4px}
+.gw-nmr{display:flex;align-items:center;flex-wrap:wrap;gap:2px 8px;min-width:0}
+.gw-tog{flex:none;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-1);padding:2px 8px;font:inherit;font-size:12px;color:var(--text-accent);cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.gw-tog[aria-expanded=true]{border-color:var(--border-accent);background:var(--bg-accent)}
+.gw-key{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--text-secondary);line-height:1.5}
+.gw-key .steps{display:flex;flex-wrap:wrap;gap:6px 14px}
+.gw-key .steps a{color:var(--text-accent);text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.gw-st{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:1px 8px;border-radius:999px;border:0.5px solid var(--border)}
+.gw-st.ok{color:var(--text-success);border-color:var(--border-success);background:var(--bg-success)}
+.gw-st.missing{color:var(--text-warning);border-color:var(--border-warning);background:var(--bg-warning)}
+.gw-set code{font-family:var(--font-mono,monospace);font-size:12px;padding:0 4px;border-radius:4px;background:var(--surface-2)}
 .gw-set{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr);gap:8px var(--gap-md);align-items:center;margin:4px 0 6px 36px;padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-1)}
 .gw-w [hidden]{display:none!important}
 .gw-set label{font-size:13px;color:var(--text-secondary)}
 .gw-set input[type=text],.gw-set input[type=number],.gw-set select{width:100%;box-sizing:border-box;padding:6px 10px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px}
 .gw-set .full{grid-column:2}
 .gw-err{font-size:12px;color:var(--text-danger)}
-@media (max-width:520px){.gw-set{grid-template-columns:1fr;margin-left:0}.gw-set .full{grid-column:1}.gw-sum,.gw-tog{margin-left:0;padding-left:0}}
+@media (max-width:520px){.gw-set{grid-template-columns:1fr;margin-left:0}.gw-set .full{grid-column:1}.gw-sum{margin-left:0;padding-left:0}}
 details.gw-more summary{cursor:pointer;font-size:14px;font-weight:500;color:var(--text-primary);padding:4px 0}
 @media (max-width:520px){.gw-role{grid-template-columns:1fr}.gw-role .gw-hint{grid-column:1}}
 </style>
@@ -133,7 +160,7 @@ details.gw-more summary{cursor:pointer;font-size:14px;font-weight:500;color:var(
 
     <div id="gw-pool" hidden>
       {{#SERVICES}}
-      <div class="gw-w" data-id="{{SERVICE_ID}}" data-group="{{SERVICE_GROUP}}" data-roles="{{SERVICE_ROLES}}" data-available="{{SERVICE_AVAILABLE}}" data-name="{{SERVICE_NAME}}" data-access-options="{{SERVICE_ACCESS_OPTIONS}}" data-access="{{SERVICE_ACCESS}}" data-github="{{SERVICE_GITHUB}}"><div class="gw-svc"><input type="checkbox" id="gw-s-{{SERVICE_ID}}"><label for="gw-s-{{SERVICE_ID}}" style="min-width:0;cursor:pointer"><span class="nm">{{SERVICE_NAME}}</span><br><span class="nt">{{SERVICE_NOTE}}</span></label><span class="lk"><a href="{{SERVICE_GUIDE_URL}}" target="_blank" rel="noopener"><i class="ti ti-book" style="font-size:14px" aria-hidden="true"></i>Anleitung</a><a href="{{SERVICE_WEBSITE_URL}}" data-gw-web target="_blank" rel="noopener"><i class="ti ti-external-link" style="font-size:14px" aria-hidden="true"></i>Website</a></span></div><div class="gw-sum"></div><button type="button" class="gw-tog" aria-expanded="false"><i class="ti ti-adjustments" aria-hidden="true"></i><span>Einstellungen</span></button><div class="gw-set" hidden><label for="gw-a-{{SERVICE_ID}}">Zugang</label><select id="gw-a-{{SERVICE_ID}}" class="s-access"></select><label class="llm" for="gw-m-{{SERVICE_ID}}">Modell</label><input class="llm s-model" type="text" id="gw-m-{{SERVICE_ID}}" value="{{SERVICE_MODEL}}" placeholder="leer = Standard des Dienstes"><label class="gh" for="gw-g-{{SERVICE_ID}}">Mit GitHub verbunden</label><span class="gh" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)"><input type="checkbox" class="s-github" id="gw-g-{{SERVICE_ID}}" style="width:16px;height:16px;margin:0"><a href="{{CONNECTOR_GUIDE_URL}}" target="_blank" rel="noopener" style="color:var(--text-accent);text-decoration:none">Anleitung</a></span><label for="gw-p-{{SERVICE_ID}}">Tarif</label><input class="s-plan" type="text" id="gw-p-{{SERVICE_ID}}" value="{{SERVICE_PLAN}}" placeholder="z. B. Plus, Pro, kostenlos"><label for="gw-c-{{SERVICE_ID}}">Kosten pro Monat</label><span style="display:flex;align-items:center;gap:6px"><input class="s-cost" type="number" min="0" step="0.01" id="gw-c-{{SERVICE_ID}}" value="{{SERVICE_COST}}" placeholder="unbekannt" style="max-width:120px"><span style="font-size:13px;color:var(--text-secondary)">€</span></span><span class="gw-err full s-cost-err" hidden>Bitte eine Zahl ab 0 eintragen oder leer lassen.</span><label for="gw-n-{{SERVICE_ID}}">Notiz</label><input class="s-note" type="text" id="gw-n-{{SERVICE_ID}}" value="{{SERVICE_MEMO}}" placeholder="z. B. nur für Recherche"></div></div>
+      <div class="gw-w" data-id="{{SERVICE_ID}}" data-group="{{SERVICE_GROUP}}" data-roles="{{SERVICE_ROLES}}" data-available="{{SERVICE_AVAILABLE}}" data-name="{{SERVICE_NAME}}" data-access-options="{{SERVICE_ACCESS_OPTIONS}}" data-access="{{SERVICE_ACCESS}}" data-github="{{SERVICE_GITHUB}}" data-secret-default="{{SERVICE_SECRET_DEFAULT}}" data-secret-alt="{{SERVICE_SECRET_ALT}}" data-secret-state="{{SERVICE_SECRET_STATE}}" data-secret-saved="{{SERVICE_SECRET}}"><div class="gw-svc"><input type="checkbox" id="gw-s-{{SERVICE_ID}}"><span style="min-width:0"><span class="gw-nmr"><label for="gw-s-{{SERVICE_ID}}" class="nm" style="cursor:pointer">{{SERVICE_NAME}}</label><button type="button" class="gw-tog" aria-expanded="false" title="Einstellungen für {{SERVICE_NAME}}"><i class="ti ti-adjustments" aria-hidden="true"></i><span>Einstellungen</span></button></span><label for="gw-s-{{SERVICE_ID}}" class="nt" style="cursor:pointer">{{SERVICE_NOTE}}</label></span><span class="lk"><a href="{{SERVICE_GUIDE_URL}}" target="_blank" rel="noopener"><i class="ti ti-book" style="font-size:14px" aria-hidden="true"></i>Anleitung</a><a href="{{SERVICE_WEBSITE_URL}}" data-gw-web target="_blank" rel="noopener"><i class="ti ti-external-link" style="font-size:14px" aria-hidden="true"></i>Website</a></span></div><div class="gw-sum"></div><div class="gw-set" hidden><label for="gw-a-{{SERVICE_ID}}">Zugang</label><select id="gw-a-{{SERVICE_ID}}" class="s-access"></select><span class="appkey full gw-hint">Kein API-Schlüssel nötig: läuft über dein Konto bzw. Abo beim Anbieter.</span><label class="key" for="gw-k-{{SERVICE_ID}}">Secret in GitHub</label><span class="key" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><input class="s-secret" type="text" id="gw-k-{{SERVICE_ID}}" value="{{SERVICE_SECRET}}" placeholder="{{SERVICE_SECRET_DEFAULT}}" spellcheck="false" autocomplete="off" style="max-width:260px;font-family:var(--font-mono,monospace)"><span class="gw-st s-state"></span></span><span class="gw-err full s-secret-err" hidden>Nur Buchstaben, Ziffern und _; nicht mit einer Ziffer oder GITHUB_ beginnen.</span><div class="gw-key full key"><span><i class="ti ti-lock" aria-hidden="true"></i> Den Schlüssel selbst gibst du <b>nie hier oder im Chat</b> ein. Er kommt als verschlüsseltes Secret in dein GitHub-Repository; GhostWriter speichert nur den Namen. Genutzt wird er von GitHub Actions bzw. Agenten, nicht vom Chat.</span><span class="steps"><a href="{{SERVICE_KEY_URL}}" data-gw-keyurl target="_blank" rel="noopener"><i class="ti ti-key" aria-hidden="true"></i>1. Schlüssel beim Anbieter erstellen</a><a href="{{SECRETS_URL}}" target="_blank" rel="noopener"><i class="ti ti-brand-github" aria-hidden="true"></i>2. In GitHub als Secret hinterlegen</a><a href="{{KEYS_GUIDE_URL}}" target="_blank" rel="noopener"><i class="ti ti-book" aria-hidden="true"></i>Anleitung</a></span><span class="s-alt" hidden></span></div><label class="llm" for="gw-m-{{SERVICE_ID}}">Modell</label><input class="llm s-model" type="text" id="gw-m-{{SERVICE_ID}}" value="{{SERVICE_MODEL}}" placeholder="leer = Standard des Dienstes"><label class="gh" for="gw-g-{{SERVICE_ID}}">Mit GitHub verbunden</label><span class="gh" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)"><input type="checkbox" class="s-github" id="gw-g-{{SERVICE_ID}}" style="width:16px;height:16px;margin:0"><a href="{{CONNECTOR_GUIDE_URL}}" target="_blank" rel="noopener" style="color:var(--text-accent);text-decoration:none">Anleitung</a></span><label for="gw-p-{{SERVICE_ID}}">Tarif</label><input class="s-plan" type="text" id="gw-p-{{SERVICE_ID}}" value="{{SERVICE_PLAN}}" placeholder="z. B. Plus, Pro, kostenlos"><label for="gw-c-{{SERVICE_ID}}">Kosten pro Monat</label><span style="display:flex;align-items:center;gap:6px"><input class="s-cost" type="number" min="0" step="0.01" id="gw-c-{{SERVICE_ID}}" value="{{SERVICE_COST}}" placeholder="unbekannt" style="max-width:120px"><span style="font-size:13px;color:var(--text-secondary)">€</span></span><span class="gw-err full s-cost-err" hidden>Bitte eine Zahl ab 0 eintragen oder leer lassen.</span><label for="gw-n-{{SERVICE_ID}}">Notiz</label><input class="s-note" type="text" id="gw-n-{{SERVICE_ID}}" value="{{SERVICE_MEMO}}" placeholder="z. B. nur für Recherche"></div></div>
       {{/SERVICES}}
     </div>
 
@@ -151,8 +178,16 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var AX={app:'Chat-App oder Website',api:'API-Schlüssel',local:'auf meinem Rechner',cli:'Kommandozeile',web:'über die Websuche (kostenlos)',github:'in GitHub zugewiesen'};
   var svcs=[].slice.call($('gw-pool').querySelectorAll('.gw-w'));
   function q(s,c){return s.querySelector(c);}
+  var ST={ok:'hinterlegt',alt:'über Abo-Token hinterlegt',missing:'fehlt in GitHub','':'Status unbekannt'};
+  var SECRET_RE=/^(?!GITHUB_)[A-Za-z_][A-Za-z0-9_]*$/i;
+  function secretName(s){return q(s,'.s-secret').value.trim()||s.dataset.secretDefault;}
+  function secretState(s){return secretName(s)===s.dataset.secretSaved?(s.dataset.secretState||''):'';}
   function summary(s){
     var a=q(s,'.s-access').value,p=[AX[a]||a],llm=s.dataset.group==='llm';
+    if(a==='api'){var st=secretState(s);p.push('Secret '+secretName(s)+' ('+ST[st]+')');var b=q(s,'.s-state');b.className='gw-st s-state '+(st==='alt'?'ok':st);b.textContent=(st==='ok'||st==='alt'?'✓ ':st==='missing'?'⚠ ':'')+ST[st];}
+    s.querySelectorAll('.key').forEach(function(x){x.hidden=a!=='api';});
+    s.querySelectorAll('.appkey').forEach(function(x){x.hidden=!((a==='app'&&llm)||a==='github');});
+    if(a!=='api')q(s,'.s-secret-err').hidden=true;
     if(llm)p.push('Modell: '+(q(s,'.s-model').value.trim()||'Standard'));
     if(llm&&a==='app')p.push(q(s,'.s-github').checked?'mit GitHub verbunden':'nicht mit GitHub verbunden');
     if(q(s,'.s-plan').value.trim())p.push('Tarif: '+q(s,'.s-plan').value.trim());
@@ -167,9 +202,11 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     s.dataset.accessOptions.split(',').forEach(function(o){var x=document.createElement('option');x.value=o;x.textContent=AX[o]||o;sel.appendChild(x);});
     sel.value=s.dataset.access;if(sel.options.length<2)sel.disabled=true;
     q(s,'.s-github').checked=s.dataset.github==='true';
+    if(s.dataset.secretAlt){var al=q(s,'.s-alt');al.hidden=false;al.innerHTML='';al.appendChild(document.createTextNode('Mit Abo statt API-Schlüssel: Secret '));var c=document.createElement('code');c.textContent=s.dataset.secretAlt;al.appendChild(c);al.appendChild(document.createTextNode(' anlegen; dann genügt eines der beiden.'));}
+    var ku=s.querySelector('[data-gw-keyurl]');if(ku&&!ku.getAttribute('href'))ku.remove();
     if(s.dataset.group!=='llm')s.querySelectorAll('.llm').forEach(function(x){x.remove();});
     q(s,'.gw-tog').addEventListener('click',function(){var st=q(s,'.gw-set'),open=st.hidden;st.hidden=!open;this.setAttribute('aria-expanded',String(open));});
-    s.querySelectorAll('.gw-set input,.gw-set select').forEach(function(x){x.addEventListener('input',function(){q(s,'.s-cost-err').hidden=true;summary(s);});x.addEventListener('change',function(){summary(s);});});
+    s.querySelectorAll('.gw-set input,.gw-set select').forEach(function(x){x.addEventListener('input',function(){q(s,'.s-cost-err').hidden=true;q(s,'.s-secret-err').hidden=true;summary(s);});x.addEventListener('change',function(){summary(s);});});
     summary(s);
     var w=s.querySelector('[data-gw-web]');if(w&&!w.getAttribute('href'))w.remove();
     var cb=q(s,'.gw-svc input');cb.checked=s.dataset.available==='true';
@@ -208,11 +245,14 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     m.forEach(function(s){
       var c=q(s,'.s-cost').value,cn=c===''?null:Number(c);
       if(c!==''&&!(cn>=0)){bad=bad||s;q(s,'.s-cost-err').hidden=false;q(s,'.gw-set').hidden=false;}
-      var o={access:q(s,'.s-access').value,plan:q(s,'.s-plan').value.trim(),monthly_cost:cn,note:q(s,'.s-note').value.trim()};
+      var acc=q(s,'.s-access').value;
+      if(acc==='api'&&!SECRET_RE.test(secretName(s))){bad=bad||s;q(s,'.s-secret-err').hidden=false;q(s,'.gw-set').hidden=false;}
+      var o={access:acc,plan:q(s,'.s-plan').value.trim(),monthly_cost:cn,note:q(s,'.s-note').value.trim()};
       if(s.dataset.group==='llm'){o.model=q(s,'.s-model').value.trim();o.github_connected=o.access==='app'&&q(s,'.s-github').checked;}
+      if(acc==='api')o.api_key_secret=secretName(s);
       services[s.dataset.id]=o;
     });
-    if(bad){q(bad,'.s-cost').focus();return;}
+    if(bad){var e=q(bad,'.s-secret-err').hidden?q(bad,'.s-cost'):q(bad,'.s-secret');e.focus();return;}
     var out={available:m.map(function(s){return s.dataset.id;}),services:services,roles:{},queue_agent:'manual',
       search_tools:m.filter(function(s){return s.dataset.group==='search';}).map(function(s){return s.dataset.id;})};
     roles.forEach(function(r){var v=r.querySelector('select').value;if(r.dataset.role==='queue_processing')out.queue_agent=v;else out.roles[r.dataset.role]=v;});
