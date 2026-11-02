@@ -1,0 +1,153 @@
+<!--
+  Vorlage: Daten (Ansicht, siehe templates/ui/README.md in GhostWriter, Issue #71, Teil 1)
+
+  Inline-Widget für den Chat. Unterseite der Bibliothek: wo steht was, ist alles
+  abgeglichen. Nur Anzeige; Aktionen nur als Links bzw. Knöpfe zu bestehenden
+  Ansichten und Actions. Geöffnet über „Daten“ im Bücherregal oder den Befehl
+  „Daten“ (Aktion view.data).
+
+  Aufbau:
+  - Kopf: Symbol, „Daten“, Repository, Knopf „Bücherregal“
+  - Programm: installierte Version und Hauptrepository, Update-Stand (mit Knopf
+    „Update einspielen“, wenn dahinter), letzter Update-Lauf, Hinweis auf
+    ausgelassene Workflow-Dateien, fester Commit von ghostwriter-ui
+  - Bücher: je Buch eine Karte mit letztem Stand, offenen Änderungen,
+    „sofort übernehmen“, letzter Auflage, letztem Probedruck, Datenversion
+    (Hinweis bei ausstehender Migration) und Ergebnis der Prüfung
+  - Repository: Sichtbarkeit, Größe, Zahl der Branches; Links „Branches
+    aufräumen“ und „Löschaufgaben“; Secrets nur mit Namen (hinterlegt, fehlt,
+    unbekannt)
+  - Letzte Läufe je Action mit Ergebnis und Link
+  - ohne GitHub-Abfrage (GITHUB_KNOWN leer): Hinweis, dass einige Werte fehlen
+
+  Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert):
+  - {{LIBRARY_NAME}}              owner/repo
+  - {{PROGRAM_VERSION_TEXT}}      z. B. "GhostWriter 0.6.0 · Hauptrepository ploeffler/GhostWriter:main"
+  - {{PROGRAM_UPDATE_TEXT}}       "aktuell", "3 Commits hinter … · Version 0.6.1 verfügbar" oder "unbekannt …"
+  - {{PROGRAM_BEHIND}}            nicht leer, wenn dahinter (Knopf „Update einspielen“)
+  - {{PROGRAM_LAST_UPDATE_TEXT}}  z. B. "letzter Update-Lauf am 01.11.2026"
+  - {{PROGRAM_SKIPPED_TEXT}}      Hinweis auf ausgelassene Workflow-Dateien; leer = entfällt
+  - {{UI_TEXT}}                   z. B. "ghostwriter-ui 0.24.0 · Commit e8fd606"
+  - {{GITHUB_KNOWN}}              nicht leer, wenn GitHub-Daten abgefragt wurden; sonst erscheint ein Hinweis
+  - {{REPO_TEXT}}                 z. B. "privat · 18,7 MB · 4 Branches"
+  - {{CLEANUP_URL}}, {{TASKS_URL}} Links zur Action „Branches aufräumen“ und zum Issue „Löschaufgaben“
+  Wiederholung zwischen {{#BOOKS}} und {{/BOOKS}}:
+  - {{B_TITLE}}, {{B_BRANCH}}     Titel und Branch
+  - {{B_COMMIT_TEXT}}             Datum und Nachricht des letzten Commits
+  - {{B_PENDING_TEXT}}, {{B_PENDING}} offene Änderungen (Text; nicht leer = hervorheben)
+  - {{B_AUTOMERGE_TEXT}}          "Änderungen sofort übernehmen: an|aus"
+  - {{B_EDITION_TEXT}}            letzte Auflage mit Datum und Tag
+  - {{B_PROOF_TEXT}}              letzter Probedruck und Ablauf des Downloads
+  - {{B_DATA_TEXT}}, {{B_MIGRATION}} Datenversion (Text; nicht leer = Migration steht aus)
+  - {{B_CHECK}}, {{B_CHECK_TEXT}} ok | fail | leer, und Text zur Prüfung beim letzten Push
+  Wiederholung zwischen {{#SECRETS}} und {{/SECRETS}}:
+  - {{S_NAME}}, {{S_STATE}} (yes|no|unknown), {{S_TEXT}}
+  Wiederholung zwischen {{#RUNS}} und {{/RUNS}}:
+  - {{R_NAME}}, {{R_STATE}} (ok|fail|other), {{R_TEXT}}, {{R_URL}}
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion`, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: view.library, update.apply
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Daten der Bibliothek {{LIBRARY_NAME}}: Programmstand, Bücher, Repository und letzte Läufe.</h2>
+<style>
+.gw-d .sec{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px}
+.gw-d .row{display:flex;align-items:baseline;gap:8px;font-size:14px;line-height:1.5}
+.gw-d .row i{color:var(--text-muted);font-size:15px;flex:none}
+.gw-d .warn{padding:8px 10px;border:0.5px solid var(--border-accent);border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent);font-size:13px;line-height:1.5}
+.gw-d .card{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:var(--pad-md);display:flex;flex-direction:column;gap:4px}
+.gw-d .card .t{font-size:15px;font-weight:500}
+.gw-d .card code{font-size:11px;color:var(--text-muted)}
+.gw-d .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:13px;color:var(--text-secondary);margin-top:4px}
+.gw-d .kv dt{color:var(--text-muted)}
+.gw-d .kv dd{margin:0}
+.gw-d .kv dd.hl{color:var(--text-accent);font-weight:500}
+.gw-d .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--border-strong);margin-right:6px;vertical-align:middle}
+.gw-d [data-s="ok"] .dot,.gw-d .dot[data-s="ok"],.gw-d .dot[data-s="yes"]{background:#2e9d5b}
+.gw-d [data-s="fail"] .dot,.gw-d .dot[data-s="fail"],.gw-d .dot[data-s="no"]{background:var(--text-danger)}
+.gw-d table{width:100%;border-collapse:collapse;font-size:13px}
+.gw-d td{padding:5px 0;border-top:0.5px solid var(--border);vertical-align:top}
+.gw-d td:first-child{padding-right:12px;white-space:nowrap}
+.gw-d a{color:var(--text-accent);text-decoration:none}
+.gw-d a:hover{text-decoration:underline}
+.gw-btn{padding:7px 12px;border-radius:var(--radius);font:inherit;font-size:13px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary);display:inline-flex;align-items:center;gap:6px}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-d" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="display:flex;align-items:flex-start;gap:var(--gap-md);flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div style="display:flex;align-items:center;gap:var(--gap-sm)">
+          <i class="ti ti-database" style="font-size:20px;color:var(--text-secondary)" aria-hidden="true"></i>
+          <span style="font-size:20px;font-weight:500">Daten</span>
+        </div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:2px">{{LIBRARY_NAME}}</div>
+      </div>
+      <button type="button" class="gw-btn" data-p="Zum Bücherregal" data-a="view.library"><i class="ti ti-books" aria-hidden="true"></i>Bücherregal</button>
+    </div>
+
+    <div data-gw-if="GITHUB_KNOWN" hidden></div>
+    <div class="warn" id="gw-noghub">Ohne Abfrage bei GitHub fehlen einige Werte (Repository, Prüfungen, Probedrucke, Läufe); sie stehen dann als „unbekannt“ da.</div>
+
+    <div>
+      <div class="sec">Programm</div>
+      <div class="row"><i class="ti ti-package" aria-hidden="true"></i><span>{{PROGRAM_VERSION_TEXT}}</span></div>
+      <div class="row"><i class="ti ti-refresh" aria-hidden="true"></i><span>Update: {{PROGRAM_UPDATE_TEXT}} · {{PROGRAM_LAST_UPDATE_TEXT}}</span></div>
+      <div class="row"><i class="ti ti-layout" aria-hidden="true"></i><span>{{UI_TEXT}}</span></div>
+      <div data-gw-if="PROGRAM_SKIPPED_TEXT" class="warn" style="margin-top:6px">{{PROGRAM_SKIPPED_TEXT}}</div>
+      <div data-gw-if="PROGRAM_BEHIND" style="margin-top:8px"><button type="button" class="gw-btn" data-p="GhostWriter-Update einspielen" data-a="update.apply"><i class="ti ti-download" aria-hidden="true"></i>Update einspielen</button></div>
+    </div>
+
+    <div>
+      <div class="sec">Bücher</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        {{#BOOKS}}
+        <div class="card">
+          <div><span class="t">{{B_TITLE}}</span> <code>{{B_BRANCH}}</code></div>
+          <dl class="kv">
+            <dt>Letzter Stand</dt><dd>{{B_COMMIT_TEXT}}</dd>
+            <dt>Änderungen</dt><dd class="pend" data-v="{{B_PENDING}}">{{B_PENDING_TEXT}} · {{B_AUTOMERGE_TEXT}}</dd>
+            <dt>Auflage</dt><dd>{{B_EDITION_TEXT}}</dd>
+            <dt>Probedruck</dt><dd>{{B_PROOF_TEXT}}</dd>
+            <dt>Daten</dt><dd class="mig" data-v="{{B_MIGRATION}}">{{B_DATA_TEXT}}</dd>
+            <dt>Prüfung</dt><dd><span class="dot" data-s="{{B_CHECK}}"></span>{{B_CHECK_TEXT}}</dd>
+          </dl>
+        </div>
+        {{/BOOKS}}
+      </div>
+    </div>
+
+    <div>
+      <div class="sec">Repository</div>
+      <div class="row"><i class="ti ti-brand-github" aria-hidden="true"></i><span>{{REPO_TEXT}}</span></div>
+      <div class="row"><i class="ti ti-git-branch" aria-hidden="true"></i><span>Erledigte Branches: <a href="{{CLEANUP_URL}}" target="_blank" rel="noopener">Branches aufräumen</a> · <a href="{{TASKS_URL}}" target="_blank" rel="noopener">Löschaufgaben</a></span></div>
+      <table data-gw-if="SECRETS" style="margin-top:6px">
+        {{#SECRETS}}
+        <tr><td><code>{{S_NAME}}</code></td><td><span class="dot" data-s="{{S_STATE}}"></span>{{S_TEXT}}</td></tr>
+        {{/SECRETS}}
+      </table>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Secrets nur mit Namen; Werte werden nie gelesen oder angezeigt.</div>
+    </div>
+
+    <div data-gw-if="RUNS">
+      <div class="sec">Letzte Läufe</div>
+      <table>
+        {{#RUNS}}
+        <tr data-s="{{R_STATE}}"><td><a href="{{R_URL}}" target="_blank" rel="noopener">{{R_NAME}}</a></td><td><span class="dot"></span>{{R_TEXT}}</td></tr>
+        {{/RUNS}}
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var root=document.querySelector('.gw-d');
+  // Hinweis „ohne GitHub-Abfrage“ nur, wenn GITHUB_KNOWN leer war (dann hat gw.js den Marker entfernt)
+  if(root.querySelector('[data-gw-if="GITHUB_KNOWN"]'))document.getElementById('gw-noghub').remove();
+  root.querySelectorAll('.pend[data-v="1"],.mig[data-v="1"]').forEach(function(n){n.classList.add('hl');});
+  root.querySelectorAll('.gw-btn[data-a]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,{});});});
+})();
+</script>

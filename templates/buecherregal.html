@@ -8,7 +8,7 @@
 
   Aufbau:
   - Kopf: Regal-Symbol, „Bücherregal“, Name des Repositorys, Anzahl Bücher,
-    Knopf „Neues Buch“
+    Knöpfe „Daten“ (view.data, #71) und „Neues Buch“
   - je Buch eine Karte: Kurztitel als Chip, Titel, Autor, Status
     (eingerichtet | im Aufbau), Fortschrittsbalken der freigegebenen Abschnitte,
     Auflage, KI-API-Kosten, Hinweis auf offene Änderungen, zuletzt geändert;
@@ -36,7 +36,7 @@
   - {{BOOK_UPDATED_TEXT}}     z. B. "zuletzt geändert am 01.11.2026"
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert`, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: library.book.open {branch}, library.book.create.open
+  Aktionen: library.book.open {branch}, library.book.create.open, view.data
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -72,6 +72,7 @@
         </div>
         <div style="font-size:13px;color:var(--text-muted);margin-top:2px">{{LIBRARY_NAME}} · {{BOOK_COUNT_TEXT}}</div>
       </div>
+      <button type="button" class="gw-btn" id="gw-data" title="Stand von Programm, Büchern und Repository" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-database" aria-hidden="true"></i>Daten</button>
       <button type="button" class="gw-btn" id="gw-newbook" style="border:none;background:var(--text-primary);color:var(--surface-1);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-plus" aria-hidden="true"></i>Neues Buch</button>
     </div>
 
@@ -107,6 +108,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
       gwSend((setup?'Einrichtung von „':'Buch „')+b.dataset.title+'“ '+(setup?'fortsetzen':'öffnen'),'library.book.open',{branch:b.dataset.branch});
     });
   });
+  document.getElementById('gw-data').addEventListener('click',function(){gwSend('Daten der Bibliothek anzeigen','view.data',{});});
   document.getElementById('gw-newbook').addEventListener('click',function(){gwSend('Neues Buch anlegen','library.book.create.open',{});});
 })();
 </script>
