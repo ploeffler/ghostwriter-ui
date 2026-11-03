@@ -1,0 +1,140 @@
+<!--
+  Vorlage: Figuren aus dem Text vorschlagen (Auswahl, GhostWriter #53, #116)
+
+  Inline-Widget für den Chat. Ausgelöst mit dem Personen-Symbol in Serie,
+  Projektübersicht, Figurenliste, Kapitel, Abschnitt bzw. Teil von Vor- und
+  Nachspann (Aktion character.suggest mit scope). Der Assistent liest die Texte
+  des Bereichs (scripts/characters.py scan bzw. scripts/series.py scan) und
+  schlägt Figuren vor – nur aus dem Text, mit Fundstellen. Hier wählt der
+  Benutzer aus.
+
+  Aufbau:
+  - Kopf: Personen-Symbol, „Figuren aus dem Text“, Bereich, Anzahl
+  - je Vorschlag: Häkchen, Name (änderbar), Rolle, ein Satz, weitere Angaben,
+    Abschnitte, Fundstellen; Stand (neu | schon da | Figur der Serie);
+    „Zusammenlegen mit“ einer bekannten Figur; in einem Band einer Serie
+    „als Figur der Serie anlegen“
+  - Verwerfen, Übernehmen
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{SCOPE}}               book | Kapitel N | Abschnitt N.M | mat-… | ser-…
+  - {{SCOPE_TEXT}}          z. B. „Kapitel 2“, „ganzes Buch“, „alle Bände der Serie“
+  - {{SUGGEST_COUNT_TEXT}}  z. B. „4 Vorschläge“
+  - {{SERIES_ID}}, {{SERIES_TITLE}}  Serie des Buchs bzw. die Serie; leer = keine
+  - {{SERIES_LEVEL}}        nicht leer = Vorschlag auf Ebene der Serie (alle werden Figuren der Serie)
+  Wiederholung je Vorschlag zwischen {{#SUGGESTIONS}} und {{/SUGGESTIONS}}:
+  - {{S_IDX}}               Nummer des Vorschlags (0, 1, …) in der Liste des Assistenten
+  - {{S_NAME}}, {{S_ALIASES}}  Name, weitere Namen im Text
+  - {{S_ROLE}}              main | supporting | minor
+  - {{S_SHORT}}, {{S_DETAILS}}  ein Satz; Alter, Aussehen, Eigenschaften, Sprechweise
+  - {{S_SECTIONS}}          z. B. „1.1, 2.3, Prolog“
+  - {{S_EVIDENCE}}          Fundstellen, z. B. „1.1: „…““
+  - {{S_STATE}}             new | existing | series
+  - {{S_STATE_TEXT}}, {{S_EXISTING}}  z. B. „schon da: Opi“
+  Wiederholung zwischen {{#MERGE}} und {{/MERGE}} (bekannte Figuren):
+  - {{M_ID}}, {{M_NAME}}
+
+  Verhalten:
+  - Übernehmen sendet character.suggest.apply mit scope und choices
+    [{index, name, role, short, merge_into, target}] der angehakten Vorschläge
+    (target series = als Figur der Serie). Der Text des Buchs bleibt unverändert.
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: character.suggest.apply, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Figuren aus dem Text vorschlagen: {{SUGGEST_COUNT_TEXT}} für {{SCOPE_TEXT}}. Auswählen und übernehmen.</h2>
+<style>
+.gw-fv .card{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;display:flex;gap:var(--gap-sm);align-items:flex-start}
+.gw-fv .card.off{opacity:0.55}
+.gw-fv .main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.gw-fv input[type=text],.gw-fv select{font:inherit;font-size:14px;padding:5px 8px;border:0.5px solid var(--border-strong);border-radius:8px;background:var(--surface-1);color:var(--text-primary)}
+.gw-fv .nm{font-weight:500;min-width:0;flex:1}
+.gw-fv .meta{font-size:12px;color:var(--text-muted);line-height:1.5}
+.gw-fv .meta:empty{display:none}
+.gw-fv .st{font-size:11px;padding:1px 6px;border-radius:999px;border:0.5px solid var(--border);color:var(--text-muted);white-space:nowrap}
+.gw-fv .st[data-s="new"]{border-color:var(--border-accent);color:var(--text-accent)}
+.gw-fv .st[data-s="series"]{border-color:var(--border-accent);color:var(--text-accent)}
+.gw-fv .opt{display:flex;gap:var(--gap-sm);flex-wrap:wrap;align-items:center;font-size:12px;color:var(--text-secondary)}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)}
+.gw-btn.pri{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-btn:disabled{opacity:0.45;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-fv" id="gw-fv" data-scope="{{SCOPE}}" data-series="{{SERIES_ID}}" data-level="{{SERIES_LEVEL}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div>
+      <div style="font-size:12px;color:var(--text-muted)">{{SCOPE_TEXT}} · {{SUGGEST_COUNT_TEXT}}</div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-user-search" style="color:var(--text-secondary)" aria-hidden="true"></i>Figuren aus dem Text</div>
+    </div>
+    <div id="gw-list" style="display:flex;flex-direction:column;gap:6px">
+      {{#SUGGESTIONS}}
+      <div class="card" data-idx="{{S_IDX}}" data-role="{{S_ROLE}}" data-state="{{S_STATE}}">
+        <input type="checkbox" class="on" checked aria-label="übernehmen" style="margin-top:8px">
+        <div class="main">
+          <div style="display:flex;gap:var(--gap-sm);align-items:center;flex-wrap:wrap">
+            <input type="text" class="nm" value="{{S_NAME}}" aria-label="Name">
+            <select class="role" aria-label="Rolle"><option value="main">Hauptfigur</option><option value="supporting">Nebenfigur</option><option value="minor">Randfigur</option></select>
+            <span class="st" data-s="{{S_STATE}}">{{S_STATE_TEXT}}</span>
+          </div>
+          <input type="text" class="sh" value="{{S_SHORT}}" placeholder="ein Satz: wer ist die Figur?" aria-label="Kurz">
+          <div class="meta">auch genannt: {{S_ALIASES}}</div>
+          <div class="meta">{{S_DETAILS}}</div>
+          <div class="meta">kommt vor in: {{S_SECTIONS}}</div>
+          <div class="meta" style="font-style:italic">{{S_EVIDENCE}}</div>
+          <div class="opt">
+            <label>Zusammenlegen mit <select class="merge" aria-label="Zusammenlegen mit"></select></label>
+            <label class="ser-opt"><input type="checkbox" class="ser"> als Figur der Serie anlegen</label>
+          </div>
+        </div>
+      </div>
+      {{/SUGGESTIONS}}
+    </div>
+    <select id="gw-merge-tpl" hidden><option value="">– keiner –</option>
+      {{#MERGE}}
+      <option value="{{M_ID}}">{{M_NAME}}</option>
+      {{/MERGE}}
+    </select>
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">Im Text wurden keine Figuren gefunden.</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Nur aus dem Text; was dort nicht steht, bleibt leer. Bekannte Figuren werden nur in leeren Feldern ergänzt und den Abschnitten zugeordnet. Der Text des Buchs bleibt unverändert.</div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel">Verwerfen</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">Übernehmen</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var box=document.getElementById('gw-fv'),ds=box.dataset,$=function(id){return document.getElementById(id);};
+  var cards=Array.prototype.slice.call(box.querySelectorAll('.card'));
+  if(cards.length)$('gw-none').remove();else $('gw-apply').disabled=true;
+  var tpl=$('gw-merge-tpl').innerHTML;
+  cards.forEach(function(c){
+    c.querySelector('.merge').innerHTML=tpl;
+    if(c.querySelector('.merge').options.length<2)c.querySelector('.merge').closest('label').remove();
+    c.querySelector('.role').value=c.dataset.role||'supporting';
+    // Serienoption nur bei neuen Figuren in einem Band einer Serie; auf Serienebene immer Serie
+    if(!ds.series||ds.level||c.dataset.state!=='new')c.querySelector('.ser-opt').remove();
+    if(c.dataset.state==='series'&&c.querySelector('.merge'))c.querySelector('.merge').closest('label').remove();
+    c.querySelectorAll('.meta').forEach(function(m){if(!m.textContent.trim()||/:\s*$/.test(m.textContent.trim()))m.remove();});
+    var on=c.querySelector('.on');on.addEventListener('change',function(){c.classList.toggle('off',!on.checked);refresh();});
+  });
+  function choices(){
+    return cards.filter(function(c){return c.querySelector('.on').checked;}).map(function(c){
+      var o={index:+c.dataset.idx,name:c.querySelector('.nm').value.trim(),role:c.querySelector('.role').value,short:c.querySelector('.sh').value.trim()};
+      var m=c.querySelector('.merge');if(m&&m.value)o.merge_into=m.value;
+      var s=c.querySelector('.ser');if(ds.level||(s&&s.checked))o.target='series';
+      return o;
+    });
+  }
+  function refresh(){var ch=choices();$('gw-apply').disabled=!ch.length||ch.some(function(x){return !x.name;});$('gw-apply').textContent=ch.length?ch.length+' übernehmen':'Übernehmen';}
+  box.addEventListener('input',refresh);
+  function lock(){box.querySelectorAll('input,select,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
+  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend(ch.length+' Figuren aus dem Text übernehmen','character.suggest.apply',{scope:ds.scope,choices:ch});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Vorschläge verworfen','form.cancel',{form:'character.suggest.apply'});});
+  refresh();
+})();
+</script>

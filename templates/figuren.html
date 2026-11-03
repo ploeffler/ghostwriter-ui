@@ -30,7 +30,7 @@
   - „Anlegen“ sendet character.create mit name und role; danach gesperrt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.character, character.create, view.project
+  Aktionen: view.character, character.create, character.suggest, view.project
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -57,6 +57,7 @@
         <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{PROJECT_TITLE_SHORT}}</span>
         <div style="font-size:20px;font-weight:500;display:flex;align-items:center;gap:8px;margin-top:4px"><i class="ti ti-masks-theater" style="color:var(--text-secondary)" aria-hidden="true"></i>Figuren</div>
       </div>
+      <button type="button" class="gw-sq" id="gw-sug" title="Figuren aus dem Text vorschlagen" aria-label="Figuren aus dem Text vorschlagen"><i class="ti ti-user-search" aria-hidden="true"></i></button>
       <button type="button" class="gw-sq" id="gw-back" title="Zur Projektübersicht" aria-label="Zur Projektübersicht"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
     </div>
     <div data-gw-if="SERIES_TITLE" style="font-size:12px;color:var(--text-muted);line-height:1.5">Band der Serie „{{SERIES_TITLE}}“: Figuren der Serie gelten in allen Bänden; eine Kopie gilt nur in diesem Buch.</div>
@@ -77,6 +78,7 @@
 function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 (function(){
   var box=document.getElementById('gw-figuren'),$=function(id){return document.getElementById(id);};
+  document.getElementById('gw-sug').addEventListener('click',function(){gwSend('Figuren aus dem Text vorschlagen (ganzes Buch)','character.suggest',{scope:'book'});});
   box.querySelectorAll('.gw-ch[data-id]').forEach(function(r){r.addEventListener('click',function(){gwSend('Figur „'+r.dataset.name+'“ öffnen','view.character',{character_id:r.dataset.id});});});
   $('gw-back').addEventListener('click',function(){gwSend('Zur Projektübersicht','view.project',{});});
   var names=[];box.querySelectorAll('.gw-ch[data-name]').forEach(function(r){names.push(r.dataset.name.toLowerCase());});
