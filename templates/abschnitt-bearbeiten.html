@@ -7,7 +7,7 @@
   Aufbau:
   - Kopf links: Kurztitel als Badge, Kapitel- und Abschnittsnummer, Titel
   - Kopf rechts: Symbolleiste mit Zurück zum Kapitel, vorheriger und
-    nächster Abschnitt, Schloss zum Sperren/Entsperren
+    nächster Abschnitt, Bilder (GhostWriter #54), Schloss zum Sperren/Entsperren
   - Zeile darunter: Status und Anzahl offener Marker links,
     Abschnittskosten rechtsbündig
   - Ziel des Abschnitts und Kurzbeschreibung nebeneinander
@@ -69,7 +69,7 @@
     abschnittssteuerung.html.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.chapter, view.section, run.start, section.update (mit characters, wenn das Buch Figuren hat), approval.open, form.cancel
+  Aktionen: view.chapter, view.section, view.images, run.start, section.update (mit characters, wenn das Buch Figuren hat), approval.open, form.cancel
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
@@ -121,6 +121,7 @@
           <button type="button" class="gw-sq" data-p="Zurück zu Kapitel {{CHAPTER_NUMBER}}" data-a="view.chapter" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Zum Kapitel" aria-label="Zum Kapitel"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" id="gw-prev" title="Vorheriger Abschnitt" aria-label="Vorheriger Abschnitt"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" id="gw-next" title="Nächster Abschnitt" aria-label="Nächster Abschnitt"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="Bilder zu Abschnitt {{SECTION_NUMBER}}" data-a="view.images" data-args='{"section_id":"{{SECTION_ID}}"}' title="Bilder" aria-label="Bilder"><i class="ti ti-photo" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" id="gw-lock" aria-pressed="false" title="Abschnitt sperren" aria-label="Abschnitt sperren"><i class="ti ti-lock-open" aria-hidden="true"></i></button>
         </div>
       </div>
