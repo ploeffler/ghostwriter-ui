@@ -31,11 +31,14 @@
   - {{SC_ID}}, {{SC_NAME}}, {{SC_ROLE}}, {{SC_SHORT}}
   und zwischen {{#SERIES_TERMS}} und {{/SERIES_TERMS}}:
   - {{ST_TERM}}, {{ST_TEXT}}
+  Sammelband (Stufe 4); fehlt OMNIBUS_STATE, steht nur „Sammelband anlegen“:
+  - {{OMNIBUS_STATE}}  draft | approved
+  - {{OMNIBUS_TITLE}}, {{OMNIBUS_TEXT}}  z. B. „2 Bände · freigegeben · Auflage 1“
   Wiederholung zwischen {{#CANDIDATES}} und {{/CANDIDATES}} (Bücher ohne Serie); fehlt der Block, entfällt „Band hinzufügen“:
   - {{C_BRANCH}}, {{C_TITLE}}
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: library.book.open, series.volume.add, series.volume.remove, series.reorder, series.edit.open, library.book.create.open, view.library
+  Aktionen: series.omnibus.edit.open, library.book.open, series.volume.add, series.volume.remove, series.reorder, series.edit.open, library.book.create.open, view.library
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -113,6 +116,12 @@
     </div>
     <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-top:-6px">Gelten in allen Bänden. In einem Band lassen sie sich als eigene Kopie führen, Figuren und Begriffe eines Bandes in die Serie übernehmen.</div>
 
+    <div style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <i class="ti ti-books" style="color:var(--text-secondary)" aria-hidden="true"></i>
+      <span style="flex:1;min-width:180px;font-size:14px"><span data-gw-if="OMNIBUS_STATE"><b style="font-weight:500">{{OMNIBUS_TITLE}}</b><span style="display:block;font-size:12px;color:var(--text-muted)">{{OMNIBUS_TEXT}}</span></span><span id="gw-om-none" style="color:var(--text-muted)">Noch kein Sammelband</span></span>
+      <button type="button" class="gw-btn" id="gw-om"><i class="ti ti-books" aria-hidden="true"></i><span id="gw-om-l">Sammelband</span></button>
+    </div>
+
     <div data-gw-if="CANDIDATES" style="display:flex;gap:var(--gap-sm);align-items:center;flex-wrap:wrap;border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <select id="gw-cand" aria-label="Buch ohne Serie">
         {{#CANDIDATES}}
@@ -158,6 +167,9 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   $('gw-newbook').addEventListener('click',function(){lock();gwSend('Neues Buch in der Serie „'+title+'“','library.book.create.open',{series_id:sid});});
   $('gw-edit').addEventListener('click',function(){lock();gwSend('Serie „'+title+'“ bearbeiten','series.edit.open',{series_id:sid});});
   $('gw-back').addEventListener('click',function(){gwSend('Zum Bücherregal','view.library',{});});
+  var omHas=!!box.querySelector('[data-gw-if="OMNIBUS_STATE"]');
+  if(omHas)$('gw-om-none').remove();else $('gw-om-l').textContent='Sammelband anlegen';
+  $('gw-om').addEventListener('click',function(){lock();gwSend('Sammelband der Serie „'+title+'“','series.omnibus.edit.open',{series_id:sid});});
   refresh();
 })();
 </script>
