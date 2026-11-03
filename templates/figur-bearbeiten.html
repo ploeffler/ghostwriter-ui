@@ -1,0 +1,133 @@
+<!--
+  Vorlage: Figur bearbeiten (Formular, GhostWriter #53)
+
+  Inline-Widget für den Chat (Aktion view.character mit character_id).
+
+  Aufbau:
+  - Kopf: Kurztitel, Name; Symbolleiste: alle Figuren, Projektübersicht
+  - Name, Rolle, Kurzbeschreibung (ein Satz)
+  - Alter, Aussehen, Eigenschaften (kommagetrennt), Sprechweise
+  - Bildbeschreibung (für Illustrationen, #54)
+  - Beziehungen: je Zeile andere Figur und Art („Besitzer“, „Schwester“ …),
+    hinzufügen und entfernen
+  - Beschreibung und Notizen (Markdown)
+  - wo die Figur vorkommt (nur Anzeige)
+  - Verwerfen und Speichern
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{PROJECT_TITLE_SHORT}}       project.title_short
+  - {{CHARACTER_ID}}              stabile ID (char-…)
+  - {{CHARACTER_NAME}}, {{CHARACTER_ROLE}}  name, role (main | supporting | minor)
+  - {{CHARACTER_SHORT}}, {{CHARACTER_AGE}}, {{CHARACTER_APPEARANCE}}, {{CHARACTER_VOICE}}, {{CHARACTER_VISUAL}}
+                                   Felder aus dem Kopf der Figurendatei
+  - {{CHARACTER_TRAITS}}          Eigenschaften, kommagetrennt
+  - {{CHARACTER_DESCRIPTION}}, {{CHARACTER_NOTES}}  „## Beschreibung“ und „## Notizen“
+  - {{CHARACTER_USED}}            z. B. „1.1, 2.3“ oder „noch nirgends“
+
+  Wiederholung je Beziehung zwischen {{#RELATIONS}} und {{/RELATIONS}}:
+  - {{R_TO}}, {{R_NAME}}, {{R_KIND}}  ID und Name der anderen Figur, Art der Beziehung
+  Wiederholung je anderer Figur zwischen {{#OTHERS}} und {{/OTHERS}} (Auswahl für Beziehungen):
+  - {{O_ID}}, {{O_NAME}}
+
+  Verhalten:
+  - Speichern sendet character.update mit allen Feldern (traits als Liste,
+    relations als Liste {to, kind}); leere Felder entfernen den Eintrag.
+    Danach ist das Formular gesperrt.
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: character.update, view.characters, view.project, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
+  --font-mono), Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Figur „{{CHARACTER_NAME}}“ bearbeiten.</h2>
+<style>
+.gw-sq{width:40px;height:40px;flex:none;border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0}
+.gw-sq:hover{border-color:var(--border-strong);color:var(--text-primary)}
+.gw-lbl{display:block;font-size:13px;font-weight:500;margin-bottom:4px}
+.gw-hint{font-size:12px;color:var(--text-muted);font-weight:400}
+.gw-in{width:100%;box-sizing:border-box;padding:8px 11px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px;line-height:1.5;resize:vertical}
+.gw-in:focus{outline:none;border-color:var(--border-accent)}
+.gw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--gap-md)}
+.gw-rel{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:center}
+.gw-x{width:32px;height:32px;border:0.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text-secondary);cursor:pointer;padding:0}
+.gw-mini{padding:4px 10px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:transparent;color:var(--text-primary);font:inherit;font-size:13px;cursor:pointer;justify-self:start}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+.gw-btn:disabled{opacity:0.4;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div id="gw-figur" data-id="{{CHARACTER_ID}}" data-role="{{CHARACTER_ROLE}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="display:flex;align-items:flex-start;gap:var(--gap-md)">
+      <div style="flex:1">
+        <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{PROJECT_TITLE_SHORT}}</span>
+        <div style="font-size:20px;font-weight:500;margin-top:4px">{{CHARACTER_NAME}}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px">kommt vor in: {{CHARACTER_USED}}</div>
+      </div>
+      <button type="button" class="gw-sq" data-a="view.characters" data-p="Alle Figuren" title="Alle Figuren" aria-label="Alle Figuren"><i class="ti ti-masks-theater" aria-hidden="true"></i></button>
+      <button type="button" class="gw-sq" data-a="view.project" data-p="Zur Projektübersicht" title="Zur Projektübersicht" aria-label="Zur Projektübersicht"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
+    </div>
+    <div class="gw-grid">
+      <div><label class="gw-lbl" for="f-name">Name</label><input class="gw-in" id="f-name" value="{{CHARACTER_NAME}}"></div>
+      <div><label class="gw-lbl" for="f-role">Rolle</label><select class="gw-in" id="f-role"><option value="main">Hauptfigur</option><option value="supporting">Nebenfigur</option><option value="minor">Randfigur</option></select></div>
+      <div><label class="gw-lbl" for="f-age">Alter</label><input class="gw-in" id="f-age" value="{{CHARACTER_AGE}}"></div>
+    </div>
+    <div><label class="gw-lbl" for="f-short">Kurz <span class="gw-hint">ein Satz: wer ist die Figur?</span></label><input class="gw-in" id="f-short" value="{{CHARACTER_SHORT}}"></div>
+    <div class="gw-grid">
+      <div><label class="gw-lbl" for="f-appearance">Aussehen</label><textarea class="gw-in" id="f-appearance" rows="2">{{CHARACTER_APPEARANCE}}</textarea></div>
+      <div><label class="gw-lbl" for="f-voice">Sprechweise</label><textarea class="gw-in" id="f-voice" rows="2">{{CHARACTER_VOICE}}</textarea></div>
+    </div>
+    <div><label class="gw-lbl" for="f-traits">Eigenschaften <span class="gw-hint">kommagetrennt</span></label><input class="gw-in" id="f-traits" value="{{CHARACTER_TRAITS}}"></div>
+    <div><label class="gw-lbl" for="f-visual">Bildbeschreibung <span class="gw-hint">für Illustrationen; gleich bleibende Merkmale</span></label><textarea class="gw-in" id="f-visual" rows="2">{{CHARACTER_VISUAL}}</textarea></div>
+    <div>
+      <div class="gw-lbl">Beziehungen <span class="gw-hint">Art, z. B. „Besitzer“ – „Opi ist Besitzer von Strolchi“</span></div>
+      <div id="gw-rels" style="display:flex;flex-direction:column;gap:6px">
+        {{#RELATIONS}}
+        <div class="gw-rel" data-to="{{R_TO}}"><input class="gw-in gw-k" value="{{R_KIND}}" aria-label="Art der Beziehung"><select class="gw-in gw-t" aria-label="Figur"></select><button type="button" class="gw-x" title="Entfernen" aria-label="Entfernen"><i class="ti ti-x" aria-hidden="true"></i></button></div>
+        {{/RELATIONS}}
+      </div>
+      <select id="gw-others" hidden>
+        {{#OTHERS}}
+        <option value="{{O_ID}}">{{O_NAME}}</option>
+        {{/OTHERS}}
+      </select>
+      <button type="button" class="gw-mini" id="gw-addrel" style="margin-top:6px"><i class="ti ti-plus" aria-hidden="true"></i> Beziehung</button>
+    </div>
+    <div><label class="gw-lbl" for="f-desc">Beschreibung <span class="gw-hint">Markdown; Arbeitsgrundlage, nicht im Buch</span></label><textarea class="gw-in" id="f-desc" rows="5" style="font-family:var(--font-mono);font-size:13px">{{CHARACTER_DESCRIPTION}}</textarea></div>
+    <div><label class="gw-lbl" for="f-notes">Notizen</label><textarea class="gw-in" id="f-notes" rows="3">{{CHARACTER_NOTES}}</textarea></div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Verwerfen</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">Speichern</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var box=document.getElementById('gw-figur'),d=box.dataset,$=function(id){return document.getElementById(id);};
+  $('f-role').value=d.role||'main';
+  box.querySelectorAll('.gw-sq[data-a]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,{});});});
+  var opts=$('gw-others').innerHTML;
+  function bind(r){
+    var s=r.querySelector('.gw-t');s.innerHTML=opts;if(r.dataset.to)s.value=r.dataset.to;
+    r.querySelector('.gw-x').addEventListener('click',function(){r.remove();});
+  }
+  box.querySelectorAll('.gw-rel').forEach(bind);
+  if(!$('gw-others').options.length)$('gw-addrel').disabled=true;
+  $('gw-addrel').addEventListener('click',function(){
+    var r=document.createElement('div');r.className='gw-rel';r.dataset.to='';
+    r.innerHTML='<input class="gw-in gw-k" placeholder="z. B. Besitzer" aria-label="Art der Beziehung"><select class="gw-in gw-t" aria-label="Figur"></select><button type="button" class="gw-x" title="Entfernen" aria-label="Entfernen"><i class="ti ti-x" aria-hidden="true"></i></button>';
+    $('gw-rels').appendChild(r);bind(r);r.querySelector('.gw-k').focus();
+  });
+  $('f-name').addEventListener('input',function(){$('gw-save').disabled=!$('f-name').value.trim();});
+  function lock(){box.querySelectorAll('input,select,textarea,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
+  $('gw-save').addEventListener('click',function(){
+    var rel=[];box.querySelectorAll('.gw-rel').forEach(function(r){var k=r.querySelector('.gw-k').value.trim(),t=r.querySelector('.gw-t').value;if(k&&t)rel.push({to:t,kind:k});});
+    var data={character_id:d.id,name:$('f-name').value.trim(),role:$('f-role').value,short:$('f-short').value.trim(),age:$('f-age').value.trim(),
+      appearance:$('f-appearance').value.trim(),traits:$('f-traits').value.split(',').map(function(x){return x.trim();}).filter(Boolean),
+      voice:$('f-voice').value.trim(),visual:$('f-visual').value.trim(),relations:rel,description:$('f-desc').value.trim(),notes:$('f-notes').value.trim()};
+    lock();gwSend('Figur „'+data.name+'“ speichern','character.update',data);
+  });
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Änderungen an der Figur verworfen','form.cancel',{form:'character.update',character_id:d.id});});
+})();
+</script>
