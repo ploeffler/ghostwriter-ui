@@ -1,0 +1,104 @@
+<!--
+  Vorlage: Stilprofil aus dem Text (Auswahl, GhostWriter #124)
+
+  Inline-Widget für den Chat. Zeigt die Vorschläge eines Hintergrundlaufs
+  (scripts/analyze.py, Art style): Erzählperspektive, Zeitform, Anrede,
+  Sprachebene, Ton und Stilmittel, je mit Fundstellen und abweichenden
+  Kapiteln, dazu Zahlen ohne KI (Wörter je Satz, Anteil wörtlicher Rede).
+  Übernommen wird nach ghostwriter.yml (style), die Vorgabe fürs Ghostwriting.
+
+  Aufbau:
+  - Kopf: Symbol, „Stilprofil“, Bereich, Anzahl, Lauf; Zahlen ohne KI
+  - je Angabe: Häkchen, Bezeichnung, Wert (änderbar), bisheriger Wert,
+    abweichende Kapitel, Fundstellen
+  - Verwerfen, Übernehmen
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{KIND}}                style
+  - {{RUN_ID}}, {{RUN_TEXT}}  Hintergrundlauf, z. B. „Hintergrundlauf 001 vom 04.11.2026“
+  - {{SCOPE_TEXT}}, {{SUGGEST_COUNT_TEXT}}  z. B. „ganzes Buch“, „6 Angaben“
+  - {{STATS_TEXT}}          z. B. „14,2 Wörter je Satz · 18 % wörtliche Rede · 38.000 Wörter“; leer = keine
+  Wiederholung je Angabe zwischen {{#SUGGESTIONS}} und {{/SUGGESTIONS}}:
+  - {{S_IDX}}               Nummer der Angabe in der Vorschlagsdatei
+  - {{S_FIELD}}, {{S_LABEL}}  perspective | tense | address | register | tone | features und deutsch
+  - {{S_VALUE}}             Vorschlag (Ton und Stilmittel mit Komma)
+  - {{S_NOW}}               bisheriger Wert in style; leer = bisher keiner
+  - {{S_ON}}                nicht leer = vorangehakt (bisher kein Wert)
+  - {{S_VARIANTS}}          abweichende Kapitel, z. B. „Präsens in Kapitel 3“
+  - {{S_EVIDENCE}}          Fundstellen
+
+  Verhalten:
+  - Übernehmen sendet analysis.apply mit kind, run und choices [{index, value}]
+    der angehakten Angaben. Der Text des Buchs bleibt unverändert.
+  - Verwerfen sendet form.cancel (form analysis.apply, kind, run).
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: analysis.apply, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Stilprofil aus dem Text: {{SUGGEST_COUNT_TEXT}} für {{SCOPE_TEXT}}. Auswählen und übernehmen.</h2>
+<style>
+.gw-sv .card{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;display:flex;gap:var(--gap-sm);align-items:flex-start}
+.gw-sv .card.off{opacity:0.55}
+.gw-sv .main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.gw-sv .lb{font-size:12px;color:var(--text-muted)}
+.gw-sv input[type=text]{font:inherit;font-size:14px;padding:5px 8px;border:0.5px solid var(--border-strong);border-radius:8px;background:var(--surface-1);color:var(--text-primary);width:100%;box-sizing:border-box}
+.gw-sv .meta{font-size:12px;color:var(--text-muted);line-height:1.5}
+.gw-sv .meta.ev{font-style:italic}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)}
+.gw-btn.pri{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-btn:disabled{opacity:0.45;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-sv" id="gw-sv" data-kind="{{KIND}}" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div>
+      <div style="font-size:12px;color:var(--text-muted)">{{SCOPE_TEXT}} · {{SUGGEST_COUNT_TEXT}}<span data-gw-if="RUN_TEXT"> · {{RUN_TEXT}}</span></div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-feather" style="color:var(--text-secondary)" aria-hidden="true"></i>Stilprofil</div>
+    </div>
+    <div data-gw-if="STATS_TEXT" style="font-size:13px;color:var(--text-secondary);display:flex;gap:6px;align-items:center"><i class="ti ti-calculator" aria-hidden="true"></i><span>Gezählt ohne KI: {{STATS_TEXT}}</span></div>
+    <div id="gw-list" style="display:flex;flex-direction:column;gap:6px">
+      {{#SUGGESTIONS}}
+      <div class="card" data-idx="{{S_IDX}}" data-on="{{S_ON}}" data-now="{{S_NOW}}">
+        <input type="checkbox" class="on" aria-label="übernehmen" style="margin-top:22px">
+        <div class="main">
+          <span class="lb">{{S_LABEL}}</span>
+          <input type="text" class="val" value="{{S_VALUE}}" aria-label="{{S_LABEL}}">
+          <div class="meta now"></div>
+          <div class="meta var">abweichend: {{S_VARIANTS}}</div>
+          <div class="meta ev">{{S_EVIDENCE}}</div>
+        </div>
+      </div>
+      {{/SUGGESTIONS}}
+    </div>
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">Keine Angaben mit Fundstelle im Text.</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Nur aus dem Text, jede Angabe mit Fundstelle; die Zahlen sind ohne KI gezählt. Das Stilprofil gilt als Vorgabe fürs Ghostwriting. Der Text des Buchs bleibt unverändert.</div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel">Verwerfen</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">Übernehmen</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var box=document.getElementById('gw-sv'),ds=box.dataset,$=function(id){return document.getElementById(id);};
+  var cards=Array.prototype.slice.call(box.querySelectorAll('.card'));
+  if(cards.length)$('gw-none').remove();else $('gw-apply').disabled=true;
+  cards.forEach(function(c){
+    c.querySelector('.now').textContent=c.dataset.now?'bisher: '+c.dataset.now:'bisher keine Angabe';
+    c.querySelectorAll('.meta.var,.meta.ev').forEach(function(m){if(!m.textContent.trim()||/:\s*$/.test(m.textContent.trim()))m.remove();});
+    var on=c.querySelector('.on');on.checked=!!c.dataset.on;c.classList.toggle('off',!on.checked);
+    on.addEventListener('change',function(){c.classList.toggle('off',!on.checked);refresh();});
+    c.querySelector('.val').addEventListener('input',function(){if(!on.checked){on.checked=true;c.classList.remove('off');}refresh();});
+  });
+  function choices(){return cards.filter(function(c){return c.querySelector('.on').checked&&c.querySelector('.val').value.trim();}).map(function(c){return {index:+c.dataset.idx,value:c.querySelector('.val').value.trim()};});}
+  function refresh(){var n=choices().length;$('gw-apply').disabled=!n;$('gw-apply').textContent=n?n+' übernehmen':'Übernehmen';}
+  function lock(){box.querySelectorAll('input,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
+  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend('Stilprofil übernehmen ('+ch.length+' Angaben)','analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Vorschläge verworfen','form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
+  refresh();
+})();
+</script>
