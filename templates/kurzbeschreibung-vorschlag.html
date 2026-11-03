@@ -1,0 +1,133 @@
+<!--
+  Vorlage: Kurzbeschreibung und Ziel aus dem Text (Auswahl, GhostWriter #124)
+
+  Inline-Widget für den Chat. Zeigt die Vorschläge eines Hintergrundlaufs
+  (scripts/analyze.py, Art summaries): je Kapitel und Abschnitt ein Ziel und
+  eine Kurzbeschreibung, gewonnen nur aus dem Text, mit Fundstellen. Hier wählt
+  der Benutzer aus, was eingetragen wird; nichts wird automatisch übernommen.
+
+  Aufbau:
+  - Kopf: Symbol, „Kurzbeschreibung und Ziel“, Bereich, Anzahl, Lauf
+  - Alle leeren füllen / Keine
+  - je Vorschlag (Kapitel hervorgehoben, Abschnitte darunter): Ziel und
+    Kurzbeschreibung je mit Häkchen und änderbarem Text, darunter der bisherige
+    Text („bisher: …“ bzw. „bisher leer“); Fundstellen
+  - Verwerfen, Übernehmen
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{KIND}}                summaries
+  - {{RUN_ID}}, {{RUN_TEXT}}  Hintergrundlauf, z. B. „Hintergrundlauf 001 vom 04.11.2026“
+  - {{SCOPE_TEXT}}          z. B. „ganzes Buch“, „Kapitel 2“
+  - {{SUGGEST_COUNT_TEXT}}  z. B. „12 Vorschläge“
+  Wiederholung je Vorschlag zwischen {{#SUGGESTIONS}} und {{/SUGGESTIONS}}:
+  - {{S_IDX}}               Nummer des Vorschlags (0, 1, …) in der Vorschlagsdatei
+  - {{S_LEVEL}}             chapter | section
+  - {{S_LABEL}}, {{S_TITLE}}  z. B. „Kapitel 2“ bzw. „2.3“ und der Titel
+  - {{S_GOAL}}, {{S_SHORT}}  vorgeschlagenes Ziel bzw. Kurzbeschreibung (leer = kein Vorschlag)
+  - {{S_GOAL_NOW}}, {{S_SHORT_NOW}}  bisheriger Text (leer = bisher leer)
+  - {{S_GOAL_ON}}, {{S_SHORT_ON}}  nicht leer = vorangehakt (nur wenn bisher leer)
+  - {{S_EVIDENCE}}          Fundstellen, z. B. „2.3: „…““
+
+  Verhalten:
+  - Übernehmen sendet analysis.apply mit kind, run und choices
+    [{index, goal?, short?}]: nur angehakte Felder, mit dem (geänderten) Text.
+    Der Text des Buchs bleibt unverändert.
+  - Verwerfen sendet form.cancel (form analysis.apply, kind, run); der Lauf gilt
+    dann als erledigt.
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: analysis.apply, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Kurzbeschreibung und Ziel aus dem Text: {{SUGGEST_COUNT_TEXT}} für {{SCOPE_TEXT}}. Auswählen und übernehmen.</h2>
+<style>
+.gw-kv .card{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.gw-kv .card[data-level="chapter"]{border-color:var(--border-strong);background:var(--surface-1)}
+.gw-kv .card[data-level="section"]{margin-left:14px}
+.gw-kv .hd{display:flex;gap:8px;align-items:baseline;font-size:14px}
+.gw-kv .hd b{font-weight:500}
+.gw-kv .lb{font-size:12px;color:var(--text-muted);white-space:nowrap}
+.gw-kv .fld{display:flex;gap:var(--gap-sm);align-items:flex-start}
+.gw-kv .fld.off textarea{opacity:0.55}
+.gw-kv .fld .col{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.gw-kv textarea{font:inherit;font-size:14px;line-height:1.45;padding:5px 8px;border:0.5px solid var(--border-strong);border-radius:8px;background:var(--surface-1);color:var(--text-primary);resize:vertical;min-height:2.6em;width:100%;box-sizing:border-box}
+.gw-kv .now{font-size:12px;color:var(--text-muted);line-height:1.45}
+.gw-kv .meta{font-size:12px;color:var(--text-muted);font-style:italic;line-height:1.5}
+.gw-kv .meta:empty{display:none}
+.gw-kv .lnk{background:none;border:0;padding:0;font:inherit;font-size:13px;color:var(--text-accent);cursor:pointer}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)}
+.gw-btn.pri{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-btn:disabled{opacity:0.45;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-kv" id="gw-kv" data-kind="{{KIND}}" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div>
+      <div style="font-size:12px;color:var(--text-muted)">{{SCOPE_TEXT}} · {{SUGGEST_COUNT_TEXT}}<span data-gw-if="RUN_TEXT"> · {{RUN_TEXT}}</span></div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-file-description" style="color:var(--text-secondary)" aria-hidden="true"></i>Kurzbeschreibung und Ziel</div>
+    </div>
+    <div style="display:flex;gap:var(--gap-md);font-size:13px"><button type="button" class="lnk" id="gw-empty">alle leeren füllen</button><button type="button" class="lnk" id="gw-all">alle</button><button type="button" class="lnk" id="gw-nothing">keine</button></div>
+    <div id="gw-list" style="display:flex;flex-direction:column;gap:6px">
+      {{#SUGGESTIONS}}
+      <div class="card" data-idx="{{S_IDX}}" data-level="{{S_LEVEL}}">
+        <div class="hd"><b>{{S_LABEL}}</b><span>{{S_TITLE}}</span></div>
+        <div class="fld" data-f="goal" data-on="{{S_GOAL_ON}}" data-v="{{S_GOAL}}" data-now="{{S_GOAL_NOW}}">
+          <input type="checkbox" class="on" aria-label="Ziel übernehmen" style="margin-top:8px">
+          <div class="col"><span class="lb">Ziel</span><textarea rows="2" aria-label="Ziel">{{S_GOAL}}</textarea><span class="now"></span></div>
+        </div>
+        <div class="fld" data-f="short" data-on="{{S_SHORT_ON}}" data-v="{{S_SHORT}}" data-now="{{S_SHORT_NOW}}">
+          <input type="checkbox" class="on" aria-label="Kurzbeschreibung übernehmen" style="margin-top:8px">
+          <div class="col"><span class="lb">Kurzbeschreibung</span><textarea rows="3" aria-label="Kurzbeschreibung">{{S_SHORT}}</textarea><span class="now"></span></div>
+        </div>
+        <div class="meta">{{S_EVIDENCE}}</div>
+      </div>
+      {{/SUGGESTIONS}}
+    </div>
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">Keine Vorschläge mit Fundstelle im Text.</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Nur aus dem Text, jede Angabe mit Fundstelle. Vorangehakt sind nur Felder, die bisher leer sind; ein angehaktes Feld ersetzt den bisherigen Text. Der Text des Buchs bleibt unverändert.</div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel">Verwerfen</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">Übernehmen</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var box=document.getElementById('gw-kv'),ds=box.dataset,$=function(id){return document.getElementById(id);};
+  var cards=Array.prototype.slice.call(box.querySelectorAll('.card'));
+  if(cards.length)$('gw-none').remove();else $('gw-apply').disabled=true;
+  var flds=[];
+  cards.forEach(function(c){
+    c.querySelectorAll('.fld').forEach(function(f){
+      if(!f.dataset.v){f.remove();return;}   // kein Vorschlag für dieses Feld
+      f.querySelector('.now').textContent=f.dataset.now?'bisher: '+f.dataset.now:'bisher leer';
+      var on=f.querySelector('.on');on.checked=!!f.dataset.on;f.classList.toggle('off',!on.checked);
+      on.addEventListener('change',function(){f.classList.toggle('off',!on.checked);refresh();});
+      f.querySelector('textarea').addEventListener('input',function(){if(!on.checked){on.checked=true;f.classList.remove('off');}refresh();});
+      flds.push(f);
+    });
+    if(!c.querySelector('.meta').textContent.trim())c.querySelector('.meta').remove();
+  });
+  function set(test){flds.forEach(function(f){var on=f.querySelector('.on');on.checked=test(f);f.classList.toggle('off',!on.checked);});refresh();}
+  $('gw-empty').addEventListener('click',function(){set(function(f){return !f.dataset.now;});});
+  $('gw-all').addEventListener('click',function(){set(function(){return true;});});
+  $('gw-nothing').addEventListener('click',function(){set(function(){return false;});});
+  function choices(){
+    var out=[];
+    cards.forEach(function(c){
+      var o={index:+c.dataset.idx},n=0;
+      c.querySelectorAll('.fld').forEach(function(f){if(f.querySelector('.on').checked){var v=f.querySelector('textarea').value.trim();if(v){o[f.dataset.f]=v;n++;}}});
+      if(n)out.push(o);
+    });
+    return out;
+  }
+  function refresh(){var ch=choices(),n=0;ch.forEach(function(o){n+=(o.goal?1:0)+(o.short?1:0);});$('gw-apply').disabled=!n;$('gw-apply').textContent=n?n+' Felder übernehmen':'Übernehmen';}
+  function lock(){box.querySelectorAll('input,textarea,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
+  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend('Kurzbeschreibungen und Ziele übernehmen ('+ch.length+')','analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Vorschläge verworfen','form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
+  refresh();
+})();
+</script>

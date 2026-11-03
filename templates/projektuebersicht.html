@@ -69,8 +69,12 @@
   - {{SERIES_ID}}, {{SERIES_TEXT}}  Serie des Buchs (GhostWriter #116), z. B. „Band 2 der Serie „Strolchi und Opi““; dann oben ein Link zur Serie (view.series), sonst leer
   - {{CHARACTER_COUNT}}    Zahl der Figuren (GhostWriter #53); dann erscheint neben dem Autor „Figuren (n)“ (view.characters), sonst leer
   - {{IMPORT_TEXT}}        Hinweis, dass das Original eines Imports bald entfernt wird (GhostWriter #124); fehlt = kein Hinweis
-  - {{ANALYSIS_TEXT}}, {{ANALYSIS_RUN}}  Hintergrundlauf mit offenen Figurenvorschlägen (GhostWriter #123), z. B.
-                           „Figurenvorschläge vom 03.11.2026 liegen bereit (12)“ und Pfad der Vorschlagsdatei; fehlt = kein Hinweis
+  Wiederholung je Art mit offenen Vorschlägen aus einem Hintergrundlauf (GhostWriter #123, #124) zwischen
+  {{#ANALYSES}} und {{/ANALYSES}}; fehlt = kein Hinweis:
+  - {{A_KIND}}             Art: characters | summaries | …
+  - {{A_TEXT}}             z. B. „Figurenvorschläge vom 03.11.2026 liegen bereit (12)“
+  - {{A_RUN}}              Pfad der Vorschlagsdatei (analysis/<art>/run-NNN.json)
+  - {{A_ICON}}             Tabler-Symbol ohne „ti-“, z. B. user-search
   - {{LIMIT_STATE}}        warn | pause (GhostWriter #62); fehlt = kein Hinweis
   - {{LIMIT_TEXT}}         z. B. „Automatik pausiert: KI-Budget 8 % übrig (9,20 von 10,00 €)“
   - {{UPDATE_TEXT}}        z. B. „3 Commits hinter ploeffler/GhostWriter:main · Version 0.3.1 verfügbar (installiert 0.3.0)“
@@ -137,11 +141,13 @@
       <button type="button" class="gw-sq" id="gw-merge" data-p="Änderungen übernehmen" data-a="changes.merge.open" style="width:auto;height:36px;padding:0 14px;font-size:14px;gap:6px;color:var(--text-primary)"><i class="ti ti-git-merge" style="font-size:16px" aria-hidden="true"></i>Änderungen übernehmen</button>
     </div>
     <div data-gw-if="IMPORT_TEXT" style="display:flex;align-items:center;gap:var(--gap-sm);padding:8px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);font-size:13px;color:var(--text-secondary)"><i class="ti ti-file-import" aria-hidden="true"></i><span>{{IMPORT_TEXT}}</span></div>
-    <div data-gw-if="ANALYSIS_TEXT" style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:10px 12px;border:0.5px solid var(--border-accent);border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent)">
-      <i class="ti ti-user-search" style="font-size:18px" aria-hidden="true"></i>
-      <span style="flex:1;min-width:180px;font-size:14px">{{ANALYSIS_TEXT}}</span>
-      <button type="button" class="gw-sq" data-p="Figurenvorschläge aus dem Hintergrundlauf ansehen" data-a="analysis.open" data-args='{"kind":"characters","run":"{{ANALYSIS_RUN}}"}' style="width:auto;height:36px;padding:0 14px;font-size:14px;gap:6px;color:var(--text-primary)"><i class="ti ti-list-check" style="font-size:16px" aria-hidden="true"></i>Ansehen</button>
+    {{#ANALYSES}}
+    <div style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:10px 12px;border:0.5px solid var(--border-accent);border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent)">
+      <i class="ti ti-{{A_ICON}}" style="font-size:18px" aria-hidden="true"></i>
+      <span style="flex:1;min-width:180px;font-size:14px">{{A_TEXT}}</span>
+      <button type="button" class="gw-sq" data-p="Vorschläge aus dem Hintergrundlauf ansehen" data-a="analysis.open" data-args='{"kind":"{{A_KIND}}","run":"{{A_RUN}}"}' style="width:auto;height:36px;padding:0 14px;font-size:14px;gap:6px;color:var(--text-primary)"><i class="ti ti-list-check" style="font-size:16px" aria-hidden="true"></i>Ansehen</button>
     </div>
+    {{/ANALYSES}}
     <div data-gw-if="LIMIT_STATE" id="gw-limit" data-state="{{LIMIT_STATE}}" style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:10px 12px;border:0.5px solid var(--border-warning);border-radius:var(--radius);background:var(--bg-warning);color:var(--text-warning)">
       <i class="ti ti-gauge" style="font-size:18px" aria-hidden="true"></i>
       <span style="flex:1;min-width:180px;font-size:14px">{{LIMIT_TEXT}}</span>
