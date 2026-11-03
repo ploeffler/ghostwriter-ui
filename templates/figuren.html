@@ -21,6 +21,9 @@
   - {{C_ROLE}}    Rolle deutsch, z. B. „Hauptfigur“
   - {{C_SHORT}}   ein Satz
   - {{C_USED}}    Abschnitte bzw. Teile, z. B. „1.1, 2.3, Prolog“; „–“ = noch nirgends
+  - {{C_SOURCE}}  Band einer Serie (GhostWriter #116): series | copy | copy_diff | own; ohne Serie leer
+  - {{C_SOURCE_TEXT}}  z. B. „aus der Serie“, „Kopie, weicht von der Serie ab“
+  - {{SERIES_TITLE}}   Reihentitel; leer = Buch ohne Serie (dann kein Hinweis)
 
   Verhalten:
   - Klick auf eine Figur sendet view.character mit character_id.
@@ -39,6 +42,10 @@
 .gw-sq:hover{border-color:var(--border-strong);color:var(--text-primary)}
 .gw-ch{display:flex;align-items:center;gap:var(--gap-md);padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);cursor:pointer;text-align:left;font:inherit;width:100%}
 .gw-ch:hover{border-color:var(--border-strong)}
+.gw-src{display:inline-block;margin-top:3px;font-size:11px;padding:1px 6px;border-radius:999px;border:0.5px solid var(--border);color:var(--text-muted)}
+.gw-src:empty{display:none}
+.gw-src[data-s="series"]{border-color:var(--border-accent);color:var(--text-accent)}
+.gw-src[data-s="copy_diff"]{border-color:var(--text-danger);color:var(--text-danger)}
 .gw-in{width:100%;box-sizing:border-box;padding:8px 11px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px}
 .gw-btn{padding:8px 14px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
 .gw-btn:disabled{opacity:0.4;cursor:default}
@@ -52,9 +59,10 @@
       </div>
       <button type="button" class="gw-sq" id="gw-back" title="Zur Projektübersicht" aria-label="Zur Projektübersicht"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
     </div>
+    <div data-gw-if="SERIES_TITLE" style="font-size:12px;color:var(--text-muted);line-height:1.5">Band der Serie „{{SERIES_TITLE}}“: Figuren der Serie gelten in allen Bänden; eine Kopie gilt nur in diesem Buch.</div>
     <div data-gw-if="CHARACTERS" style="display:flex;flex-direction:column;gap:var(--gap-xs)">
       {{#CHARACTERS}}
-      <button type="button" class="gw-ch" data-id="{{C_ID}}" data-name="{{C_NAME}}"><span style="flex:1;min-width:0"><span style="font-size:14px;font-weight:500">{{C_NAME}}</span> <span style="font-size:12px;color:var(--text-muted)">· {{C_ROLE}}</span><span style="display:block;font-size:12px;color:var(--text-secondary)">{{C_SHORT}}</span></span><span style="font-size:12px;color:var(--text-muted)" title="kommt vor in">{{C_USED}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
+      <button type="button" class="gw-ch" data-id="{{C_ID}}" data-name="{{C_NAME}}"><span style="flex:1;min-width:0"><span style="font-size:14px;font-weight:500">{{C_NAME}}</span> <span style="font-size:12px;color:var(--text-muted)">· {{C_ROLE}}</span><span style="display:block;font-size:12px;color:var(--text-secondary)">{{C_SHORT}}</span><span class="gw-src" data-s="{{C_SOURCE}}">{{C_SOURCE_TEXT}}</span></span><span style="font-size:12px;color:var(--text-muted)" title="kommt vor in">{{C_USED}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
       {{/CHARACTERS}}
     </div>
     <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md);display:grid;grid-template-columns:2fr 1fr auto;gap:var(--gap-sm);align-items:end">

@@ -39,6 +39,12 @@
   - {{GHOSTWRITING}}         „1“, wenn Ghostwriting erlaubt ist (Vorwort, Prolog, Epilog, Nachwort)
   - {{PERSONAL_NOTE}}        Hinweis bei Widmung und Danksagung, sonst leer
 
+  Begriffe der Serie (GhostWriter #116, nur Glossar eines Bandes) zwischen {{#SERIES_TERMS}} und {{/SERIES_TERMS}}:
+  - {{T_TERM}}, {{T_TEXT}}      Begriff und Erklärung (der Serie; bei own die des Buchs)
+  - {{T_BOOK_TEXT}}            Erklärung im Buch; leer = nicht im Buch
+  - {{T_STATE}}                missing (nur in der Serie) | same | differs (Kopie im Buch) | own (nur im Buch)
+  - {{T_STATE_TEXT}}           deutsch, z. B. „im Buch, weicht von der Serie ab“
+  - {{SERIES_ID}}, {{SERIES_TITLE}}  Serie des Buchs
   Wiederholung je Begriff zwischen {{#GLOSSARY_ENTRIES}} und {{/GLOSSARY_ENTRIES}} (alphabetisch):
   - {{G_TERM}}               Begriff
   - {{G_TEXT}}               Erklärung
@@ -57,7 +63,7 @@
     Teils in section_id; „Begriffe vorschlagen“ sendet matter.glossary.suggest.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.matter, view.project, matter.update, matter.glossary.update, matter.glossary.suggest, approval.open, run.start, form.cancel
+  Aktionen: view.matter, view.project, matter.update, matter.glossary.update, matter.glossary.suggest, matter.glossary.from_series, matter.glossary.to_series, approval.open, run.start, form.cancel
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
@@ -158,6 +164,16 @@
         <div class="gw-g" data-old="{{G_TERM}}"><input class="gw-in gw-t" value="{{G_TERM}}" aria-label="Begriff"><textarea class="gw-in gw-e" rows="1" aria-label="Erklärung">{{G_TEXT}}</textarea><button type="button" class="gw-x" title="Begriff entfernen" aria-label="Begriff entfernen"><i class="ti ti-trash" aria-hidden="true"></i></button></div>
         {{/GLOSSARY_ENTRIES}}
       </div>
+      <div data-gw-if="SERIES_TERMS" id="gw-sterms" data-series="{{SERIES_ID}}" style="border:0.5px solid var(--border-accent);border-radius:var(--radius);padding:8px 10px;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:12px;color:var(--text-accent)">Begriffe der Serie „{{SERIES_TITLE}}“</div>
+        {{#SERIES_TERMS}}
+        <div class="gw-st" data-term="{{T_TERM}}" data-state="{{T_STATE}}" style="display:flex;gap:8px;align-items:center;font-size:13px;flex-wrap:wrap">
+          <span style="flex:1;min-width:160px"><b style="font-weight:500">{{T_TERM}}</b> <span style="font-size:11px;color:var(--text-muted)">· {{T_STATE_TEXT}}</span><span style="display:block;font-size:12px;color:var(--text-secondary)">{{T_TEXT}}</span></span>
+          <button type="button" class="gw-mini gw-sa" data-act="matter.glossary.from_series" data-t="aus der Serie übernehmen">Ins Buch</button>
+          <button type="button" class="gw-mini gw-sa" data-act="matter.glossary.to_series" data-t="in die Serie übernehmen">In die Serie</button>
+        </div>
+        {{/SERIES_TERMS}}
+      </div>
       <div style="display:flex;gap:var(--gap-sm);flex-wrap:wrap">
         <button type="button" class="gw-mini" id="gw-add" style="margin-left:0"><i class="ti ti-plus" aria-hidden="true"></i> Begriff hinzufügen</button>
         <button type="button" class="gw-mini" id="gw-suggest" style="margin-left:0"><i class="ti ti-sparkles" aria-hidden="true"></i> Begriffe aus dem Text vorschlagen</button>
@@ -239,6 +255,16 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
       var r=document.createElement('div');r.className='gw-g';r.dataset.old='';
       r.innerHTML='<input class="gw-in gw-t" placeholder="Begriff" aria-label="Begriff"><textarea class="gw-in gw-e" rows="1" placeholder="Erklärung" aria-label="Erklärung"></textarea><button type="button" class="gw-x" title="Zeile entfernen" aria-label="Zeile entfernen"><i class="ti ti-x" aria-hidden="true"></i></button>';
       list.appendChild(r);bindRow(r);r.querySelector('.gw-t').focus();
+    });
+    // Begriffe der Serie (#116): Ins Buch = übernehmen bzw. angleichen; In die Serie = Erklärung des Buchs übernehmen
+    document.querySelectorAll('.gw-st').forEach(function(r){
+      var s=r.dataset.state;
+      r.querySelectorAll('.gw-sa').forEach(function(b){
+        var ok=b.dataset.act==='matter.glossary.from_series'?(s==='missing'||s==='differs'):(s==='differs'||s==='own');
+        if(!ok){b.remove();return;}
+        if(b.dataset.act==='matter.glossary.from_series'&&s==='differs')b.textContent='An Serie angleichen';
+        b.addEventListener('click',function(){gwSend('Begriff „'+r.dataset.term+'“ '+b.dataset.t,b.dataset.act,{matter_id:d.id,term:r.dataset.term});});
+      });
     });
     $('gw-suggest').addEventListener('click',function(){gwSend('Begriffe für das Glossar aus dem freigegebenen Text vorschlagen','matter.glossary.suggest',{matter_id:d.id});});
   }
