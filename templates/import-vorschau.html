@@ -1,0 +1,153 @@
+<!--
+  Vorlage: Manuskript importieren – Gliederung prüfen (GhostWriter #124)
+
+  Inline-Widget für den Chat. Nach der Umwandlung durch die Action
+  „Manuskript importieren“ (scripts/import_book.py convert) zeigt es den
+  Vorschlag aus import/proposal.json. Am Buch ist noch nichts geändert.
+
+  Aufbau:
+  - Kopf: Import-Symbol, Titel und Autor aus dem Dokument, Format, Zahlen,
+    Hinweis „vollständig“ bzw. Abweichung, Aufbewahrung des Originals
+  - Hinweise (PDF, Tabellen, Fußnoten, Bilder, sehr lange Abschnitte)
+  - Gliederung: Teile des Vorspanns, Kapitel mit Abschnitten, Teile des Nachspanns;
+    Titel änderbar; je Abschnitt „an Szenen teilen“ (wenn Szenen erkannt),
+    „mit nächstem zusammenlegen“, „neues Kapitel ab hier“; je Kapitel
+    „mit nächstem zusammenlegen“ und „ist Teil von Vor-/Nachspann“; je Teil
+    „ist ein Kapitel“
+  - „Änderungen anwenden“ (import.edit) bzw. „Buch anlegen“ (import.apply) mit
+    Häkchen „Schreibfreigabe für alle importierten Abschnitte erteilen“ (aus)
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{IMPORT_TITLE}}, {{IMPORT_AUTHOR}}, {{IMPORT_FORMAT}}
+  - {{STATS_TEXT}}       z. B. „12 Kapitel, 31 Abschnitte, 3 Teile von Vor- und Nachspann · 38.000 von 38.000 Wörtern übernommen“
+  - {{LOSSLESS}}         nicht leer = Wortzahl stimmt mit der Umwandlung überein
+  - {{KEEP_TEXT}}        Aufbewahrung des Originals, z. B. „bis zur ersten Auflage“
+  - {{KINDS_TEXT}}       Arten von Vor- und Nachspann (kind=Name), für die Auswahl
+  Wiederholung zwischen {{#WARNINGS}} und {{/WARNINGS}}: {{W_TEXT}}
+  Wiederholung zwischen {{#PARTS}} und {{/PARTS}}:
+  - {{P_IDX}}, {{P_KIND}}, {{P_AREA}} (front | back), {{P_LABEL}}, {{P_TITLE}}, {{P_WORDS}}
+  Wiederholung zwischen {{#ROWS}} und {{/ROWS}} (Kapitel, darunter ihre Abschnitte):
+  - {{R_TYPE}} (chapter | section), {{R_CHAPTER}}, {{R_SECTION}}, {{R_LABEL}}, {{R_TITLE}}, {{R_WORDS}}
+  - {{R_COUNT}} (beim Kapitel, z. B. „3 Abschnitte“), {{R_SCENES}} (Szenen im Abschnitt, leer = eine), {{R_LONG}} (nicht leer = sehr lang)
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: import.edit {ops}, import.apply {writing_approval}, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Manuskript importieren: Gliederung prüfen und Buch anlegen. {{STATS_TEXT}}</h2>
+<style>
+.gw-iv .row{display:flex;align-items:center;gap:var(--gap-sm);padding:6px 10px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);font-size:14px;flex-wrap:wrap}
+.gw-iv .row.chapter{background:var(--surface-1);border-color:var(--border-strong);margin-top:6px}
+.gw-iv .row.section{margin-left:22px}
+.gw-iv .row.part{border-style:dashed}
+.gw-iv .lbl{font-size:12px;color:var(--text-muted);min-width:64px}
+.gw-iv input.t{flex:1;min-width:140px;font:inherit;font-size:14px;padding:4px 8px;border:0.5px solid var(--border);border-radius:6px;background:var(--surface-1);color:var(--text-primary)}
+.gw-iv .row.chapter input.t{font-weight:500}
+.gw-iv .w{font-size:12px;color:var(--text-muted);white-space:nowrap}
+.gw-iv .warn{color:var(--text-danger)}
+.gw-iv .ic{border:0.5px solid var(--border);border-radius:6px;background:transparent;color:var(--text-secondary);cursor:pointer;font:inherit;font-size:12px;padding:3px 7px;white-space:nowrap}
+.gw-iv .ic:hover:not(:disabled){border-color:var(--border-strong);color:var(--text-primary)}
+.gw-iv .ic.on{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-iv select{font:inherit;font-size:12px;padding:2px 4px;border:0.5px solid var(--border);border-radius:6px;background:var(--surface-1);color:var(--text-primary)}
+.gw-iv .sec{font-size:12px;color:var(--text-muted);margin:8px 0 2px}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)}
+.gw-btn.pri{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-btn:disabled{opacity:0.45;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-iv" id="gw-iv" data-kinds="{{KINDS_TEXT}}" data-lossless="{{LOSSLESS}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-sm)">
+    <div>
+      <div style="font-size:12px;color:var(--text-muted)">Manuskript importieren · {{IMPORT_FORMAT}} · Original: {{KEEP_TEXT}}</div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-file-import" style="color:var(--text-secondary)" aria-hidden="true"></i>{{IMPORT_TITLE}}</div>
+      <div style="font-size:13px;color:var(--text-secondary)">{{IMPORT_AUTHOR}}</div>
+      <div style="font-size:13px;margin-top:4px"><span id="gw-loss"></span> {{STATS_TEXT}}</div>
+    </div>
+    <div data-gw-if="WARNINGS" style="display:flex;flex-direction:column;gap:4px;padding:8px 10px;border:0.5px solid var(--border-strong);border-radius:var(--radius);font-size:13px;color:var(--text-secondary)">
+      {{#WARNINGS}}
+      <div>⚠️ {{W_TEXT}}</div>
+      {{/WARNINGS}}
+    </div>
+    <div id="gw-tree" style="display:flex;flex-direction:column;gap:4px">
+      <div class="sec" id="gw-front-h">Vorspann</div>
+      {{#PARTS}}
+      <div class="row part" data-idx="{{P_IDX}}" data-area="{{P_AREA}}"><span class="lbl">{{P_LABEL}}</span><span style="flex:1">{{P_TITLE}}</span><span class="w">{{P_WORDS}} Wörter</span><button type="button" class="ic tochap">ist ein Kapitel</button></div>
+      {{/PARTS}}
+      <div class="sec" id="gw-ch-h">Kapitel</div>
+      {{#ROWS}}
+      <div class="row {{R_TYPE}}" data-type="{{R_TYPE}}" data-c="{{R_CHAPTER}}" data-s="{{R_SECTION}}" data-title="{{R_TITLE}}" data-scenes="{{R_SCENES}}" data-long="{{R_LONG}}">
+        <span class="lbl">{{R_LABEL}}</span><input class="t" value="{{R_TITLE}}" aria-label="Titel">
+        <span class="w"><span class="cnt">{{R_COUNT}} · </span>{{R_WORDS}} Wörter</span>
+      </div>
+      {{/ROWS}}
+      <div class="sec" id="gw-back-h">Nachspann</div>
+    </div>
+    <div id="gw-pending" style="font-size:12px;color:var(--text-accent)"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <label style="font-size:13px;flex:1;min-width:220px"><input type="checkbox" id="gw-wa"> Schreibfreigabe für alle importierten Abschnitte erteilen</label>
+      <button type="button" class="gw-btn" id="gw-cancel">Abbrechen</button>
+      <button type="button" class="gw-btn" id="gw-edit" disabled>Änderungen anwenden</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">Buch anlegen</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var box=document.getElementById('gw-iv'),tree=document.getElementById('gw-tree'),$=function(id){return document.getElementById(id);};
+  var ops=[],done=false;
+  $('gw-loss').textContent=box.dataset.lossless?'✓':'⚠️ Wortzahl weicht ab –';
+  // Vorspann/Nachspann einsortieren
+  var front=[],back=[];tree.querySelectorAll('.row.part').forEach(function(r){(r.dataset.area==='front'?front:back).push(r);});
+  front.forEach(function(r){tree.insertBefore(r,$('gw-ch-h'));});back.forEach(function(r){tree.appendChild(r);});
+  if(!front.length)$('gw-front-h').remove();if(!back.length)$('gw-back-h').remove();
+  var kinds=(box.dataset.kinds||'').split(', ').map(function(x){var p=x.split('=');return {k:p[0],n:p[1]};}).filter(function(x){return x.k;});
+  function add(op,btn,label){
+    if(btn.classList.contains('on')){ops=ops.filter(function(o){return o._b!==btn;});btn.classList.remove('on');}
+    else{op._b=btn;ops.push(op);btn.classList.add('on');}
+    refresh();
+  }
+  function mk(row,text,fn){var b=document.createElement('button');b.type='button';b.className='ic';b.textContent=text;b.addEventListener('click',function(){fn(b);});row.appendChild(b);return b;}
+  var chRows=tree.querySelectorAll('.row.chapter'),last=chRows.length;
+  tree.querySelectorAll('.row[data-type]').forEach(function(r){
+    var c=+r.dataset.c,s=+r.dataset.s,inp=r.querySelector('input.t');
+    if(r.dataset.type==='chapter'){
+      if(c<last)mk(r,'+ nächstes Kapitel',function(b){add({op:'merge_chapters',chapter:c},b);});
+      var sel=document.createElement('select');sel.innerHTML='<option value="">ist Teil …</option>'+kinds.map(function(x){return '<option value="'+x.k+'">'+x.n+'</option>';}).join('');
+      sel.addEventListener('change',function(){ops=ops.filter(function(o){return o._s!==sel;});if(sel.value)ops.push({op:'to_matter',chapter:c,kind:sel.value,_s:sel});refresh();});
+      r.appendChild(sel);
+    }else{
+      r.querySelector('.cnt').remove();
+      if(r.dataset.long)r.querySelector('.w').classList.add('warn');
+      if(r.dataset.scenes)mk(r,'an '+r.dataset.scenes+' Szenen teilen',function(b){add({op:'split_scenes',chapter:c,section:s},b);});
+      var next=r.nextElementSibling;
+      if(next&&next.dataset.type==='section')mk(r,'+ nächster',function(b){add({op:'merge_sections',chapter:c,section:s},b);});
+      if(s>1)mk(r,'neues Kapitel ab hier',function(b){add({op:'split_chapter',chapter:c,section:s},b);});
+    }
+    inp.addEventListener('input',refresh);
+  });
+  tree.querySelectorAll('.row.part .tochap').forEach(function(b){var r=b.closest('.row');b.addEventListener('click',function(){add({op:'to_chapter',part:+r.dataset.idx},b);});});
+  function renames(){
+    var out=[];tree.querySelectorAll('.row[data-type]').forEach(function(r){var v=r.querySelector('input.t').value.trim();if(v&&v!==r.dataset.title)out.push(r.dataset.type==='chapter'?{op:'rename_chapter',chapter:+r.dataset.c,title:v}:{op:'rename_section',chapter:+r.dataset.c,section:+r.dataset.s,title:v});});
+    return out;
+  }
+  function all(){
+    // Umbenennen zuerst (Nummern gelten für den gezeigten Stand), Strukturänderungen von hinten nach vorn
+    var struct=ops.map(function(o){var x={};Object.keys(o).forEach(function(k){if(k[0]!=='_')x[k]=o[k];});return x;});
+    struct.sort(function(a,b){return (b.chapter||0)-(a.chapter||0)||(b.section||0)-(a.section||0)||(b.part||0)-(a.part||0);});
+    return renames().concat(struct);
+  }
+  function refresh(){
+    var n=all().length;
+    $('gw-pending').textContent=n?n+' Änderung'+(n>1?'en':'')+' – erst anwenden, dann ist die neue Gliederung zu sehen.':'';
+    $('gw-edit').disabled=done||!n;$('gw-apply').disabled=done||!!n;
+  }
+  function lock(){done=true;box.querySelectorAll('input,select,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
+  $('gw-edit').addEventListener('click',function(){var o=all();lock();gwSend(o.length+' Änderungen an der Gliederung anwenden','import.edit',{ops:o});});
+  $('gw-apply').addEventListener('click',function(){var wa=$('gw-wa').checked;lock();gwSend('Buch aus dem Manuskript anlegen'+(wa?' (mit Schreibfreigabe)':''),'import.apply',{writing_approval:wa});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Import abgebrochen','form.cancel',{form:'import.apply'});});
+  refresh();
+})();
+</script>
