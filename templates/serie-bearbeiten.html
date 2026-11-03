@@ -1,0 +1,101 @@
+<!--
+  Vorlage: Neue Serie bzw. Serie bearbeiten (Formular, GhostWriter #116)
+
+  Inline-Widget für den Chat. „Neue Serie“ im Bücherregal (series.create.open)
+  bzw. „Bearbeiten“ auf der Seite „Serie“ (series.edit.open mit series_id).
+
+  Aufbau:
+  - Kopf: Stapel-Symbol, „Neue Serie“ bzw. „Serie bearbeiten“
+  - Titel der Reihe (Pflicht; Warnung, wenn es ihn schon gibt), Untertitel,
+    Art (durchgehende Handlung | eigenständige Bände), Beschreibung
+  - Abbrechen und Anlegen bzw. Speichern
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{SERIES_ID}}           leer = neue Serie; sonst ser-… (bleibt beim Umbenennen gleich)
+  - {{SERIES_TITLE}}, {{SERIES_SUBTITLE}}, {{SERIES_DESCRIPTION}}  bisherige bzw. gesendete Werte
+  - {{SERIES_KIND}}         continuous | standalone
+  - {{ERROR_TEXT}}          Meldung nach einer fehlgeschlagenen Prüfung; leer = entfällt
+  Wiederholung zwischen {{#TAKEN}} und {{/TAKEN}} (andere Serien):
+  - {{TAKEN_TITLE}}
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: series.create {title, subtitle, kind, description}, series.update {series_id, title, subtitle, kind, description}, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Formular Serie: Titel, Untertitel, Art und Beschreibung der Reihe.</h2>
+<style>
+.gw-f label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--text-primary)}
+.gw-f .hint{font-weight:400;color:var(--text-muted)}
+.gw-f input,.gw-f select,.gw-f textarea{width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:8px 10px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-1);color:var(--text-primary)}
+.gw-f textarea{min-height:80px;resize:vertical}
+.gw-f .gw-err{font-size:12px;color:var(--text-danger);margin-top:4px}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+.gw-btn:disabled{opacity:0.5;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <form class="gw-f" id="gw-sf" data-id="{{SERIES_ID}}" data-kind="{{SERIES_KIND}}" novalidate style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="display:flex;align-items:center;gap:var(--gap-sm)">
+      <i class="ti ti-stack-2" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
+      <span style="font-size:16px;font-weight:500" id="gw-head">Neue Serie</span>
+    </div>
+    <div data-gw-if="ERROR_TEXT" class="gw-err" style="margin:0;padding:8px 10px;border:0.5px solid var(--text-danger);border-radius:var(--radius)">{{ERROR_TEXT}}</div>
+    <div>
+      <label for="gw-title">Titel der Reihe</label>
+      <input id="gw-title" value="{{SERIES_TITLE}}" autocomplete="off" placeholder="z. B. Strolchi und Opi">
+      <div class="gw-err" id="gw-title-err" style="display:none"></div>
+    </div>
+    <div>
+      <label for="gw-sub">Untertitel <span class="hint">optional</span></label>
+      <input id="gw-sub" value="{{SERIES_SUBTITLE}}" autocomplete="off">
+    </div>
+    <div>
+      <label for="gw-kind">Art</label>
+      <select id="gw-kind">
+        <option value="continuous">Durchgehende Handlung – die Bände bauen aufeinander auf</option>
+        <option value="standalone">Eigenständige Bände – jeder Band für sich lesbar</option>
+      </select>
+    </div>
+    <div>
+      <label for="gw-desc">Beschreibung <span class="hint">optional</span></label>
+      <textarea id="gw-desc">{{SERIES_DESCRIPTION}}</textarea>
+    </div>
+    <ul id="gw-taken" hidden>
+      {{#TAKEN}}
+      <li>{{TAKEN_TITLE}}</li>
+      {{/TAKEN}}
+    </ul>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Bände fügst du danach auf der Seite der Serie hinzu oder legst sie dort neu an. Ein Buch gehört zu höchstens einer Serie.</div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)" disabled>Anlegen</button>
+    </div>
+  </form>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var f=document.getElementById('gw-sf'),sid=f.dataset.id,$=function(id){return document.getElementById(id);};
+  if(sid){$('gw-head').textContent='Serie bearbeiten';$('gw-save').textContent='Speichern';}
+  $('gw-kind').value=f.dataset.kind||'continuous';
+  var taken=Array.prototype.map.call($('gw-taken').querySelectorAll('li'),function(l){return l.textContent.trim().toLowerCase();});
+  function data(){return {title:$('gw-title').value.trim(),subtitle:$('gw-sub').value.trim(),kind:$('gw-kind').value,description:$('gw-desc').value.trim()};}
+  var start=JSON.stringify(data()),done=false;
+  function refresh(){
+    var d=data(),dup=taken.indexOf(d.title.toLowerCase())>=0,e=$('gw-title-err');
+    e.style.display=dup?'block':'none';e.textContent=dup?'Eine Serie mit diesem Titel gibt es schon.':'';
+    $('gw-save').disabled=done||!d.title||dup||(sid&&JSON.stringify(d)===start);
+  }
+  f.addEventListener('input',refresh);f.addEventListener('change',refresh);
+  function lock(){done=true;f.querySelectorAll('input,select,textarea,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
+  $('gw-save').addEventListener('click',function(){
+    var d=data();lock();
+    if(sid)gwSend('Serie „'+d.title+'“ speichern','series.update',Object.assign({series_id:sid},d));
+    else gwSend('Neue Serie „'+d.title+'“ anlegen','series.create',d);
+  });
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(sid?'Serie bearbeiten abgebrochen':'Neue Serie abgebrochen','form.cancel',{form:sid?'series.update':'series.create'});});
+  refresh();
+})();
+</script>

@@ -66,6 +66,7 @@
   siehe docs/UPDATES.md); fehlt UPDATE_BEHIND, entfällt der Hinweis:
   - {{UPDATE_BEHIND}}      Anzahl Commits, die der Buch-Branch hinter dem Hauptrepository liegt
   - {{LIBRARY_COUNT}}      Zahl der Bücher in der Bibliothek; ab 2 erscheint oben „Bücherregal“ (view.library), sonst leer
+  - {{SERIES_ID}}, {{SERIES_TEXT}}  Serie des Buchs (GhostWriter #116), z. B. „Band 2 der Serie „Strolchi und Opi““; dann oben ein Link zur Serie (view.series), sonst leer
   - {{CHARACTER_COUNT}}    Zahl der Figuren (GhostWriter #53); dann erscheint neben dem Autor „Figuren (n)“ (view.characters), sonst leer
   - {{LIMIT_STATE}}        warn | pause (GhostWriter #62); fehlt = kein Hinweis
   - {{LIMIT_TEXT}}         z. B. „Automatik pausiert: KI-Budget 8 % übrig (9,20 von 10,00 €)“
@@ -103,6 +104,7 @@
         <div style="flex:1;min-width:220px">
           <div style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;margin-bottom:4px">
             <button type="button" id="gw-lib" data-gw-if="LIBRARY_COUNT" title="Alle Bücher dieser Bibliothek" style="border:none;background:none;padding:0;font:inherit;font-size:12px;color:var(--text-secondary);cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-books" aria-hidden="true"></i>Bücherregal ({{LIBRARY_COUNT}}) ›</button>
+            <button type="button" id="gw-series" data-gw-if="SERIES_ID" data-id="{{SERIES_ID}}" title="Alle Bände dieser Serie" style="border:none;background:none;padding:0;font:inherit;font-size:12px;color:var(--text-secondary);cursor:pointer;display:inline-flex;align-items:center;gap:4px"><i class="ti ti-stack-2" aria-hidden="true"></i>{{SERIES_TEXT}} ›</button>
             <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{PROJECT_TITLE_SHORT}}</span>
             <span style="font-size:12px;color:var(--text-muted)">Buchprojekt · {{PROJECT_EDITION_TEXT}}</span>
           </div>
@@ -176,6 +178,7 @@
 function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 document.querySelectorAll('.gw-sq[data-p]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,b.dataset.args?JSON.parse(b.dataset.args):{});});});
 var chars=document.getElementById('gw-chars');if(chars)chars.addEventListener('click',function(){gwSend('Figuren anzeigen','view.characters',{});});
+var ser=document.getElementById('gw-series');if(ser)ser.addEventListener('click',function(){gwSend('Serie anzeigen','view.series',{series_id:ser.dataset.id});});
 var lib=document.getElementById('gw-lib');if(lib)lib.addEventListener('click',function(){gwSend('Zum Bücherregal','view.library',{});});
 document.querySelectorAll('.gw-ch[data-id]:not(.gw-mt)').forEach(function(r){r.addEventListener('click',function(){gwSend('Kapitel '+r.dataset.number+' „'+r.dataset.title+'“ öffnen','view.chapter',{chapter_id:r.dataset.id});});});
 document.querySelectorAll('.gw-mt[data-id]').forEach(function(r){r.addEventListener('click',function(){gwSend(r.dataset.title+' öffnen','view.matter',{matter_id:r.dataset.id});});});
