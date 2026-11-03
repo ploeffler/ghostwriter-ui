@@ -10,7 +10,8 @@
   - Kopf links: Kurztitel als Badge, Titel
   - Kopf rechts: Symbolleiste mit quadratischen Symbol-Knöpfen:
     Projektdaten bearbeiten, Neues Kapitel anlegen,
-    Kapitelreihenfolge ändern, Neue Auflage erzeugen, KI-Dienste, Projekteinstellungen
+    Kapitelreihenfolge ändern, Vor- und Nachspann, Neue Auflage erzeugen, Ausgabeoptionen,
+    KI-Dienste, Projekteinstellungen
   - neben "Buchprojekt": die aktuelle Auflage
   - Zeile darunter: Autor links, bisherige Gesamtkosten rechtsbündig
   - nur bei offenen Änderungen: Hinweis mit Anzahl und Pull Request,
@@ -20,6 +21,8 @@
   - Trennlinie, Liste der Kapitel (Nummer, Titel, Kapitelkosten, Status);
     ein Klick öffnet die Kapitelansicht im Chat, der Stift rechts daneben
     das Formular „Kapitel bearbeiten“
+  - Vor- und Nachspann (GhostWriter #57, #58): Teile vor Kapitel 1 über der
+    Kapitelliste, Teile nach dem letzten Kapitel darunter; ein Klick öffnet den Teil
 
   Platzhalter (vor der Ausgabe ersetzen):
   - {{PROJECT_TITLE}}              project.title (bzw. working_title, solange kein Titel feststeht)
@@ -45,6 +48,14 @@
   - {{CHAPTER_ID}}         stabile Kapitel-ID aus structure.chapters (für view.chapter)
   Gibt es noch keine Kapitel, entfällt der Abschnitt "Kapitel" ganz.
 
+  Wiederholung je Teil des Vorspanns ({{#MATTER_FRONT}} … {{/MATTER_FRONT}}) bzw.
+  des Nachspanns ({{#MATTER_BACK}} … {{/MATTER_BACK}}), in Buchreihenfolge;
+  fehlt der Block, entfällt der Bereich:
+  - {{MATTER_ID}}          stabile ID, z. B. mat-widmung (für view.matter)
+  - {{MATTER_TITLE}}       Titel, z. B. „Widmung“
+  - {{MATTER_STATUS}}      Status wie bei Abschnitten (gw.js zeigt ihn deutsch)
+  - {{MATTER_MARKERS}}     Zahl offener Marker
+
   Offene Änderungen (Arbeits-Branch mit Pull Request, siehe START.md,
   „Schreiben ins Repository“); fehlt PENDING_COUNT, entfällt der Hinweis:
   - {{PENDING_COUNT}}      Anzahl der Commits im Pull Request
@@ -66,7 +77,7 @@
     im Tooltip ", enthält geschätzte Kosten" ergänzt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.chapter, chapter.edit.open, changes.merge.open, update.apply, project.providers.open, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open, view.library
+  Aktionen: view.chapter, chapter.edit.open, changes.merge.open, update.apply, project.providers.open, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open, view.library, view.matter, project.output.open
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -98,7 +109,9 @@
           <button type="button" class="gw-sq" data-p="Projektdaten bearbeiten" data-a="project.edit" title="Projektdaten bearbeiten" aria-label="Projektdaten bearbeiten"><i class="ti ti-edit" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Neues Kapitel anlegen" data-a="chapter.create.open" title="Neues Kapitel anlegen" aria-label="Neues Kapitel anlegen"><i class="ti ti-plus" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Kapitelreihenfolge ändern" data-a="chapter.reorder.open" title="Kapitelreihenfolge ändern" aria-label="Kapitelreihenfolge ändern"><i class="ti ti-arrows-sort" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="Vor- und Nachspann anzeigen" data-a="view.matter" title="Vor- und Nachspann (Widmung, Vorwort, Glossar …)" aria-label="Vor- und Nachspann"><i class="ti ti-bookmarks" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Neue Auflage erzeugen" data-a="edition.create.open" title="Neue Auflage erzeugen" aria-label="Neue Auflage erzeugen"><i class="ti ti-books" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="Ausgabeoptionen anzeigen" data-a="project.output.open" title="Ausgabeoptionen (Satz, Umschlag, Druck)" aria-label="Ausgabeoptionen"><i class="ti ti-printer" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="KI-Dienste anzeigen" data-a="project.providers.open" title="KI-Dienste" aria-label="KI-Dienste"><i class="ti ti-robot" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Projekteinstellungen anzeigen" data-a="project.settings.open" title="Projekteinstellungen" aria-label="Projekteinstellungen"><i class="ti ti-settings" aria-hidden="true"></i></button>
         </div>
@@ -123,12 +136,28 @@
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Beschreibung</div>
       <p style="margin:0;font-size:14px;line-height:1.7;color:var(--text-secondary)">{{PROJECT_DESCRIPTION}}</p>
     </div>
+    <div data-gw-if="MATTER_FRONT" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Vorspann</div>
+      <div style="display:flex;flex-direction:column;gap:var(--gap-xs)">
+        {{#MATTER_FRONT}}
+        <button type="button" class="gw-ch gw-mt" data-id="{{MATTER_ID}}" data-title="{{MATTER_TITLE}}"><i class="ti ti-bookmark" style="font-size:15px;color:var(--text-muted);min-width:20px" aria-hidden="true"></i><span style="flex:1;font-size:14px">{{MATTER_TITLE}}</span><span style="font-size:12px;color:var(--text-muted)">{{MATTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
+        {{/MATTER_FRONT}}
+      </div>
+    </div>
     <div data-gw-if="CHAPTERS" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Kapitel</div>
       <div style="display:flex;flex-direction:column;gap:var(--gap-xs)">
         {{#CHAPTERS}}
         <div style="display:flex;gap:var(--gap-xs);min-width:0"><button type="button" class="gw-ch" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" data-title="{{CHAPTER_TITLE}}"><span style="font-size:13px;color:var(--text-muted);min-width:20px">{{CHAPTER_NUMBER}}</span><span style="flex:1;font-size:14px;font-weight:500">{{CHAPTER_TITLE}}</span><span class="gw-cost" title="{{CHAPTER_COST_HINT}}">{{CHAPTER_COST}}</span><span style="font-size:12px;color:var(--text-muted)">{{CHAPTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button><button type="button" class="gw-ed" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" title="Kapitel {{CHAPTER_NUMBER}} bearbeiten" aria-label="Kapitel {{CHAPTER_NUMBER}} bearbeiten"><i class="ti ti-edit" aria-hidden="true"></i></button></div>
         {{/CHAPTERS}}
+      </div>
+    </div>
+    <div data-gw-if="MATTER_BACK" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Nachspann</div>
+      <div style="display:flex;flex-direction:column;gap:var(--gap-xs)">
+        {{#MATTER_BACK}}
+        <button type="button" class="gw-ch gw-mt" data-id="{{MATTER_ID}}" data-title="{{MATTER_TITLE}}"><i class="ti ti-bookmark" style="font-size:15px;color:var(--text-muted);min-width:20px" aria-hidden="true"></i><span style="flex:1;font-size:14px">{{MATTER_TITLE}}</span><span style="font-size:12px;color:var(--text-muted)">{{MATTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
+        {{/MATTER_BACK}}
       </div>
     </div>
   </div>
@@ -138,6 +167,7 @@
 function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 document.querySelectorAll('.gw-sq[data-p]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,b.dataset.args?JSON.parse(b.dataset.args):{});});});
 var lib=document.getElementById('gw-lib');if(lib)lib.addEventListener('click',function(){gwSend('Zum Bücherregal','view.library',{});});
-document.querySelectorAll('.gw-ch[data-id]').forEach(function(r){r.addEventListener('click',function(){gwSend('Kapitel '+r.dataset.number+' „'+r.dataset.title+'“ öffnen','view.chapter',{chapter_id:r.dataset.id});});});
+document.querySelectorAll('.gw-ch[data-id]:not(.gw-mt)').forEach(function(r){r.addEventListener('click',function(){gwSend('Kapitel '+r.dataset.number+' „'+r.dataset.title+'“ öffnen','view.chapter',{chapter_id:r.dataset.id});});});
+document.querySelectorAll('.gw-mt[data-id]').forEach(function(r){r.addEventListener('click',function(){gwSend(r.dataset.title+' öffnen','view.matter',{matter_id:r.dataset.id});});});
 document.querySelectorAll('.gw-ed[data-id]').forEach(function(b){b.addEventListener('click',function(){gwSend('Kapitel '+b.dataset.number+' bearbeiten','chapter.edit.open',{chapter_id:b.dataset.id});});});
 </script>

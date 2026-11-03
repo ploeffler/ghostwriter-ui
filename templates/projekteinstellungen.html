@@ -16,12 +16,13 @@
     Inhaltsverzeichnis mit Tiefe
   - Änderungen: gespeicherte Änderungen sofort übernehmen ja/nein (changes.auto_merge)
   - Updates: automatisch einspielen ja/nein, installierte Version (docs/UPDATES.md)
+  - Weitere Formulare: „Ausgabeoptionen“ (Satz, Umschlag, Druck) und „KI-Angabe im Buch“
   - Abbrechen und Speichern
 
   Platzhalter (Text wird von gw.js HTML-maskiert):
   - {{FACT_CHECK_DEFAULT}}  workflow.fact_checking_default: disabled | optional | requested
   - {{PAGE_SIZE}}           typesetting.page_size: a5 | 12x19 | 13.5x21.5 | a4
-  - {{FONT}}                typesetting.font: serif | sans
+  - {{FONT}}                typesetting.font: serif | sans | pagella | termes | bonum | schola | heros | adventor
   - {{FONT_SIZE}}           typesetting.font_size: 10 | 10.5 | 11 | 11.5 | 12
   - {{TITLE_PAGE}}, {{IMPRINT}}, {{TOC}}  typesetting.title_page, .imprint, .toc als true/false
   - {{TOC_DEPTH}}           typesetting.toc_depth: 1 (Kapitel) | 2 (Kapitel und Abschnitte)
@@ -29,6 +30,7 @@
   - {{CHANGES_AUTO_MERGE}}  changes.auto_merge als true/false (fehlt = false)
   - {{GW_VERSION_TEXT}}     installierte Programmversion, z. B. „GhostWriter 0.3.0 · aktualisiert am 01.11.2026“
   - {{GW_UPDATE_HINT}}      Hinweis, z. B. Workflow-Dateien ohne Token nicht aktualisiert; leer = entfällt
+  - {{AI_DISCLOSURE_TEXT}}  KI-Angabe im Buch, kurz, z. B. „kurz, im Impressum“ oder „keine“ (GhostWriter #78)
   Fehlt typesetting in ghostwriter.yml, gelten die Vorgaben aus docs/DATA-MODEL.md.
 
   Wiederholung pro fester Regel zwischen {{#FIXED}} und {{/FIXED}}:
@@ -42,7 +44,8 @@
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe BEFUELLUNG.md in GhostWriter.
   Aktionen: project.settings.update {fact_checking_default, typesetting: {page_size, font,
-            font_size, title_page, imprint, toc, toc_depth}, updates: {auto}, changes: {auto_merge}}, form.cancel
+            font_size, title_page, imprint, toc, toc_depth}, updates: {auto}, changes: {auto_merge}}, form.cancel,
+            project.output.open, project.ai_disclosure.open
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -115,6 +118,12 @@
           <select id="gw-font">
             <option value="serif">Serifenschrift</option>
             <option value="sans">Serifenlose Schrift</option>
+            <option value="pagella">Pagella</option>
+            <option value="termes">Termes</option>
+            <option value="bonum">Bonum</option>
+            <option value="schola">Schola</option>
+            <option value="heros">Heros (serifenlos)</option>
+            <option value="adventor">Adventor (serifenlos)</option>
           </select>
         </div>
         <div>
@@ -146,6 +155,11 @@
           </select>
         </div>
       </div>
+    </div>
+
+    <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md);display:flex;gap:var(--gap-sm);flex-wrap:wrap">
+      <button type="button" class="gw-btn gw-open" data-a="project.output.open" data-p="Ausgabeoptionen anzeigen" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)"><i class="ti ti-printer" aria-hidden="true"></i> Weitere Ausgabeoptionen</button>
+      <button type="button" class="gw-btn gw-open" data-a="project.ai_disclosure.open" data-p="KI-Angabe im Buch anzeigen" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)"><i class="ti ti-robot" aria-hidden="true"></i> KI-Angabe im Buch: {{AI_DISCLOSURE_TEXT}}</button>
     </div>
 
     <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
@@ -187,6 +201,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     gwSend('Projekteinstellungen speichern','project.settings.update',d);
   });
   $('gw-cancel').addEventListener('click',function(){lock();gwSend('Projekteinstellungen abgebrochen','form.cancel',{form:'project.settings.update'});});
+  f.querySelectorAll('.gw-open').forEach(function(b){b.addEventListener('click',function(){lock();gwSend(b.dataset.p,b.dataset.a,{});});});
   refresh();
 })();
 </script>

@@ -16,12 +16,12 @@
     gesperrt und nennt den Grund
 
   Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert):
-  - {{APPROVAL_KIND}}      writing | section | chapter
+  - {{APPROVAL_KIND}}      writing | section | chapter | matter (Teil von Vor- oder Nachspann, GhostWriter #57)
   - {{APPROVAL_REVOKE}}    „true“ beim Zurücknehmen, sonst leer
   - {{APPROVAL_TITLE}}     z. B. „Abschnitt freigeben“, „Schreibfreigabe zurücknehmen“
   - {{APPROVAL_BUTTON}}    Beschriftung des Bestätigen-Knopfs, z. B. „Freigeben“
   - {{APPROVAL_EFFECT}}    Satz, was passiert, z. B. „Status wird ‚freigegeben‘ …“
-  - {{TARGET_ID}}          section_id bzw. chapter_id
+  - {{TARGET_ID}}          section_id bzw. chapter_id; bei Vor- und Nachspann die mat-…-ID (wird als section_id gesendet)
   - {{TARGET_LABEL}}       z. B. „Abschnitt 8.2 „Warum ausgerechnet …““
   - {{HEAD_SHA}}           gelesener Stand; gw.js schickt ihn als expected_head_sha
   - {{HEAD_SHORT}}         derselbe Commit, 7 Zeichen
