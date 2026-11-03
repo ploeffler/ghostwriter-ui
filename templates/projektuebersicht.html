@@ -66,6 +66,7 @@
   siehe docs/UPDATES.md); fehlt UPDATE_BEHIND, entfällt der Hinweis:
   - {{UPDATE_BEHIND}}      Anzahl Commits, die der Buch-Branch hinter dem Hauptrepository liegt
   - {{LIBRARY_COUNT}}      Zahl der Bücher in der Bibliothek; ab 2 erscheint oben „Bücherregal“ (view.library), sonst leer
+  - {{CHARACTER_COUNT}}    Zahl der Figuren (GhostWriter #53); dann erscheint neben dem Autor „Figuren (n)“ (view.characters), sonst leer
   - {{UPDATE_TEXT}}        z. B. „3 Commits hinter ploeffler/GhostWriter:main · Version 0.3.1 verfügbar (installiert 0.3.0)“
 
   Kosten (siehe docs/DATA-MODEL.md, Kostenmodell):
@@ -77,7 +78,7 @@
     im Tooltip ", enthält geschätzte Kosten" ergänzt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.chapter, chapter.edit.open, changes.merge.open, update.apply, project.providers.open, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open, view.library, view.matter, project.output.open
+  Aktionen: view.chapter, chapter.edit.open, changes.merge.open, update.apply, project.providers.open, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open, view.library, view.matter, project.output.open, view.characters
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -118,6 +119,7 @@
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--gap-md);flex-wrap:wrap;margin-top:6px">
         <div style="font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:6px"><i class="ti ti-user" aria-hidden="true"></i>{{PROJECT_AUTHOR}}</div>
+        <button type="button" id="gw-chars" data-gw-if="CHARACTER_COUNT" style="border:none;background:none;padding:0;font:inherit;font-size:14px;color:var(--text-secondary);cursor:pointer;display:inline-flex;align-items:center;gap:6px"><i class="ti ti-masks-theater" aria-hidden="true"></i>Figuren ({{CHARACTER_COUNT}}) ›</button>
         <div style="font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;margin-left:auto" title="{{PROJECT_COST_HINT}}"><i class="ti ti-coins" aria-hidden="true"></i><span style="font-variant-numeric:tabular-nums">{{PROJECT_COST}}</span></div>
       </div>
     </div>
@@ -166,6 +168,7 @@
 <script>
 function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 document.querySelectorAll('.gw-sq[data-p]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,b.dataset.args?JSON.parse(b.dataset.args):{});});});
+var chars=document.getElementById('gw-chars');if(chars)chars.addEventListener('click',function(){gwSend('Figuren anzeigen','view.characters',{});});
 var lib=document.getElementById('gw-lib');if(lib)lib.addEventListener('click',function(){gwSend('Zum Bücherregal','view.library',{});});
 document.querySelectorAll('.gw-ch[data-id]:not(.gw-mt)').forEach(function(r){r.addEventListener('click',function(){gwSend('Kapitel '+r.dataset.number+' „'+r.dataset.title+'“ öffnen','view.chapter',{chapter_id:r.dataset.id});});});
 document.querySelectorAll('.gw-mt[data-id]').forEach(function(r){r.addEventListener('click',function(){gwSend(r.dataset.title+' öffnen','view.matter',{matter_id:r.dataset.id});});});
