@@ -21,6 +21,8 @@
   - {{SCOPE_TEXT}}          z. B. „Kapitel 2“, „ganzes Buch“, „alle Bände der Serie“
   - {{SUGGEST_COUNT_TEXT}}  z. B. „4 Vorschläge“
   - {{SERIES_ID}}, {{SERIES_TITLE}}  Serie des Buchs bzw. die Serie; leer = keine
+  - {{RUN_ID}}, {{RUN_TEXT}}  Hintergrundlauf (GhostWriter #123), z. B. „Hintergrundlauf 002 vom 03.11.2026“; leer = im Chat
+  - {{CONFLICTS_TEXT}}      Widersprüche zwischen Kapiteln, z. B. „Opi, Alter: 78 / 80“; leer = keine
   - {{SERIES_LEVEL}}        nicht leer = Vorschlag auf Ebene der Serie (alle werden Figuren der Serie)
   Wiederholung je Vorschlag zwischen {{#SUGGESTIONS}} und {{/SUGGESTIONS}}:
   - {{S_IDX}}               Nummer des Vorschlags (0, 1, …) in der Liste des Assistenten
@@ -64,11 +66,12 @@
 .gw-btn:disabled{opacity:0.45;cursor:default}
 </style>
 <div style="padding:1rem 0">
-  <div class="gw-fv" id="gw-fv" data-scope="{{SCOPE}}" data-series="{{SERIES_ID}}" data-level="{{SERIES_LEVEL}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+  <div class="gw-fv" id="gw-fv" data-scope="{{SCOPE}}" data-series="{{SERIES_ID}}" data-level="{{SERIES_LEVEL}}" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div>
-      <div style="font-size:12px;color:var(--text-muted)">{{SCOPE_TEXT}} · {{SUGGEST_COUNT_TEXT}}</div>
+      <div style="font-size:12px;color:var(--text-muted)">{{SCOPE_TEXT}} · {{SUGGEST_COUNT_TEXT}}<span data-gw-if="RUN_TEXT"> · {{RUN_TEXT}}</span></div>
       <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-user-search" style="color:var(--text-secondary)" aria-hidden="true"></i>Figuren aus dem Text</div>
     </div>
+    <div data-gw-if="CONFLICTS_TEXT" style="font-size:13px;padding:8px 10px;border:0.5px solid var(--text-danger);border-radius:var(--radius);color:var(--text-danger)">Widersprüche im Text (nicht entschieden): {{CONFLICTS_TEXT}}</div>
     <div id="gw-list" style="display:flex;flex-direction:column;gap:6px">
       {{#SUGGESTIONS}}
       <div class="card" data-idx="{{S_IDX}}" data-role="{{S_ROLE}}" data-state="{{S_STATE}}">
@@ -133,8 +136,8 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   function refresh(){var ch=choices();$('gw-apply').disabled=!ch.length||ch.some(function(x){return !x.name;});$('gw-apply').textContent=ch.length?ch.length+' übernehmen':'Übernehmen';}
   box.addEventListener('input',refresh);
   function lock(){box.querySelectorAll('input,select,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
-  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend(ch.length+' Figuren aus dem Text übernehmen','character.suggest.apply',{scope:ds.scope,choices:ch});});
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Vorschläge verworfen','form.cancel',{form:'character.suggest.apply'});});
+  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();var p={scope:ds.scope,choices:ch};if(ds.run)p.run=ds.run;gwSend(ch.length+' Figuren aus dem Text übernehmen','character.suggest.apply',p);});
+  $('gw-cancel').addEventListener('click',function(){lock();var c={form:'character.suggest.apply'};if(ds.run)c.run=ds.run;gwSend('Vorschläge verworfen','form.cancel',c);});
   refresh();
 })();
 </script>
