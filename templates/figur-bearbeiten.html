@@ -23,6 +23,10 @@
   - {{CHARACTER_TRAITS}}          Eigenschaften, kommagetrennt
   - {{CHARACTER_DESCRIPTION}}, {{CHARACTER_NOTES}}  „## Beschreibung“ und „## Notizen“
   - {{CHARACTER_USED}}            z. B. „1.1, 2.3“ oder „noch nirgends“
+  - {{CHARACTER_SOURCE}}          Band einer Serie (GhostWriter #116): series (Figur der Serie) | copy | copy_diff
+                                   (Kopie gleich bzw. abweichend) | own (nur in diesem Buch); ohne Serie leer
+  - {{CHARACTER_SOURCE_TEXT}}     z. B. „aus der Serie“
+  - {{SERIES_ID}}, {{SERIES_TITLE}}  Serie des Buchs; leer ohne Serie
 
   Wiederholung je Beziehung zwischen {{#RELATIONS}} und {{/RELATIONS}}:
   - {{R_TO}}, {{R_NAME}}, {{R_KIND}}  ID und Name der anderen Figur, Art der Beziehung
@@ -33,9 +37,15 @@
   - Speichern sendet character.update mit allen Feldern (traits als Liste,
     relations als Liste {to, kind}); leere Felder entfernen den Eintrag.
     Danach ist das Formular gesperrt.
+  - Figur der Serie (CHARACTER_SOURCE series): Speichern sendet
+    character.series.update (mit series_id; gilt für alle Bände ohne eigene
+    Kopie); „Kopie nur für dieses Buch“ sendet character.detach.
+  - Kopie (copy, copy_diff): „An Serie angleichen“ (character.align),
+    „In die Serie übernehmen“ (character.adopt); eigene Figur eines Bandes (own):
+    „In die Serie übernehmen“ (character.adopt).
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: character.update, view.characters, view.project, form.cancel
+  Aktionen: character.update, character.series.update, character.detach, character.align, character.adopt, view.characters, view.project, form.cancel
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
@@ -57,7 +67,7 @@
 .gw-btn:disabled{opacity:0.4;cursor:default}
 </style>
 <div style="padding:1rem 0">
-  <div id="gw-figur" data-id="{{CHARACTER_ID}}" data-role="{{CHARACTER_ROLE}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+  <div id="gw-figur" data-id="{{CHARACTER_ID}}" data-role="{{CHARACTER_ROLE}}" data-source="{{CHARACTER_SOURCE}}" data-series="{{SERIES_ID}}" data-series-title="{{SERIES_TITLE}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div style="display:flex;align-items:flex-start;gap:var(--gap-md)">
       <div style="flex:1">
         <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{PROJECT_TITLE_SHORT}}</span>
@@ -66,6 +76,12 @@
       </div>
       <button type="button" class="gw-sq" data-a="view.characters" data-p="Alle Figuren" title="Alle Figuren" aria-label="Alle Figuren"><i class="ti ti-masks-theater" aria-hidden="true"></i></button>
       <button type="button" class="gw-sq" data-a="view.project" data-p="Zur Projektübersicht" title="Zur Projektübersicht" aria-label="Zur Projektübersicht"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
+    </div>
+    <div id="gw-ser" data-gw-if="CHARACTER_SOURCE" style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;padding:8px 10px;border:0.5px solid var(--border-accent);border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent);font-size:13px">
+      <i class="ti ti-stack-2" aria-hidden="true"></i><span style="flex:1;min-width:180px"><span id="gw-ser-text">{{CHARACTER_SOURCE_TEXT}}</span> · Serie „{{SERIES_TITLE}}“</span>
+      <button type="button" class="gw-btn gw-sact" data-act="character.detach" data-t="Kopie nur für dieses Buch anlegen" style="padding:5px 10px;font-size:13px;border:0.5px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary)">Kopie nur für dieses Buch</button>
+      <button type="button" class="gw-btn gw-sact" data-act="character.align" data-t="An die Serie angleichen" style="padding:5px 10px;font-size:13px;border:0.5px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary)">An Serie angleichen</button>
+      <button type="button" class="gw-btn gw-sact" data-act="character.adopt" data-t="In die Serie übernehmen" style="padding:5px 10px;font-size:13px;border:0.5px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary)">In die Serie übernehmen</button>
     </div>
     <div class="gw-grid">
       <div><label class="gw-lbl" for="f-name">Name</label><input class="gw-in" id="f-name" value="{{CHARACTER_NAME}}"></div>
@@ -126,8 +142,16 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     var data={character_id:d.id,name:$('f-name').value.trim(),role:$('f-role').value,short:$('f-short').value.trim(),age:$('f-age').value.trim(),
       appearance:$('f-appearance').value.trim(),traits:$('f-traits').value.split(',').map(function(x){return x.trim();}).filter(Boolean),
       voice:$('f-voice').value.trim(),visual:$('f-visual').value.trim(),relations:rel,description:$('f-desc').value.trim(),notes:$('f-notes').value.trim()};
+    if(d.source==='series'){data.series_id=d.series;lock();gwSend('Figur „'+data.name+'“ der Serie speichern (gilt für alle Bände)','character.series.update',data);return;}
     lock();gwSend('Figur „'+data.name+'“ speichern','character.update',data);
   });
+  // Serie (#116): passende Knöpfe je Herkunft
+  var allow={series:['character.detach'],copy:['character.align','character.adopt'],copy_diff:['character.align','character.adopt'],own:['character.adopt']}[d.source]||[];
+  box.querySelectorAll('.gw-sact').forEach(function(b){
+    if(allow.indexOf(b.dataset.act)<0){b.remove();return;}
+    b.addEventListener('click',function(){lock();gwSend(b.dataset.t+': „'+$('f-name').value.trim()+'“',b.dataset.act,{character_id:d.id});});
+  });
+  if(d.source==='series')$('gw-save').textContent='Für alle Bände speichern';
   $('gw-cancel').addEventListener('click',function(){lock();gwSend('Änderungen an der Figur verworfen','form.cancel',{form:'character.update',character_id:d.id});});
 })();
 </script>

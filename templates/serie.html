@@ -27,6 +27,10 @@
   Wiederholung zwischen {{#VOLUMES}} und {{/VOLUMES}}, in Bandreihenfolge:
   - {{V_NUMBER}}, {{V_BRANCH}}, {{V_TITLE}}, {{V_TITLE_SHORT}}
   - {{V_STATE}} (ready | setup), {{V_STATE_TEXT}}, {{V_PROGRESS}} (0–100), {{V_PROGRESS_TEXT}}, {{V_EDITION_TEXT}}
+  Gemeinsame Inhalte (Stufe 2) zwischen {{#SERIES_CHARACTERS}} und {{/SERIES_CHARACTERS}}:
+  - {{SC_ID}}, {{SC_NAME}}, {{SC_ROLE}}, {{SC_SHORT}}
+  und zwischen {{#SERIES_TERMS}} und {{/SERIES_TERMS}}:
+  - {{ST_TERM}}, {{ST_TEXT}}
   Wiederholung zwischen {{#CANDIDATES}} und {{/CANDIDATES}} (Bücher ohne Serie); fehlt der Block, entfällt „Band hinzufügen“:
   - {{C_BRANCH}}, {{C_TITLE}}
 
@@ -87,6 +91,28 @@
       <button type="button" class="gw-btn pri" id="gw-order-save"><i class="ti ti-check" aria-hidden="true"></i>Reihenfolge speichern</button>
     </div>
 
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--gap-md);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">Figuren der Serie</div>
+        <div data-gw-if="SERIES_CHARACTERS" style="display:flex;flex-direction:column;gap:4px;font-size:13px">
+          {{#SERIES_CHARACTERS}}
+          <div><b style="font-weight:500">{{SC_NAME}}</b> <span style="color:var(--text-muted);font-size:12px">· {{SC_ROLE}}</span><span style="display:block;color:var(--text-secondary);font-size:12px">{{SC_SHORT}}</span></div>
+          {{/SERIES_CHARACTERS}}
+        </div>
+        <div class="gw-none-c" style="font-size:12px;color:var(--text-muted)">noch keine</div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">Begriffe der Serie</div>
+        <div data-gw-if="SERIES_TERMS" style="display:flex;flex-direction:column;gap:4px;font-size:13px">
+          {{#SERIES_TERMS}}
+          <div><b style="font-weight:500">{{ST_TERM}}</b><span style="display:block;color:var(--text-secondary);font-size:12px">{{ST_TEXT}}</span></div>
+          {{/SERIES_TERMS}}
+        </div>
+        <div class="gw-none-c" style="font-size:12px;color:var(--text-muted)">noch keine</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-top:-6px">Gelten in allen Bänden. In einem Band lassen sie sich als eigene Kopie führen, Figuren und Begriffe eines Bandes in die Serie übernehmen.</div>
+
     <div data-gw-if="CANDIDATES" style="display:flex;gap:var(--gap-sm);align-items:center;flex-wrap:wrap;border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <select id="gw-cand" aria-label="Buch ohne Serie">
         {{#CANDIDATES}}
@@ -110,6 +136,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   function rows(){return Array.prototype.slice.call(list.querySelectorAll('.vol'));}
   var start=rows().map(function(r){return r.dataset.branch;}).join('|');
   if(rows().length)$('gw-none').remove();
+  box.querySelectorAll('.gw-none-c').forEach(function(n){if(n.previousElementSibling&&n.previousElementSibling.hasAttribute('data-gw-if'))n.remove();});
   function refresh(){
     var rs=rows();
     rs.forEach(function(r,i){r.querySelector('.num').textContent=i+1;r.querySelector('.up').disabled=i===0;r.querySelector('.down').disabled=i===rs.length-1;});
