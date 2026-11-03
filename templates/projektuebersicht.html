@@ -81,7 +81,7 @@
     im Tooltip ", enthält geschätzte Kosten" ergänzt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.chapter, chapter.edit.open, changes.merge.open, update.apply, project.providers.open, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open, view.library, view.matter, project.output.open, view.characters
+  Aktionen: view.chapter, chapter.edit.open, changes.merge.open, update.apply, project.providers.open, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open, view.library, view.matter, project.output.open, view.characters, character.suggest
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -117,6 +117,7 @@
           <button type="button" class="gw-sq" data-p="Vor- und Nachspann anzeigen" data-a="view.matter" title="Vor- und Nachspann (Widmung, Vorwort, Glossar …)" aria-label="Vor- und Nachspann"><i class="ti ti-bookmarks" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Neue Auflage erzeugen" data-a="edition.create.open" title="Neue Auflage erzeugen" aria-label="Neue Auflage erzeugen"><i class="ti ti-books" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Ausgabeoptionen anzeigen" data-a="project.output.open" title="Ausgabeoptionen (Satz, Umschlag, Druck)" aria-label="Ausgabeoptionen"><i class="ti ti-printer" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="Figuren aus dem Text vorschlagen (ganzes Buch)" data-a="character.suggest" data-args='{"scope":"book"}' title="Figuren aus dem Text vorschlagen (ganzes Buch)" aria-label="Figuren aus dem Text vorschlagen (ganzes Buch)"><i class="ti ti-user-search" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="KI-Dienste anzeigen" data-a="project.providers.open" title="KI-Dienste" aria-label="KI-Dienste"><i class="ti ti-robot" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Projekteinstellungen anzeigen" data-a="project.settings.open" title="Projekteinstellungen" aria-label="Projekteinstellungen"><i class="ti ti-settings" aria-hidden="true"></i></button>
         </div>

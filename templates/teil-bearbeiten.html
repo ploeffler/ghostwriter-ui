@@ -63,7 +63,7 @@
     Teils in section_id; „Begriffe vorschlagen“ sendet matter.glossary.suggest.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.matter, view.project, matter.update, matter.glossary.update, matter.glossary.suggest, matter.glossary.from_series, matter.glossary.to_series, approval.open, run.start, form.cancel
+  Aktionen: view.matter, view.project, character.suggest, matter.update, matter.glossary.update, matter.glossary.suggest, matter.glossary.from_series, matter.glossary.to_series, approval.open, run.start, form.cancel
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
@@ -105,6 +105,7 @@
           <div style="font-size:20px;font-weight:500;line-height:1.3">{{MATTER_TITLE}}</div>
         </div>
         <div style="display:flex;gap:var(--gap-sm);margin-left:auto">
+          <button type="button" class="gw-sq" id="gw-figsug" data-scope="{{MATTER_ID}}" title="Figuren aus dem Text vorschlagen" aria-label="Figuren aus dem Text vorschlagen"><i class="ti ti-user-search" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Vor- und Nachspann anzeigen" data-a="view.matter" title="Vor- und Nachspann" aria-label="Vor- und Nachspann"><i class="ti ti-bookmarks" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Zur Projektübersicht" data-a="view.project" title="Zur Projektübersicht" aria-label="Zur Projektübersicht"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
         </div>
@@ -209,6 +210,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var glossary=d.glossary==='1';
   if(glossary)$('gw-text').remove();
   box.querySelectorAll('.gw-sq[data-p]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,{});});});
+  var fs=document.getElementById('gw-figsug');if(fs)fs.addEventListener('click',function(){gwSend('Figuren aus dem Text vorschlagen ('+d.title+')','character.suggest',{scope:fs.dataset.scope});});
 
   var apr={writing:{on:d.aw==='true',yes:'Schreiben freigegeben',no:'Schreiben nicht freigegeben',grant:'Schreibfreigabe für ',revoke:'Schreibfreigabe zurücknehmen für '},
     matter:{on:d.as==='true',yes:d.title+' freigegeben',no:d.title+' nicht freigegeben',grant:'Freigabe für ',revoke:'Freigabe zurücknehmen für '}};

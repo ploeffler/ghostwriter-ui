@@ -38,7 +38,7 @@
   - {{C_BRANCH}}, {{C_TITLE}}
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: series.omnibus.edit.open, library.book.open, series.volume.add, series.volume.remove, series.reorder, series.edit.open, library.book.create.open, view.library
+  Aktionen: character.suggest, series.omnibus.edit.open, library.book.open, series.volume.add, series.volume.remove, series.reorder, series.edit.open, library.book.create.open, view.library
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -72,6 +72,7 @@
         <div style="font-size:20px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-stack-2" style="color:var(--text-secondary)" aria-hidden="true"></i>{{SERIES_TITLE}}</div>
         <div data-gw-if="SERIES_SUBTITLE" style="font-size:14px;color:var(--text-secondary);margin-top:2px">{{SERIES_SUBTITLE}}</div>
       </div>
+      <button type="button" class="gw-sq" id="gw-figsug" title="Figuren aus den Texten aller Bände vorschlagen" aria-label="Figuren aus dem Text vorschlagen"><i class="ti ti-user-search" aria-hidden="true"></i></button>
       <button type="button" class="gw-sq" id="gw-edit" title="Serie bearbeiten" aria-label="Serie bearbeiten"><i class="ti ti-edit" aria-hidden="true"></i></button>
       <button type="button" class="gw-sq" id="gw-back" title="Zum Bücherregal" aria-label="Zum Bücherregal"><i class="ti ti-books" aria-hidden="true"></i></button>
     </div>
@@ -165,6 +166,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   $('gw-order-save').addEventListener('click',function(){var o=rows().map(function(r){return r.dataset.branch;});lock();gwSend('Bandreihenfolge der Serie „'+title+'“ speichern','series.reorder',{series_id:sid,order:o});});
   var add=$('gw-add');if(add)add.addEventListener('click',function(){var c=$('gw-cand'),t=c.options[c.selectedIndex].text;lock();gwSend('„'+t+'“ als nächsten Band zur Serie „'+title+'“ hinzufügen','series.volume.add',{series_id:sid,branch:c.value});});
   $('gw-newbook').addEventListener('click',function(){lock();gwSend('Neues Buch in der Serie „'+title+'“','library.book.create.open',{series_id:sid});});
+  $('gw-figsug').addEventListener('click',function(){lock();gwSend('Figuren aus den Texten der Serie „'+title+'“ vorschlagen','character.suggest',{scope:sid});});
   $('gw-edit').addEventListener('click',function(){lock();gwSend('Serie „'+title+'“ bearbeiten','series.edit.open',{series_id:sid});});
   $('gw-back').addEventListener('click',function(){gwSend('Zum Bücherregal','view.library',{});});
   var omHas=!!box.querySelector('[data-gw-if="OMNIBUS_STATE"]');

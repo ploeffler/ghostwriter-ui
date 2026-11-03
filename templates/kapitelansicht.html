@@ -55,7 +55,7 @@
   Kosten, wird "≈ " vorangestellt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.project, chapter.edit.open, section.create.open, section.reorder.open, approval.open, chapter.research.open, view.section
+  Aktionen: view.project, character.suggest, chapter.edit.open, section.create.open, section.reorder.open, approval.open, chapter.research.open, view.section
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -96,6 +96,7 @@
           <button type="button" class="gw-sq" data-p="Kapitel {{CHAPTER_NUMBER}} bearbeiten" data-a="chapter.edit.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Kapitel bearbeiten" aria-label="Kapitel bearbeiten"><i class="ti ti-edit" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Neuen Abschnitt in Kapitel {{CHAPTER_NUMBER}} anlegen" data-a="section.create.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Neuer Abschnitt" aria-label="Neuer Abschnitt"><i class="ti ti-plus" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Abschnittsreihenfolge in Kapitel {{CHAPTER_NUMBER}} ändern" data-a="section.reorder.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Abschnittsreihenfolge ändern" aria-label="Abschnittsreihenfolge ändern"><i class="ti ti-arrows-sort" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="Figuren aus dem Text von Kapitel {{CHAPTER_NUMBER}} vorschlagen" data-a="character.suggest" data-args='{"scope":"{{CHAPTER_NUMBER}}"}' title="Figuren aus dem Text von Kapitel {{CHAPTER_NUMBER}} vorschlagen" aria-label="Figuren aus dem Text von Kapitel {{CHAPTER_NUMBER}} vorschlagen"><i class="ti ti-user-search" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-gw-if="CHAPTER_APPROVABLE" data-p="Freigabe für Kapitel {{CHAPTER_NUMBER}} „{{CHAPTER_TITLE}}“ bestätigen" data-a="approval.open" data-args='{"kind":"chapter","chapter_id":"{{CHAPTER_ID}}"}' title="Kapitel freigeben" aria-label="Kapitel freigeben"><i class="ti ti-circle-check" aria-hidden="true"></i></button>
         </div>
       </div>
