@@ -67,6 +67,8 @@
   - {{UPDATE_BEHIND}}      Anzahl Commits, die der Buch-Branch hinter dem Hauptrepository liegt
   - {{LIBRARY_COUNT}}      Zahl der Bücher in der Bibliothek; ab 2 erscheint oben „Bücherregal“ (view.library), sonst leer
   - {{CHARACTER_COUNT}}    Zahl der Figuren (GhostWriter #53); dann erscheint neben dem Autor „Figuren (n)“ (view.characters), sonst leer
+  - {{LIMIT_STATE}}        warn | pause (GhostWriter #62); fehlt = kein Hinweis
+  - {{LIMIT_TEXT}}         z. B. „Automatik pausiert: KI-Budget 8 % übrig (9,20 von 10,00 €)“
   - {{UPDATE_TEXT}}        z. B. „3 Commits hinter ploeffler/GhostWriter:main · Version 0.3.1 verfügbar (installiert 0.3.0)“
 
   Kosten (siehe docs/DATA-MODEL.md, Kostenmodell):
@@ -127,6 +129,11 @@
       <i class="ti ti-git-pull-request" style="font-size:18px" aria-hidden="true"></i>
       <span style="flex:1;min-width:180px;font-size:14px">{{PENDING_TEXT}} noch nicht übernommen <span style="font-size:12px">· Pull Request #{{PENDING_PR}}</span></span>
       <button type="button" class="gw-sq" id="gw-merge" data-p="Änderungen übernehmen" data-a="changes.merge.open" style="width:auto;height:36px;padding:0 14px;font-size:14px;gap:6px;color:var(--text-primary)"><i class="ti ti-git-merge" style="font-size:16px" aria-hidden="true"></i>Änderungen übernehmen</button>
+    </div>
+    <div data-gw-if="LIMIT_STATE" id="gw-limit" data-state="{{LIMIT_STATE}}" style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:10px 12px;border:0.5px solid var(--border-warning);border-radius:var(--radius);background:var(--bg-warning);color:var(--text-warning)">
+      <i class="ti ti-gauge" style="font-size:18px" aria-hidden="true"></i>
+      <span style="flex:1;min-width:180px;font-size:14px">{{LIMIT_TEXT}}</span>
+      <button type="button" class="gw-sq" data-p="Projekteinstellungen öffnen" data-a="project.settings.open" style="width:auto;height:36px;padding:0 14px;font-size:14px;gap:6px;color:var(--text-primary)"><i class="ti ti-adjustments" style="font-size:16px" aria-hidden="true"></i>Limits</button>
     </div>
     <div data-gw-if="UPDATE_BEHIND" style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:10px 12px;border:0.5px solid var(--border-accent);border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent)">
       <i class="ti ti-refresh" style="font-size:18px" aria-hidden="true"></i>

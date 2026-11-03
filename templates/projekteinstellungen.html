@@ -16,6 +16,8 @@
     Inhaltsverzeichnis mit Tiefe
   - Änderungen: gespeicherte Änderungen sofort übernehmen ja/nein (changes.auto_merge)
   - Updates: automatisch einspielen ja/nein, installierte Version (docs/UPDATES.md)
+  - Limits (GhostWriter #62): KI-Budget und Actions-Minuten je Monat; unter 10 %
+    pausiert die Update-Automatik, unter 20 % gibt es eine Vorwarnung
   - Weitere Formulare: „Ausgabeoptionen“ (Satz, Umschlag, Druck) und „KI-Angabe im Buch“
   - Abbrechen und Speichern
 
@@ -30,6 +32,9 @@
   - {{CHANGES_AUTO_MERGE}}  changes.auto_merge als true/false (fehlt = false)
   - {{GW_VERSION_TEXT}}     installierte Programmversion, z. B. „GhostWriter 0.3.0 · aktualisiert am 01.11.2026“
   - {{GW_UPDATE_HINT}}      Hinweis, z. B. Workflow-Dateien ohne Token nicht aktualisiert; leer = entfällt
+  - {{LIMIT_BUDGET}}        limits.ai_budget_monthly (Zahl in Projektwährung); leer = keine Prüfung
+  - {{LIMIT_MINUTES}}       limits.actions_minutes_monthly (Minuten); leer = keine Prüfung
+  - {{LIMIT_SUMMARY}}       Stand, z. B. „KI-Budget 62 % übrig (3,80 von 10,00 €)“ oder „Keine Limits eingestellt.“
   - {{AI_DISCLOSURE_TEXT}}  KI-Angabe im Buch, kurz, z. B. „kurz, im Impressum“ oder „keine“ (GhostWriter #78)
   Fehlt typesetting in ghostwriter.yml, gelten die Vorgaben aus docs/DATA-MODEL.md.
 
@@ -70,7 +75,7 @@
 <div style="padding:1rem 0">
   <form class="gw-f" id="gw-einstellungen" novalidate
     data-fc="{{FACT_CHECK_DEFAULT}}" data-page="{{PAGE_SIZE}}" data-font="{{FONT}}" data-size="{{FONT_SIZE}}"
-    data-title="{{TITLE_PAGE}}" data-imprint="{{IMPRINT}}" data-toc="{{TOC}}" data-depth="{{TOC_DEPTH}}" data-upd="{{UPDATES_AUTO}}" data-merge="{{CHANGES_AUTO_MERGE}}"
+    data-title="{{TITLE_PAGE}}" data-imprint="{{IMPRINT}}" data-toc="{{TOC}}" data-depth="{{TOC_DEPTH}}" data-upd="{{UPDATES_AUTO}}" data-merge="{{CHANGES_AUTO_MERGE}}" data-budget="{{LIMIT_BUDGET}}" data-minutes="{{LIMIT_MINUTES}}"
     style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-lg)">
     <div style="display:flex;align-items:center;gap:var(--gap-sm)">
       <i class="ti ti-settings" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
@@ -175,6 +180,21 @@
       <div id="gw-upd-hint" style="font-size:12px;color:var(--text-warning);margin-top:4px">{{GW_UPDATE_HINT}}</div>
     </div>
 
+    <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <div class="gw-sec">Limits</div>
+      <div class="gw-grid">
+        <div>
+          <label for="gw-budget">KI-Budget je Monat <span class="hint">in €, leer = keins</span></label>
+          <input type="number" id="gw-budget" min="0" step="0.5" inputmode="decimal" placeholder="z. B. 10">
+        </div>
+        <div>
+          <label for="gw-minutes">Actions-Minuten je Monat <span class="hint">leer = nicht prüfen</span></label>
+          <input type="number" id="gw-minutes" min="0" step="100" inputmode="numeric" placeholder="z. B. 2000">
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:6px;line-height:1.5">{{LIMIT_SUMMARY}} Unter 10 % pausiert die tägliche Update-Automatik bis zum nächsten Monat; unter 20 % kommt eine Vorwarnung. Manuelle Schritte gehen weiter, nach Rückfrage.</div>
+    </div>
+
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
       <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)" disabled>Speichern</button>
@@ -189,11 +209,13 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   function set(id,v){if(v)$(id).value=v;}
   set('gw-fc',ds.fc);set('gw-page',ds.page);set('gw-font',ds.font);set('gw-size',ds.size);set('gw-depth',ds.depth);
   $('gw-title').checked=ds.title==='true';$('gw-imprint').checked=ds.imprint==='true';$('gw-toc').checked=ds.toc==='true';$('gw-upd').checked=ds.upd!=='false';$('gw-merge').checked=ds.merge==='true';
+  $('gw-budget').value=ds.budget||'';$('gw-minutes').value=ds.minutes||'';
+  function num(id){var v=$(id).value.trim();return v===''?null:+v;}
   if(!$('gw-upd-hint').textContent.trim())$('gw-upd-hint').remove();
-  function data(){return {fact_checking_default:$('gw-fc').value,typesetting:{page_size:$('gw-page').value,font:$('gw-font').value,font_size:+$('gw-size').value,title_page:$('gw-title').checked,imprint:$('gw-imprint').checked,toc:$('gw-toc').checked,toc_depth:+$('gw-depth').value},updates:{auto:$('gw-upd').checked},changes:{auto_merge:$('gw-merge').checked}};}
+  function data(){return {fact_checking_default:$('gw-fc').value,typesetting:{page_size:$('gw-page').value,font:$('gw-font').value,font_size:+$('gw-size').value,title_page:$('gw-title').checked,imprint:$('gw-imprint').checked,toc:$('gw-toc').checked,toc_depth:+$('gw-depth').value},updates:{auto:$('gw-upd').checked},changes:{auto_merge:$('gw-merge').checked},limits:{ai_budget_monthly:num('gw-budget'),actions_minutes_monthly:num('gw-minutes')}};}
   var start=JSON.stringify(data()),done=false;
   function refresh(){$('gw-depth').disabled=done||!$('gw-toc').checked;$('gw-save').disabled=done||JSON.stringify(data())===start;}
-  f.addEventListener('change',refresh);
+  f.addEventListener('change',refresh);f.addEventListener('input',refresh);
   function lock(){done=true;f.querySelectorAll('input,select,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
   $('gw-save').addEventListener('click',function(){
     var d=data();
