@@ -1,0 +1,91 @@
+<!--
+  Vorlage: Vor- und Nachspann (Liste, GhostWriter #57, #58)
+
+  Inline-Widget für den Chat. Wird über den Knopf „Vor- und Nachspann“ der
+  Projektübersicht geöffnet (Aktion view.matter ohne matter_id). Zeigt alle
+  Teile außerhalb der Kapitel in Buchreihenfolge: vorhandene mit Status,
+  fehlende mit dem Knopf „Anlegen“.
+
+  Aufbau:
+  - Kopf: Lesezeichen-Symbol, „Vor- und Nachspann“, Zurück zur Übersicht
+  - Vorspann (Widmung, Vorwort, Prolog), Nachspann (Epilog, Nachwort, Glossar,
+    Danksagung) als Zeilen; vorhandene öffnen den Teil, fehlende legen ihn an
+  - Hinweis, was in eine Auflage kommt
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{PROJECT_TITLE_SHORT}}  project.title_short
+
+  Wiederholung je möglichem Teil zwischen {{#PARTS}} und {{/PARTS}}, in Buchreihenfolge:
+  - {{PART_KIND}}       dedication | foreword | prologue | epilogue | afterword | glossary | acknowledgments
+  - {{PART_TITLE}}      Titel des vorhandenen Teils bzw. Vorgabetitel („Widmung“)
+  - {{PART_AREA}}       front | back
+  - {{PART_ID}}         ID des vorhandenen Teils (mat-…); leer = noch nicht angelegt
+  - {{PART_STATUS}}     Status (gw.js zeigt ihn deutsch); leer bei fehlendem Teil
+  - {{PART_HINT}}       kurze Beschreibung, z. B. „eigene Seite nach der Titelei“
+
+  Verhalten:
+  - Klick auf einen vorhandenen Teil sendet view.matter mit matter_id.
+  - „Anlegen“ sendet matter.create mit kind; danach ist die Liste gesperrt.
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: view.matter, matter.create, view.project
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Vor- und Nachspann: vorhandene Teile öffnen oder fehlende anlegen.</h2>
+<style>
+.gw-sq{width:40px;height:40px;flex:none;border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0}
+.gw-sq:hover{border-color:var(--border-strong);color:var(--text-primary)}
+.gw-pt{display:flex;align-items:center;gap:var(--gap-md);padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);text-align:left;font:inherit;width:100%}
+.gw-pt[data-id]:not([data-id=""]){cursor:pointer}
+.gw-pt[data-id]:not([data-id=""]):hover{border-color:var(--border-strong)}
+.gw-pt[data-id=""]{border-style:dashed;background:transparent}
+.gw-mini{padding:4px 10px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:transparent;color:var(--text-primary);font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+.gw-mini:hover:not(:disabled){background:var(--surface-1)}
+.gw-sec{font-size:12px;color:var(--text-muted);margin:4px 0 6px}
+</style>
+<div style="padding:1rem 0">
+  <div id="gw-matter" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="display:flex;align-items:flex-start;gap:var(--gap-md)">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:var(--gap-sm);margin-bottom:4px">
+          <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{PROJECT_TITLE_SHORT}}</span>
+        </div>
+        <div style="font-size:20px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-bookmarks" style="color:var(--text-secondary)" aria-hidden="true"></i>Vor- und Nachspann</div>
+      </div>
+      <button type="button" class="gw-sq" id="gw-back" title="Zur Projektübersicht" aria-label="Zur Projektübersicht"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:var(--gap-xs)" id="gw-list">
+      {{#PARTS}}
+      <div class="gw-pt" data-id="{{PART_ID}}" data-kind="{{PART_KIND}}" data-area="{{PART_AREA}}" data-title="{{PART_TITLE}}">
+        <i class="ti ti-bookmark" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i>
+        <span style="flex:1;min-width:0"><span style="font-size:14px;font-weight:500">{{PART_TITLE}}</span><span style="display:block;font-size:12px;color:var(--text-muted)">{{PART_HINT}}</span></span>
+        <span class="gw-st" style="font-size:12px;color:var(--text-muted)">{{PART_STATUS}}</span>
+      </div>
+      {{/PARTS}}
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5;border-top:0.5px solid var(--border);padding-top:var(--pad-md)">Alle Teile sind freiwillig. In eine Auflage kommen nur freigegebene Teile. Widmung und Danksagung schreibst du selbst; für Vorwort, Prolog, Epilog und Nachwort gibt es Recherche und Ghostwriting, fürs Glossar Vorschläge und Recherche je Begriff.</div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var box=document.getElementById('gw-matter'),list=document.getElementById('gw-list');
+  // Überschriften „Vorspann“ und „Nachspann“ vor die erste Zeile des Bereichs
+  var last='';
+  list.querySelectorAll('.gw-pt').forEach(function(r){
+    if(r.dataset.area!==last){var h=document.createElement('div');h.className='gw-sec';h.textContent=r.dataset.area==='front'?'Vorspann · vor Kapitel 1':'Nachspann · nach dem letzten Kapitel';list.insertBefore(h,r);last=r.dataset.area;}
+    if(!r.dataset.id){
+      var b=document.createElement('button');b.type='button';b.className='gw-mini';b.innerHTML='<i class="ti ti-plus" aria-hidden="true"></i> Anlegen';
+      r.querySelector('.gw-st').replaceWith(b);
+      b.addEventListener('click',function(){box.querySelectorAll('button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';gwSend(r.dataset.title+' anlegen','matter.create',{kind:r.dataset.kind});});
+    }else{
+      r.setAttribute('role','button');r.tabIndex=0;
+      r.addEventListener('click',function(){gwSend(r.dataset.title+' öffnen','view.matter',{matter_id:r.dataset.id});});
+    }
+  });
+  document.getElementById('gw-back').addEventListener('click',function(){gwSend('Zur Projektübersicht','view.project',{});});
+})();
+</script>

@@ -1,0 +1,251 @@
+<!--
+  Vorlage: Ausgabeoptionen (Formular, GhostWriter #68)
+
+  Inline-Widget für den Chat. Wird über den Drucker-Knopf der Projektübersicht,
+  den Knopf in den Projekteinstellungen oder den Befehl „Ausgabe“ geöffnet
+  (Aktion project.output.open). Alles, was bestimmt, wie Auflagen und
+  Probedrucke aussehen.
+
+  Aufbau (Reiter):
+  - Seite: Seitenformat, Ränder, Kapitelbeginn, Kolumnentitel, Seitenzahlen
+  - Schrift: Grundschrift, Schriftgröße, Überschriften, Initialen, Zeilenabstand,
+    Absätze, Silbentrennung
+  - Titelei und Formate: Titelseite, Impressum, Inhaltsverzeichnis mit Tiefe,
+    Formate einer Auflage; Angaben im Impressum (Verlag, ISBN, Rechtehinweis)
+  - Druck: Druckprofil, Papier, Rückenbreite, Beschnitt, Schnittmarken
+  - Umschlag: Vorlage, Farben, Bilder, Preis, Rückentext; Klappentext und
+    Autorentext
+  - Abbrechen und Speichern (erst aktiv, wenn sich etwas geändert hat)
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{OUTPUT_JSON}}  aktuelle Werte als JSON-Text: {"typesetting": {…alle Felder mit Vorgaben},
+                     "publication": {…}, "print": {…}, "cover": {…}, "blurb": "…", "author_bio": "…"}
+                     (Felder wie in docs/DATA-MODEL.md, „Buchsatz“ und „Umschlag und Druck“)
+
+  Verhalten:
+  - Speichern sendet project.output.update nur mit den geänderten Feldern,
+    gruppiert nach typesetting, publication, print, cover, dazu blurb und
+    author_bio, wenn geändert. Leere Felder bei publication, print und cover
+    bedeuten „entfernen“ (Wert null).
+  - ISBN-Felder zeigen eine ungültige Prüfziffer sofort an; Speichern bleibt
+    dann gesperrt. Bei Books on Demand und „eigene Werte“ ist die Rückenbreite
+    Pflicht.
+  - Abbrechen meldet nur den Abbruch. Danach ist das Formular gesperrt.
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: project.output.update, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Formular Ausgabeoptionen: Seite, Schrift, Titelei, Formate, Impressum, Druck und Umschlag.</h2>
+<style>
+.gw-f label{display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
+.gw-f .hint{font-size:12px;color:var(--text-muted);font-weight:400}
+.gw-f select,.gw-f input:not([type=checkbox]):not([type=color]),.gw-f textarea{width:100%;box-sizing:border-box;padding:8px 11px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px;line-height:1.5}
+.gw-f select:focus,.gw-f input:focus,.gw-f textarea:focus{outline:none;border-color:var(--border-accent)}
+.gw-f input.bad{border-color:var(--border-danger);background:var(--bg-danger)}
+.gw-f .chk{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:400;margin:0;cursor:pointer}
+.gw-f .chk input{width:16px;height:16px;margin:0;accent-color:var(--text-accent)}
+.gw-f input[type=color]{width:44px;height:34px;padding:0;border:0.5px solid var(--border-strong);border-radius:8px;background:none;cursor:pointer}
+.gw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--gap-md);align-items:end}
+.gw-tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:0.5px solid var(--border)}
+.gw-tab{padding:7px 12px;border:none;border-bottom:2px solid transparent;background:none;color:var(--text-secondary);font:inherit;font-size:14px;cursor:pointer}
+.gw-tab.on{color:var(--text-primary);border-bottom-color:var(--text-accent)}
+.gw-pane{display:none;flex-direction:column;gap:var(--gap-md)}
+.gw-pane.on{display:flex}
+.gw-sec{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+.gw-btn:disabled{opacity:0.4;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <form class="gw-f" id="gw-out" novalidate data-json="{{OUTPUT_JSON}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="display:flex;align-items:center;gap:var(--gap-sm)">
+      <i class="ti ti-printer" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
+      <span style="font-size:16px;font-weight:500">Ausgabeoptionen</span>
+      <span class="hint" style="margin-left:auto;font-size:12px;color:var(--text-muted)">gilt ab dem nächsten Probedruck</span>
+    </div>
+    <div class="gw-tabs" role="tablist">
+      <button type="button" class="gw-tab on" data-pane="seite">Seite</button>
+      <button type="button" class="gw-tab" data-pane="schrift">Schrift</button>
+      <button type="button" class="gw-tab" data-pane="titelei">Titelei und Formate</button>
+      <button type="button" class="gw-tab" data-pane="druck">Druck</button>
+      <button type="button" class="gw-tab" data-pane="umschlag">Umschlag</button>
+    </div>
+
+    <div class="gw-pane on" data-pane="seite">
+      <div class="gw-grid">
+        <div><label for="ts-page_size">Seitenformat</label><select id="ts-page_size" data-g="typesetting" data-k="page_size">
+          <option value="a5">A5 (14,8 × 21 cm)</option><option value="12x19">12 × 19 cm</option><option value="13.5x21.5">13,5 × 21,5 cm</option><option value="a4">A4</option></select></div>
+        <div><label for="ts-margins">Ränder</label><select id="ts-margins" data-g="typesetting" data-k="margins">
+          <option value="standard">Standard</option><option value="classic">klassisch (breit)</option><option value="modern">modern (schmal)</option></select></div>
+        <div><label for="ts-chapter_start">Kapitelbeginn</label><select id="ts-chapter_start" data-g="typesetting" data-k="chapter_start">
+          <option value="any">nächste Seite</option><option value="right">immer rechte Seite</option></select></div>
+        <div><label for="ts-running_heads">Kolumnentitel</label><select id="ts-running_heads" data-g="typesetting" data-k="running_heads">
+          <option value="sections">Kapitel und Abschnitt</option><option value="chapter">Kapiteltitel</option><option value="book">Buch- und Kapiteltitel</option><option value="none">keine</option></select></div>
+        <div><label for="ts-page_numbers">Seitenzahlen</label><select id="ts-page_numbers" data-g="typesetting" data-k="page_numbers">
+          <option value="header">oben außen</option><option value="footer_center">unten Mitte</option><option value="footer_outer">unten außen</option></select></div>
+      </div>
+    </div>
+
+    <div class="gw-pane" data-pane="schrift">
+      <div class="gw-grid">
+        <div><label for="ts-font">Grundschrift</label><select id="ts-font" data-g="typesetting" data-k="font">
+          <option value="serif">Serifenschrift (Pagella)</option><option value="sans">serifenlos (Heros)</option><option value="pagella">Pagella</option><option value="heros">Heros (serifenlos)</option><option value="termes">Termes</option><option value="bonum">Bonum</option><option value="schola">Schola</option><option value="adventor">Adventor (serifenlos)</option></select></div>
+        <div><label for="ts-font_size">Schriftgröße</label><select id="ts-font_size" data-g="typesetting" data-k="font_size" data-num="1">
+          <option value="10">10 pt</option><option value="10.5">10,5 pt</option><option value="11">11 pt</option><option value="11.5">11,5 pt</option><option value="12">12 pt</option></select></div>
+        <div><label for="ts-heading_font">Überschriften</label><select id="ts-heading_font" data-g="typesetting" data-k="heading_font">
+          <option value="same">wie Grundschrift</option><option value="serif">Serifenschrift</option><option value="sans">serifenlos</option></select></div>
+        <div><label for="ts-line_spacing">Zeilenabstand</label><select id="ts-line_spacing" data-g="typesetting" data-k="line_spacing" data-num="1">
+          <option value="1">1,0-fach</option><option value="1.1">1,1-fach</option><option value="1.2">1,2-fach</option><option value="1.3">1,3-fach</option><option value="1.5">1,5-fach</option></select></div>
+        <div><label for="ts-paragraph">Absätze</label><select id="ts-paragraph" data-g="typesetting" data-k="paragraph">
+          <option value="indent">mit Einzug</option><option value="spacing">mit Abstand</option></select></div>
+      </div>
+      <div class="gw-grid">
+        <label class="chk"><input type="checkbox" data-g="typesetting" data-k="initials"> Initiale am Kapitelanfang</label>
+        <label class="chk"><input type="checkbox" data-g="typesetting" data-k="hyphenation"> Silbentrennung</label>
+      </div>
+    </div>
+
+    <div class="gw-pane" data-pane="titelei">
+      <div class="gw-grid">
+        <label class="chk"><input type="checkbox" data-g="typesetting" data-k="title_page"> Titelseite</label>
+        <label class="chk"><input type="checkbox" data-g="typesetting" data-k="imprint"> Impressum</label>
+        <label class="chk"><input type="checkbox" data-g="typesetting" data-k="toc" id="ts-toc"> Inhaltsverzeichnis</label>
+        <div><label for="ts-toc_depth">Tiefe</label><select id="ts-toc_depth" data-g="typesetting" data-k="toc_depth" data-num="1">
+          <option value="1">nur Kapitel</option><option value="2">Kapitel und Abschnitte</option></select></div>
+      </div>
+      <div>
+        <div class="gw-sec" style="margin-bottom:6px">Formate einer Auflage</div>
+        <div class="gw-grid" id="gw-formats">
+          <label class="chk"><input type="checkbox" value="pdf"> PDF (Bildschirm)</label>
+          <label class="chk"><input type="checkbox" value="pdf_print"> Druck-PDF</label>
+          <label class="chk"><input type="checkbox" value="cover"> Umschlag-PDF</label>
+          <label class="chk"><input type="checkbox" value="epub"> EPUB</label>
+          <label class="chk"><input type="checkbox" value="docx"> DOCX</label>
+        </div>
+      </div>
+      <div>
+        <div class="gw-sec" style="margin-bottom:6px">Angaben im Impressum</div>
+        <div class="gw-grid">
+          <div><label for="pub-publisher">Verlag <span class="hint">oder „Selbstverlag“</span></label><input id="pub-publisher" data-g="publication" data-k="publisher"></div>
+          <div><label for="pub-isbn_print">ISBN Druckausgabe</label><input id="pub-isbn_print" data-g="publication" data-k="isbn_print" data-isbn="1" placeholder="978-…"></div>
+          <div><label for="pub-isbn_ebook">ISBN E-Book</label><input id="pub-isbn_ebook" data-g="publication" data-k="isbn_ebook" data-isbn="1" placeholder="978-…"></div>
+          <div><label for="pub-rights">Rechtehinweis</label><input id="pub-rights" data-g="publication" data-k="rights" placeholder="Alle Rechte vorbehalten."></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gw-pane" data-pane="druck">
+      <div class="gw-grid">
+        <div><label for="pr-profile">Druckprofil</label><select id="pr-profile" data-g="print" data-k="profile">
+          <option value="">keins (kein Umschlag)</option><option value="kdp">Amazon KDP</option><option value="bod">Books on Demand</option><option value="custom">eigene Werte</option></select></div>
+        <div id="gw-paper"><label for="pr-paper">Papier <span class="hint">KDP</span></label><select id="pr-paper" data-g="print" data-k="paper">
+          <option value="">weiß (Vorgabe)</option><option value="white">weiß</option><option value="cream">creme</option><option value="premium_color">Premiumfarbe</option></select></div>
+        <div><label for="pr-spine_mm">Rückenbreite <span class="hint">mm; leer = berechnet</span></label><input id="pr-spine_mm" data-g="print" data-k="spine_mm" data-num="1" inputmode="decimal"></div>
+        <div><label for="pr-bleed_mm">Beschnitt <span class="hint">mm; leer = Profil</span></label><input id="pr-bleed_mm" data-g="print" data-k="bleed_mm" data-num="1" inputmode="decimal"></div>
+      </div>
+      <label class="chk"><input type="checkbox" data-g="print" data-k="crop_marks"> Schnittmarken an Druck-PDF und Umschlag</label>
+      <div id="gw-spine-hint" style="font-size:12px;color:var(--text-warning)" hidden>Für Books on Demand und eigene Werte die Rückenbreite aus dem Rechner des Anbieters eintragen.</div>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.5">KDP: Beschnitt 3,2 mm, Rücken aus Seitenzahl und Papier, Rückentext ab 79 Seiten. BoD: Beschnitt 5 mm, Rückenbreite nur aus dem BoD-Rechner. Werte vor dem Hochladen mit dem Anbieter abgleichen.</div>
+    </div>
+
+    <div class="gw-pane" data-pane="umschlag">
+      <div class="gw-grid">
+        <div><label for="cv-template">Vorlage</label><select id="cv-template" data-g="cover" data-k="template">
+          <option value="">klassisch (Vorgabe)</option><option value="classic">klassisch</option><option value="modern">modern</option><option value="plain">schlicht</option></select></div>
+        <div><label>Hintergrund · Schrift</label><div style="display:flex;gap:8px"><input type="color" data-g="cover" data-k="background" data-def="#1F2A44" title="Hintergrund"><input type="color" data-g="cover" data-k="text_color" data-def="#FFFFFF" title="Schriftfarbe"></div></div>
+        <div><label for="cv-price">Preis</label><input id="cv-price" data-g="cover" data-k="price" placeholder="18,00 € (D)"></div>
+        <div><label for="cv-spine_direction">Rückentext</label><select id="cv-spine_direction" data-g="cover" data-k="spine_direction">
+          <option value="">von oben nach unten (Vorgabe)</option><option value="down">von oben nach unten</option><option value="up">von unten nach oben</option></select></div>
+      </div>
+      <div class="gw-grid">
+        <div><label for="cv-image">Bild vorne <span class="hint">Datei unter cover/</span></label><input id="cv-image" data-g="cover" data-k="image" placeholder="cover/vorderseite.jpg"></div>
+        <div><label for="cv-author_image">Autorenbild</label><input id="cv-author_image" data-g="cover" data-k="author_image" placeholder="cover/autor.jpg"></div>
+      </div>
+      <div><label for="gw-blurb">Klappentext <span class="hint">Rückseite, etwa 80–150 Wörter</span></label><textarea id="gw-blurb" rows="5"></textarea></div>
+      <div><label for="gw-bio">Über dich <span class="hint">zwei, drei Sätze</span></label><textarea id="gw-bio" rows="2"></textarea></div>
+      <div style="font-size:12px;color:var(--text-muted)">Bilder lädst du im Chat hoch; der Assistent legt sie unter cover/ ab. Ein Strichcode entsteht aus der ISBN der Druckausgabe.</div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <span id="gw-err" style="font-size:13px;color:var(--text-danger);margin-right:auto"></span>
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)" disabled>Speichern</button>
+    </div>
+  </form>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var f=document.getElementById('gw-out'),$=function(id){return document.getElementById(id);};
+  var cur={};try{cur=JSON.parse(f.dataset.json||'{}');}catch(e){}
+  ['typesetting','publication','print','cover'].forEach(function(g){cur[g]=cur[g]||{};});
+  f.querySelectorAll('.gw-tab').forEach(function(t){t.addEventListener('click',function(){
+    f.querySelectorAll('.gw-tab').forEach(function(x){x.classList.toggle('on',x===t);});
+    f.querySelectorAll('.gw-pane').forEach(function(p){p.classList.toggle('on',p.dataset.pane===t.dataset.pane);});
+  });});
+  var fields=f.querySelectorAll('[data-g][data-k]');
+  fields.forEach(function(el){
+    var v=cur[el.dataset.g][el.dataset.k];
+    if(el.type==='checkbox')el.checked=!!v;
+    else if(el.type==='color')el.value=(v||el.dataset.def).toLowerCase();
+    else el.value=v==null?'':String(v);
+  });
+  var fm=cur.typesetting.formats||['pdf','docx','epub'];
+  $('gw-formats').querySelectorAll('input').forEach(function(c){c.checked=fm.indexOf(c.value)>=0;});
+  $('gw-blurb').value=cur.blurb||'';$('gw-bio').value=cur.author_bio||'';
+
+  function isbnOk(v){
+    var d=v.replace(/[ -]/g,'').toUpperCase(),s=0,i;
+    if(/^\d{13}$/.test(d)){for(i=0;i<13;i++)s+=(+d[i])*(i%2?3:1);return s%10===0;}
+    if(/^\d{9}[\dX]$/.test(d)){for(i=0;i<10;i++)s+=(10-i)*(d[i]==='X'?10:+d[i]);return s%11===0;}
+    return false;
+  }
+  function value(el){
+    if(el.type==='checkbox')return el.checked;
+    var v=el.value.trim();
+    if(el.type==='color')return v.toUpperCase()===(el.dataset.def||'').toUpperCase()&&cur[el.dataset.g][el.dataset.k]==null?null:v.toUpperCase();
+    if(v==='')return null;
+    if(el.dataset.num){var n=parseFloat(v.replace(',','.'));return isNaN(n)?v:n;}
+    return v;
+  }
+  function changes(){
+    var out={},n=0;
+    fields.forEach(function(el){
+      var g=el.dataset.g,k=el.dataset.k,v=value(el),old=cur[g][k];
+      if(old===undefined)old=null;
+      if(g==='typesetting'&&el.type==='checkbox'&&old===null)return;   // Vorgaben kommen immer mit
+      if(String(v)!==String(old)){(out[g]=out[g]||{})[k]=v;n++;}
+    });
+    // Papier gilt nur bei KDP: beim Wechsel auf ein anderes Profil entfernen
+    if($('pr-profile').value!=='kdp'&&cur.print.paper!=null&&out.print&&'profile' in out.print)out.print.paper=null;
+    var formats=[];$('gw-formats').querySelectorAll('input').forEach(function(c){if(c.checked)formats.push(c.value);});
+    if(formats.join()!==fm.join()){(out.typesetting=out.typesetting||{}).formats=formats;n++;}
+    if($('gw-blurb').value.trim()!==(cur.blurb||'').trim()){out.blurb=$('gw-blurb').value.trim();n++;}
+    if($('gw-bio').value.trim()!==(cur.author_bio||'').trim()){out.author_bio=$('gw-bio').value.trim();n++;}
+    return n?out:null;
+  }
+  var done=false;
+  function refresh(){
+    var err=[];
+    f.querySelectorAll('[data-isbn]').forEach(function(i){var bad=i.value.trim()&&!isbnOk(i.value);i.classList.toggle('bad',!!bad);if(bad)err.push('ISBN-Prüfziffer stimmt nicht');});
+    var prof=$('pr-profile').value;
+    $('gw-paper').style.display=prof==='kdp'?'':'none';
+    var needSpine=(prof==='bod'||prof==='custom')&&!$('pr-spine_mm').value.trim();
+    $('gw-spine-hint').hidden=!needSpine;if(needSpine)err.push('Rückenbreite fehlt');
+    var fmts=[];$('gw-formats').querySelectorAll('input').forEach(function(c){if(c.checked)fmts.push(c.value);});
+    if(!fmts.length)err.push('mindestens ein Format');
+    if(fmts.indexOf('cover')>=0&&!prof)err.push('Umschlag braucht ein Druckprofil');
+    $('ts-toc_depth').disabled=done||!$('ts-toc').checked;
+    $('gw-err').textContent=err.length?err.filter(function(x,i){return err.indexOf(x)===i;}).join(' · '):'';
+    $('gw-save').disabled=done||!!err.length||!changes();
+  }
+  f.addEventListener('change',refresh);f.addEventListener('input',refresh);
+  function lock(){done=true;f.querySelectorAll('input,select,textarea,button').forEach(function(x){if(!x.classList.contains('gw-tab'))x.disabled=true;});f.style.opacity='0.6';}
+  $('gw-save').addEventListener('click',function(){var c=changes();if(!c)return;lock();gwSend('Ausgabeoptionen speichern','project.output.update',c);});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Ausgabeoptionen abgebrochen','form.cancel',{form:'project.output.update'});});
+  refresh();
+})();
+</script>
