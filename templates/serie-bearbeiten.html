@@ -14,12 +14,14 @@
   - {{SERIES_ID}}           leer = neue Serie; sonst ser-… (bleibt beim Umbenennen gleich)
   - {{SERIES_TITLE}}, {{SERIES_SUBTITLE}}, {{SERIES_DESCRIPTION}}  bisherige bzw. gesendete Werte
   - {{SERIES_KIND}}         continuous | standalone
+  - {{SERIES_ISSN}}         ISSN der Reihe; leer = keine (steht im Impressum jedes Bandes)
+  - {{SERIES_ALSO}}         true | false: Seite „Ebenfalls in dieser Reihe“ am Ende jedes Bandes
   - {{ERROR_TEXT}}          Meldung nach einer fehlgeschlagenen Prüfung; leer = entfällt
   Wiederholung zwischen {{#TAKEN}} und {{/TAKEN}} (andere Serien):
   - {{TAKEN_TITLE}}
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: series.create {title, subtitle, kind, description}, series.update {series_id, title, subtitle, kind, description}, form.cancel
+  Aktionen: series.create {title, subtitle, kind, description, issn, also_in_series}, series.update {series_id, …}, form.cancel
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -36,7 +38,7 @@
 .gw-btn:disabled{opacity:0.5;cursor:default}
 </style>
 <div style="padding:1rem 0">
-  <form class="gw-f" id="gw-sf" data-id="{{SERIES_ID}}" data-kind="{{SERIES_KIND}}" novalidate style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+  <form class="gw-f" id="gw-sf" data-id="{{SERIES_ID}}" data-kind="{{SERIES_KIND}}" data-also="{{SERIES_ALSO}}" novalidate style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div style="display:flex;align-items:center;gap:var(--gap-sm)">
       <i class="ti ti-stack-2" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
       <span style="font-size:16px;font-weight:500" id="gw-head">Neue Serie</span>
@@ -62,6 +64,13 @@
       <label for="gw-desc">Beschreibung <span class="hint">optional</span></label>
       <textarea id="gw-desc">{{SERIES_DESCRIPTION}}</textarea>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-md);align-items:end">
+      <div>
+        <label for="gw-issn">ISSN der Reihe <span class="hint">optional, im Impressum</span></label>
+        <input id="gw-issn" value="{{SERIES_ISSN}}" autocomplete="off" placeholder="z. B. 1234-5679">
+      </div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;margin:0 0 8px"><input type="checkbox" id="gw-also" style="width:auto"> Seite „Ebenfalls in dieser Reihe“ in jedem Band</label>
+    </div>
     <ul id="gw-taken" hidden>
       {{#TAKEN}}
       <li>{{TAKEN_TITLE}}</li>
@@ -80,8 +89,9 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var f=document.getElementById('gw-sf'),sid=f.dataset.id,$=function(id){return document.getElementById(id);};
   if(sid){$('gw-head').textContent='Serie bearbeiten';$('gw-save').textContent='Speichern';}
   $('gw-kind').value=f.dataset.kind||'continuous';
+  $('gw-also').checked=f.dataset.also!=='false';
   var taken=Array.prototype.map.call($('gw-taken').querySelectorAll('li'),function(l){return l.textContent.trim().toLowerCase();});
-  function data(){return {title:$('gw-title').value.trim(),subtitle:$('gw-sub').value.trim(),kind:$('gw-kind').value,description:$('gw-desc').value.trim()};}
+  function data(){return {title:$('gw-title').value.trim(),subtitle:$('gw-sub').value.trim(),kind:$('gw-kind').value,description:$('gw-desc').value.trim(),issn:$('gw-issn').value.trim(),also_in_series:$('gw-also').checked};}
   var start=JSON.stringify(data()),done=false;
   function refresh(){
     var d=data(),dup=taken.indexOf(d.title.toLowerCase())>=0,e=$('gw-title-err');
