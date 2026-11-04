@@ -27,6 +27,8 @@
   - {{CHAPTER_APPROVABLE}}    nicht leer, wenn das Kapitel freigegeben werden kann
                              (Status ready_for_approval, alle Abschnitte approved);
                              sonst leer, dann fehlt der Knopf „Kapitel freigeben“
+  - {{CHAPTER_REVISION_READY}} nicht leer, wenn alle Abschnitte Text im Status
+                             ab „Schreiben“ enthalten; sonst fehlt „Kapitel überarbeiten“
   - {{CHAPTER_SUBTITLE}}      Untertitel; leer = Zeile entfällt
   - {{CHAPTER_GOAL}}          Ziel des Kapitels (Kapitel-README, „## Ziel des Kapitels“); leer = „noch offen“
   - {{CHAPTER_SUMMARY}}       Kurzbeschreibung (Kapitel-README, „## Kurzbeschreibung“); leer = „noch offen“
@@ -55,7 +57,7 @@
   Kosten, wird "≈ " vorangestellt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.project, character.suggest, chapter.edit.open, section.create.open, section.reorder.open, approval.open, chapter.research.open, view.section
+  Aktionen: view.project, character.suggest, chapter.edit.open, section.create.open, section.reorder.open, approval.open, chapter.research.open, chapter.revision.start, view.section
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -97,6 +99,7 @@
           <button type="button" class="gw-sq" data-p="Neuen Abschnitt in Kapitel {{CHAPTER_NUMBER}} anlegen" data-a="section.create.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Neuer Abschnitt" aria-label="Neuer Abschnitt"><i class="ti ti-plus" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Abschnittsreihenfolge in Kapitel {{CHAPTER_NUMBER}} ändern" data-a="section.reorder.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Abschnittsreihenfolge ändern" aria-label="Abschnittsreihenfolge ändern"><i class="ti ti-arrows-sort" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="Figuren aus dem Text von Kapitel {{CHAPTER_NUMBER}} vorschlagen" data-a="character.suggest" data-args='{"scope":"{{CHAPTER_NUMBER}}"}' title="Figuren aus dem Text von Kapitel {{CHAPTER_NUMBER}} vorschlagen" aria-label="Figuren aus dem Text von Kapitel {{CHAPTER_NUMBER}} vorschlagen"><i class="ti ti-user-search" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-gw-if="CHAPTER_REVISION_READY" data-p="Kapitel {{CHAPTER_NUMBER}} überarbeiten" data-a="chapter.revision.start" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Kapitel überarbeiten" aria-label="Kapitel überarbeiten"><i class="ti ti-file-pencil" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-gw-if="CHAPTER_APPROVABLE" data-p="Freigabe für Kapitel {{CHAPTER_NUMBER}} „{{CHAPTER_TITLE}}“ bestätigen" data-a="approval.open" data-args='{"kind":"chapter","chapter_id":"{{CHAPTER_ID}}"}' title="Kapitel freigeben" aria-label="Kapitel freigeben"><i class="ti ti-circle-check" aria-hidden="true"></i></button>
         </div>
       </div>
