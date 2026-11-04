@@ -45,6 +45,10 @@
   - {{C_ID}}, {{C_NAME}}        ID und Name
   - {{C_ON}}                    „1“, wenn die Figur im Abschnitt vorkommt (characters im Kopf), sonst leer
 
+  Wiederholung pro sprachlichem Hinweis zwischen {{#HINTS}} und {{/HINTS}} (GhostWriter #124, story/hints.yml;
+  fehlt = kein Bereich):
+  - {{H_KIND_TEXT}}   z. B. "Langer Satz", "Wortwiederholung"
+  - {{H_TEXT}}, {{H_QUOTE}}  Hinweis und Fundstelle
   Wiederholung pro offenem Marker zwischen {{#MARKERS}} und {{/MARKERS}}:
   - {{MARKER_TYPE}}   anekdote | quelle | medizin | recht
   - {{MARKER_LABEL}}  Platzhalter-Anekdote | Quelle prüfen | Medizin prüfen | Recht prüfen
@@ -153,6 +157,15 @@
           {{#MARKERS}}
           <div class="gw-mk gw-mk-{{MARKER_TYPE}}"><i class="ti gw-mk-icon" data-type="{{MARKER_TYPE}}" style="font-size:16px;margin-top:2px" aria-hidden="true"></i><span style="flex:1"><span class="gw-mk-label">{{MARKER_LABEL}}</span> · {{MARKER_TEXT}}</span></div>
           {{/MARKERS}}
+        </div>
+      </div>
+
+      <div data-gw-if="HINTS" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+        <div class="gw-lbl">Sprachliche Hinweise <span class="gw-hint">nur zur Durchsicht, der Text bleibt unverändert</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;font-size:13px;line-height:1.45">
+          {{#HINTS}}
+          <div style="display:flex;gap:6px;align-items:flex-start"><i class="ti ti-text-spellcheck" style="font-size:15px;margin-top:2px;color:var(--text-muted)" aria-hidden="true"></i><span style="flex:1"><b style="font-weight:500">{{H_KIND_TEXT}}</b> · {{H_TEXT}} <span style="color:var(--text-muted);font-style:italic">„{{H_QUOTE}}“</span></span></div>
+          {{/HINTS}}
         </div>
       </div>
 
