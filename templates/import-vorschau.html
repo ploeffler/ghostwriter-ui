@@ -23,6 +23,10 @@
   - {{LOSSLESS}}         nicht leer = Wortzahl stimmt mit der Umwandlung überein
   - {{KEEP_TEXT}}        Aufbewahrung des Originals, z. B. „bis zur ersten Auflage“
   - {{KINDS_TEXT}}       Arten von Vor- und Nachspann (kind=Name), für die Auswahl
+  - {{NO_STRUCTURE}}     nicht leer = keine Gliederung erkannt; dann der Knopf „Gliederung mit KI vorschlagen“
+                         (import.outline.start)
+  - {{OUTLINE_TEXT}}     KI-Vorschlag für die Gliederung liegt bereit, z. B. „… 8 Kapitel, 21 Abschnitte“; dann
+                         der Knopf „Ansehen“ (import.outline.open); leer = keiner
   Wiederholung zwischen {{#WARNINGS}} und {{/WARNINGS}}: {{W_TEXT}}
   Wiederholung zwischen {{#PARTS}} und {{/PARTS}}:
   - {{P_IDX}}, {{P_KIND}}, {{P_AREA}} (front | back), {{P_LABEL}}, {{P_TITLE}}, {{P_WORDS}}
@@ -31,7 +35,7 @@
   - {{R_COUNT}} (beim Kapitel, z. B. „3 Abschnitte“), {{R_SCENES}} (Szenen im Abschnitt, leer = eine), {{R_LONG}} (nicht leer = sehr lang)
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: import.edit {ops}, import.apply {writing_approval}, form.cancel
+  Aktionen: import.edit {ops}, import.apply {writing_approval}, import.outline.start, import.outline.open, form.cancel
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -69,6 +73,16 @@
       {{#WARNINGS}}
       <div>⚠️ {{W_TEXT}}</div>
       {{/WARNINGS}}
+    </div>
+    <div data-gw-if="NO_STRUCTURE" style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:10px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius)">
+      <i class="ti ti-compass" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
+      <span style="flex:1;min-width:180px;font-size:14px">Keine Gliederung erkannt. Die KI kann Kapitel und Abschnitte vorschlagen; vorher werden Umfang und Kosten gezeigt.</span>
+      <button type="button" class="gw-btn" id="gw-ol-start">Gliederung mit KI vorschlagen</button>
+    </div>
+    <div data-gw-if="OUTLINE_TEXT" style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:10px 12px;border:0.5px solid var(--border-accent);border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent)">
+      <i class="ti ti-compass" style="font-size:18px" aria-hidden="true"></i>
+      <span style="flex:1;min-width:180px;font-size:14px">{{OUTLINE_TEXT}}</span>
+      <button type="button" class="gw-btn" id="gw-ol-open" style="color:var(--text-primary)">Ansehen</button>
     </div>
     <div id="gw-tree" style="display:flex;flex-direction:column;gap:4px">
       <div class="sec" id="gw-front-h">Vorspann</div>
@@ -148,6 +162,8 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   $('gw-edit').addEventListener('click',function(){var o=all();lock();gwSend(o.length+' Änderungen an der Gliederung anwenden','import.edit',{ops:o});});
   $('gw-apply').addEventListener('click',function(){var wa=$('gw-wa').checked;lock();gwSend('Buch aus dem Manuskript anlegen'+(wa?' (mit Schreibfreigabe)':''),'import.apply',{writing_approval:wa});});
   $('gw-cancel').addEventListener('click',function(){lock();gwSend('Import abgebrochen','form.cancel',{form:'import.apply'});});
+  if($('gw-ol-start'))$('gw-ol-start').addEventListener('click',function(){lock();gwSend('Gliederung mit KI vorschlagen','import.outline.start',{});});
+  if($('gw-ol-open'))$('gw-ol-open').addEventListener('click',function(){gwSend('KI-Vorschlag für die Gliederung ansehen','import.outline.open',{});});
   refresh();
 })();
 </script>
