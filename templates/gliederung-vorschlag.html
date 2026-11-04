@@ -1,0 +1,129 @@
+<!--
+  Vorlage: Gliederung mit KI (Vorschlag beim Import, GhostWriter #124)
+
+  Inline-Widget für den Chat. Hat ein importiertes Manuskript keine Gliederung,
+  schlägt die KI Kapitel und Abschnitte vor (scripts/import_book.py outline,
+  Ergebnis import/outline.json). Jeder Anfang ist ohne KI geprüft: er steht
+  wörtlich am genannten Absatz. Getrennt wird nur an Absatzgrenzen. Hier legt
+  der Benutzer fest, was gilt; erst dann ändert sich der Vorschlag der
+  Gliederung (danach weiter in der Import-Vorschau).
+
+  Aufbau:
+  - Kopf: Kompass-Symbol, „Gliederung mit KI“, Zahlen, Lauf; ggf. Hinweis,
+    dass bei sehr langen Texten nur Absatzanfänge gelesen wurden
+  - je Kapitel: Titel (änderbar), Wortzahl, Begründung
+  - je Abschnitt: Trennung (neues Kapitel | neuer Abschnitt | keine Trennung;
+    beim ersten Abschnitt fest), Titel (änderbar), Wortzahl, Anfang (wörtlich),
+    Begründung
+  - Verwerfen, Übernehmen
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{RUN_ID}}, {{RUN_TEXT}}  Lauf, z. B. „Vorschlag 001 vom 04.11.2026 (claude-sonnet-5-5)“
+  - {{STATS_TEXT}}          z. B. „8 Kapitel, 21 Abschnitte aus 412 Absätzen · 2 Anfänge ohne wörtliche Fundstelle verworfen“
+  - {{PARTIAL_TEXT}}        Hinweis bei sehr langen Texten; leer = ganzer Text gelesen
+  Wiederholung zwischen {{#ROWS}} und {{/ROWS}} (Kapitel, darunter ihre Abschnitte):
+  - {{O_TYPE}}              chapter | section
+  - {{O_CHAPTER}}, {{O_SECTION}}, {{O_LABEL}}  Nummern und „Kapitel N“ bzw. „N.M“
+  - {{O_TITLE}}, {{O_WORDS}}, {{O_COUNT}}  Titel, Wörter, beim Kapitel z. B. „3 Abschnitte“
+  - {{O_START}}             Nummer des ersten Absatzes (ab 1)
+  - {{O_QUOTE}}, {{O_REASON}}  Anfang (wörtlich) und Begründung der KI; leer = keine
+
+  Verhalten:
+  - Übernehmen sendet import.outline.apply mit chapters
+    [{title, start, sections: [{title, start}]}] nach den gewählten Trennungen;
+    ein Abschnitt, der ein neues Kapitel beginnt, gibt dem Kapitel seinen Titel,
+    wenn es kein vorgeschlagenes Kapitel ist.
+  - Verwerfen sendet form.cancel (form import.outline.apply).
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: import.outline.apply, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Gliederung mit KI: Vorschlag prüfen und übernehmen. {{STATS_TEXT}}</h2>
+<style>
+.gw-gl .row{display:flex;flex-direction:column;gap:4px;padding:8px 10px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);font-size:14px}
+.gw-gl .row.chapter{background:var(--surface-1);border-color:var(--border-strong);margin-top:8px}
+.gw-gl .row.section{margin-left:22px}
+.gw-gl .row.off{opacity:0.5}
+.gw-gl .line{display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap}
+.gw-gl .lbl{font-size:12px;color:var(--text-muted);min-width:64px}
+.gw-gl input.t{flex:1;min-width:140px;font:inherit;font-size:14px;padding:4px 8px;border:0.5px solid var(--border);border-radius:6px;background:var(--surface-1);color:var(--text-primary)}
+.gw-gl .row.chapter input.t{font-weight:500}
+.gw-gl .w{font-size:12px;color:var(--text-muted);white-space:nowrap}
+.gw-gl select{font:inherit;font-size:12px;padding:2px 4px;border:0.5px solid var(--border);border-radius:6px;background:var(--surface-1);color:var(--text-primary)}
+.gw-gl .meta{font-size:12px;color:var(--text-muted);line-height:1.45}
+.gw-gl .meta.q{font-style:italic}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)}
+.gw-btn.pri{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-btn:disabled{opacity:0.45;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-gl" id="gw-gl" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div>
+      <div style="font-size:12px;color:var(--text-muted)">Manuskript importieren · {{RUN_TEXT}}</div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-compass" style="color:var(--text-secondary)" aria-hidden="true"></i>Gliederung mit KI</div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-top:4px">{{STATS_TEXT}}</div>
+    </div>
+    <div data-gw-if="PARTIAL_TEXT" style="font-size:13px;padding:8px 10px;border:0.5px solid var(--border-strong);border-radius:var(--radius);color:var(--text-secondary)">⚠️ {{PARTIAL_TEXT}}</div>
+    <div id="gw-tree" style="display:flex;flex-direction:column;gap:4px">
+      {{#ROWS}}
+      <div class="row {{O_TYPE}}" data-type="{{O_TYPE}}" data-ch="{{O_CHAPTER}}" data-sec="{{O_SECTION}}" data-start="{{O_START}}">
+        <div class="line">
+          <span class="lbl">{{O_LABEL}}</span>
+          <select class="kind" aria-label="Trennung"><option value="chapter">neues Kapitel</option><option value="section">neuer Abschnitt</option><option value="none">keine Trennung</option></select>
+          <input type="text" class="t" value="{{O_TITLE}}" aria-label="Titel">
+          <span class="w">{{O_WORDS}} Wörter</span>
+        </div>
+        <div class="meta q">beginnt mit: „{{O_QUOTE}}“</div>
+        <div class="meta">{{O_REASON}}</div>
+      </div>
+      {{/ROWS}}
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Nur ein Vorschlag aus dem Text. Getrennt wird nur an Absatzgrenzen, kein Wort geht verloren. Nach dem Übernehmen lässt sich die Gliederung in der Vorschau weiter ändern; das Buch entsteht erst mit „Buch anlegen“.</div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel">Verwerfen</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">Übernehmen</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var box=document.getElementById('gw-gl'),$=function(id){return document.getElementById(id);};
+  var rows=Array.prototype.slice.call(box.querySelectorAll('.row'));
+  var chap={};   // Kapitelzeile je Kapitelnummer
+  rows.forEach(function(r){
+    r.querySelectorAll('.meta').forEach(function(m){if(!m.textContent.replace(/beginnt mit: „“/,'').trim())m.remove();});
+    if(r.dataset.type==='chapter'){chap[r.dataset.ch]=r;r.querySelector('.kind').remove();return;}
+    var k=r.querySelector('.kind');k.value=r.dataset.sec==='1'?'chapter':'section';
+    if(r.dataset.ch==='1'&&r.dataset.sec==='1')k.disabled=true;   // Anfang des Buchs
+    k.addEventListener('change',refresh);
+  });
+  var secs=rows.filter(function(r){return r.dataset.type==='section';});
+  function model(){
+    var out=[];
+    secs.forEach(function(r){
+      var kind=r.querySelector('.kind').value,start=+r.dataset.start,title=r.querySelector('.t').value.trim();
+      if(kind==='chapter'||!out.length){
+        var cr=r.dataset.sec==='1'?chap[r.dataset.ch]:null;
+        out.push({title:(cr?cr.querySelector('.t').value.trim():'')||title,start:start,sections:[{title:title,start:start}]});
+      }else if(kind==='section'){out[out.length-1].sections.push({title:title,start:start});}
+    });
+    return out;
+  }
+  function refresh(){
+    secs.forEach(function(r){var k=r.querySelector('.kind').value;r.classList.toggle('off',k==='none');r.querySelector('.t').disabled=k==='none';});
+    Object.keys(chap).forEach(function(n){var first=secs.filter(function(r){return r.dataset.ch===n&&r.dataset.sec==='1';})[0];
+      var on=!first||first.querySelector('.kind').value==='chapter';chap[n].classList.toggle('off',!on);chap[n].querySelector('.t').disabled=!on;});
+    var m=model(),n=0;m.forEach(function(c){n+=c.sections.length;});
+    $('gw-apply').textContent=m.length+' Kapitel, '+n+' Abschnitte übernehmen';
+  }
+  function lock(){box.querySelectorAll('input,select,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
+  $('gw-apply').addEventListener('click',function(){var m=model();lock();gwSend('Gliederung aus dem KI-Vorschlag übernehmen ('+m.length+' Kapitel)','import.outline.apply',{chapters:m});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend('KI-Vorschlag für die Gliederung verworfen','form.cancel',{form:'import.outline.apply'});});
+  refresh();
+})();
+</script>
