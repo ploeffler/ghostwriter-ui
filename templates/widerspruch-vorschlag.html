@@ -1,0 +1,116 @@
+<!--
+  Vorlage: Mögliche Widersprüche (Auswahl, GhostWriter #124)
+
+  Inline-Widget für den Chat. Zeigt die Vorschläge eines Hintergrundlaufs
+  (scripts/analyze.py, Art continuity): je Widerspruch ein Satz und die
+  beteiligten Tatsachen mit wörtlicher Fundstelle. Hier wählt der Benutzer, ob
+  und hinter welche Fundstellen ein Marker [KONTINUITÄT PRÜFEN: …] kommt.
+  Entschieden wird nichts; sonst bleibt der Text unverändert.
+
+  Aufbau:
+  - Kopf: Symbol, „Mögliche Widersprüche“, Bereich, Anzahl, verglichene
+    Tatsachen, Lauf
+  - je Widerspruch: Häkchen, Text des Markers (änderbar), darunter die
+    Fundstellen je mit Häkchen „Marker hier“ (vorgewählt: die letzte)
+  - Verwerfen, Übernehmen
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{KIND}}                continuity
+  - {{RUN_ID}}, {{RUN_TEXT}}  Hintergrundlauf, z. B. „Hintergrundlauf 001 vom 04.11.2026“
+  - {{SCOPE_TEXT}}, {{SUGGEST_COUNT_TEXT}}  z. B. „ganzes Buch“, „3 mögliche Widersprüche“
+  - {{FACTS_TEXT}}          z. B. „214 Tatsachen mit Fundstelle verglichen“
+  Wiederholung je Widerspruch zwischen {{#SUGGESTIONS}} und {{/SUGGESTIONS}}:
+  - {{S_IDX}}, {{S_TEXT}}, {{S_COUNT}}  Nummer, Satz, Zahl der Fundstellen
+  Wiederholung je Fundstelle zwischen {{#FACTS}} und {{/FACTS}} (flach; das Skript
+  ordnet sie über F_IDX dem Widerspruch zu):
+  - {{F_IDX}}, {{F_K}}      Nummer des Widerspruchs und der Fundstelle darin (ab 0)
+  - {{F_WHERE}}, {{F_ABOUT}}, {{F_FACT}}, {{F_QUOTE}}  Abschnitt, Gegenstand, Tatsache, Zitat
+  - {{F_ON}}                nicht leer = „Marker hier“ vorgewählt
+
+  Verhalten:
+  - Übernehmen sendet analysis.apply mit kind, run und choices
+    [{index, text, mark: [F_K, …]}] der angehakten Widersprüche.
+  - Verwerfen sendet form.cancel (form analysis.apply, kind, run).
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: analysis.apply, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Mögliche Widersprüche: {{SUGGEST_COUNT_TEXT}} für {{SCOPE_TEXT}}. Auswählen, wo ein Marker gesetzt wird.</h2>
+<style>
+.gw-wv .card{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;display:flex;gap:var(--gap-sm);align-items:flex-start}
+.gw-wv .card.off{opacity:0.55}
+.gw-wv .main{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.gw-wv input[type=text]{font:inherit;font-size:14px;padding:5px 8px;border:0.5px solid var(--border-strong);border-radius:8px;background:var(--surface-1);color:var(--text-primary);width:100%;box-sizing:border-box}
+.gw-wv .fact{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.45;padding-left:2px}
+.gw-wv .fact .w{color:var(--text-muted);white-space:nowrap;min-width:2.6em}
+.gw-wv .fact .q{font-style:italic;color:var(--text-secondary)}
+.gw-wv .fact .t{color:var(--text-muted);font-size:12px}
+.gw-wv .lb{font-size:11px;color:var(--text-muted);white-space:nowrap;display:flex;gap:4px;align-items:center}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)}
+.gw-btn.pri{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-btn:disabled{opacity:0.45;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-wv" id="gw-wv" data-kind="{{KIND}}" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div>
+      <div style="font-size:12px;color:var(--text-muted)">{{SCOPE_TEXT}} · {{SUGGEST_COUNT_TEXT}} · {{FACTS_TEXT}}<span data-gw-if="RUN_TEXT"> · {{RUN_TEXT}}</span></div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-link" style="color:var(--text-secondary)" aria-hidden="true"></i>Mögliche Widersprüche</div>
+    </div>
+    <div id="gw-list" style="display:flex;flex-direction:column;gap:6px">
+      {{#SUGGESTIONS}}
+      <div class="card" data-idx="{{S_IDX}}">
+        <input type="checkbox" class="on" checked aria-label="Marker setzen" style="margin-top:8px">
+        <div class="main">
+          <input type="text" class="tx" value="{{S_TEXT}}" aria-label="Text des Markers">
+          <div class="facts"></div>
+        </div>
+      </div>
+      {{/SUGGESTIONS}}
+    </div>
+    <div id="gw-facts" hidden>
+      {{#FACTS}}
+      <div class="fact" data-idx="{{F_IDX}}" data-k="{{F_K}}" data-on="{{F_ON}}">
+        <span class="w">{{F_WHERE}}</span>
+        <span style="flex:1;min-width:0"><span class="q">„{{F_QUOTE}}“</span><br><span class="t">{{F_ABOUT}}: {{F_FACT}}</span></span>
+        <label class="lb"><input type="checkbox" class="mk"> Marker hier</label>
+      </div>
+      {{/FACTS}}
+    </div>
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">Keine Widersprüche zwischen Stellen mit Fundstelle gefunden.</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Nur Widersprüche zwischen Tatsachen mit wörtlicher Fundstelle; entschieden wird nichts. Übernehmen setzt den Marker [KONTINUITÄT PRÜFEN: …] hinter den Satz der gewählten Fundstelle, sonst bleibt der Text unverändert. Offene Marker verhindern eine Auflage, bis sie geklärt sind.</div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel">Verwerfen</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">Marker setzen</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var box=document.getElementById('gw-wv'),ds=box.dataset,$=function(id){return document.getElementById(id);};
+  var cards=Array.prototype.slice.call(box.querySelectorAll('.card'));
+  if(cards.length)$('gw-none').remove();else $('gw-apply').disabled=true;
+  var byIdx={};cards.forEach(function(c){byIdx[c.dataset.idx]=c;});
+  Array.prototype.slice.call($('gw-facts').querySelectorAll('.fact')).forEach(function(f){
+    var c=byIdx[f.dataset.idx];if(!c){f.remove();return;}
+    f.querySelector('.mk').checked=!!f.dataset.on;
+    if(!f.querySelector('.t').textContent.replace(/[:\s]/g,''))f.querySelector('.t').remove();
+    c.querySelector('.facts').appendChild(f);
+  });
+  $('gw-facts').remove();
+  cards.forEach(function(c){var on=c.querySelector('.on');on.addEventListener('change',function(){c.classList.toggle('off',!on.checked);refresh();});});
+  box.addEventListener('input',refresh);box.addEventListener('change',refresh);
+  function choices(){return cards.filter(function(c){return c.querySelector('.on').checked;}).map(function(c){
+    var mk=[];c.querySelectorAll('.fact').forEach(function(f){if(f.querySelector('.mk').checked)mk.push(+f.dataset.k);});
+    return {index:+c.dataset.idx,text:c.querySelector('.tx').value.trim(),mark:mk};});}
+  function refresh(){var ch=choices(),n=0,bad=false;ch.forEach(function(o){n+=o.mark.length;if(!o.mark.length||!o.text)bad=true;});$('gw-apply').disabled=!ch.length||bad;$('gw-apply').textContent=bad?'Fundstelle für den Marker wählen':(n?n+' Marker setzen':'Marker setzen');}
+  function lock(){box.querySelectorAll('input,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
+  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend('Widersprüche als Marker setzen ('+ch.length+')','analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Vorschläge verworfen','form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
+  refresh();
+})();
+</script>

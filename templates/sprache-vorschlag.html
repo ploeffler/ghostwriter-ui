@@ -1,0 +1,99 @@
+<!--
+  Vorlage: Sprachliche Hinweise (Auswahl, GhostWriter #124)
+
+  Inline-Widget für den Chat. Zeigt die Auffälligkeiten eines Hintergrundlaufs
+  (scripts/analyze.py, Art language, ganz ohne KI gezählt): lange Sätze,
+  Wortwiederholungen, gleiche Satzanfänge, Füllwörter – je Abschnitt mit
+  Fundstelle. Übernommen wird nur in die Hinweisliste der Abschnitte
+  (story/hints.yml); der Text bleibt unverändert.
+
+  Aufbau:
+  - Kopf: Symbol, „Sprachliche Hinweise“, Bereich, Anzahl, Lauf; Regeln
+  - Filter je Art (Häkchen)
+  - je Hinweis: Häkchen, Abschnitt, Art, Hinweis, Fundstelle
+  - Verwerfen, Übernehmen
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{KIND}}                language
+  - {{RUN_ID}}, {{RUN_TEXT}}  Hintergrundlauf, z. B. „Hintergrundlauf 001 vom 04.11.2026“
+  - {{SCOPE_TEXT}}, {{SUGGEST_COUNT_TEXT}}  z. B. „ganzes Buch“, „23 Hinweise“
+  - {{RULES_TEXT}}          die Regeln, nach denen gezählt wurde
+  Wiederholung je Hinweis zwischen {{#SUGGESTIONS}} und {{/SUGGESTIONS}}:
+  - {{S_IDX}}, {{S_WHERE}}  Nummer in der Vorschlagsdatei, Abschnitt
+  - {{S_KIND}}, {{S_KIND_TEXT}}  long_sentence | repetition | same_start | filler und deutsch
+  - {{S_TEXT}}, {{S_QUOTE}}  Hinweis und Fundstelle
+
+  Verhalten:
+  - Übernehmen sendet analysis.apply mit kind, run und choices [{index}] der
+    angehakten Hinweise; sie ersetzen die bisherigen Hinweise der gelesenen
+    Abschnitte.
+  - Verwerfen sendet form.cancel (form analysis.apply, kind, run).
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: analysis.apply, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">Sprachliche Hinweise: {{SUGGEST_COUNT_TEXT}} für {{SCOPE_TEXT}}. Auswählen und übernehmen.</h2>
+<style>
+.gw-pv .row{display:grid;grid-template-columns:auto 3em minmax(0,1fr);gap:8px;align-items:start;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:13px;line-height:1.45}
+.gw-pv .row:last-child{border-bottom:0}
+.gw-pv .row.off{opacity:0.5}
+.gw-pv .w{color:var(--text-muted)}
+.gw-pv .k{font-weight:500}
+.gw-pv .q{font-style:italic;color:var(--text-muted);font-size:12px}
+.gw-pv .flt{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:13px;color:var(--text-secondary)}
+.gw-pv .flt label{display:flex;gap:5px;align-items:center;cursor:pointer}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)}
+.gw-btn.pri{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-btn:disabled{opacity:0.45;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-pv" id="gw-pv" data-kind="{{KIND}}" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div>
+      <div style="font-size:12px;color:var(--text-muted)">{{SCOPE_TEXT}} · {{SUGGEST_COUNT_TEXT}}<span data-gw-if="RUN_TEXT"> · {{RUN_TEXT}}</span></div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-text-spellcheck" style="color:var(--text-secondary)" aria-hidden="true"></i>Sprachliche Hinweise</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Gezählt ohne KI: {{RULES_TEXT}}</div>
+    </div>
+    <div class="flt" id="gw-flt"></div>
+    <div id="gw-list">
+      {{#SUGGESTIONS}}
+      <div class="row" data-idx="{{S_IDX}}" data-k="{{S_KIND}}" data-kt="{{S_KIND_TEXT}}">
+        <input type="checkbox" class="on" checked aria-label="übernehmen" style="margin-top:3px">
+        <span class="w">{{S_WHERE}}</span>
+        <span><span class="k">{{S_KIND_TEXT}}</span> · {{S_TEXT}}<br><span class="q">„{{S_QUOTE}}“</span></span>
+      </div>
+      {{/SUGGESTIONS}}
+    </div>
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">Keine Auffälligkeiten.</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Nur Hinweise zur Durchsicht: Sie erscheinen beim Abschnitt und ersetzen dort die Hinweise eines früheren Laufs. Der Text des Buchs bleibt unverändert.</div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel">Verwerfen</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">Übernehmen</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var box=document.getElementById('gw-pv'),ds=box.dataset,$=function(id){return document.getElementById(id);};
+  var rows=Array.prototype.slice.call(box.querySelectorAll('.row'));
+  if(rows.length)$('gw-none').remove();else{$('gw-apply').disabled=true;$('gw-flt').remove();}
+  var kinds={};rows.forEach(function(r){kinds[r.dataset.k]=kinds[r.dataset.k]||{text:r.dataset.kt,n:0};kinds[r.dataset.k].n++;});
+  Object.keys(kinds).forEach(function(k){
+    var l=document.createElement('label'),c=document.createElement('input');c.type='checkbox';c.checked=true;
+    l.appendChild(c);l.appendChild(document.createTextNode(kinds[k].text+' ('+kinds[k].n+')'));
+    c.addEventListener('change',function(){rows.forEach(function(r){if(r.dataset.k===k){r.querySelector('.on').checked=c.checked;r.classList.toggle('off',!c.checked);}});refresh();});
+    $('gw-flt')&&$('gw-flt').appendChild(l);
+  });
+  rows.forEach(function(r){var on=r.querySelector('.on');on.addEventListener('change',function(){r.classList.toggle('off',!on.checked);refresh();});});
+  function choices(){return rows.filter(function(r){return r.querySelector('.on').checked;}).map(function(r){return {index:+r.dataset.idx};});}
+  function refresh(){var n=choices().length;$('gw-apply').disabled=!rows.length;$('gw-apply').textContent=n?n+' Hinweise übernehmen':'Keine übernehmen (alte entfernen)';}
+  function lock(){box.querySelectorAll('input,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
+  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend('Sprachliche Hinweise übernehmen ('+ch.length+')','analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Vorschläge verworfen','form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
+  refresh();
+})();
+</script>
