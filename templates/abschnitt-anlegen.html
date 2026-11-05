@@ -32,7 +32,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Formular zum Anlegen eines neuen Abschnitts in Kapitel {{CHAPTER_NUMBER}}: Titel, Ziel, Kurzbeschreibung, Faktencheck und Position.</h2>
+<h2 class="sr-only" data-i18n="section.create.accessible_title">Formular zum Anlegen eines neuen Abschnitts.</h2>
 <style>
 .gw-f label{display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
 .gw-f .hint{font-size:12px;color:var(--text-muted);font-weight:400}
@@ -46,33 +46,33 @@
   <form class="gw-f" id="gw-abschnitt-anlegen" data-chapter="{{CHAPTER_ID}}" data-num="{{CHAPTER_NUMBER}}" data-fc="{{FACT_CHECK_DEFAULT}}" novalidate style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div style="display:flex;align-items:center;gap:var(--gap-sm)">
       <i class="ti ti-plus" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
-      <span style="font-size:16px;font-weight:500">Neuer Abschnitt in Kapitel {{CHAPTER_NUMBER}}</span>
+      <span style="font-size:16px;font-weight:500"><span data-i18n="section.create.heading">Neuer Abschnitt in Kapitel</span> {{CHAPTER_NUMBER}}</span>
       <span style="font-size:13px;color:var(--text-secondary);margin-left:auto">{{CHAPTER_TITLE}}</span>
     </div>
     <div>
-      <label for="gw-title">Titel</label>
-      <input id="gw-title" placeholder="Titel des Abschnitts">
-      <div class="gw-err" id="gw-title-err" hidden>Bitte einen Titel eingeben.</div>
+      <label for="gw-title"><span data-i18n="section.create.title_label">Titel</span></label>
+      <input id="gw-title" data-i18n-placeholder="section.create.title_placeholder" placeholder="Titel des Abschnitts">
+      <div class="gw-err" id="gw-title-err" data-i18n="section.create.title_required" hidden>Bitte einen Titel eingeben.</div>
     </div>
     <div>
-      <label for="gw-goal">Ziel des Abschnitts <span class="hint">was soll dieser Abschnitt leisten?</span></label>
+      <label for="gw-goal"><span data-i18n="section.create.goal_label">Ziel des Abschnitts</span> <span class="hint" data-i18n="section.create.goal_hint">was soll dieser Abschnitt leisten?</span></label>
       <textarea id="gw-goal" rows="2"></textarea>
     </div>
     <div>
-      <label for="gw-summary">Kurzbeschreibung <span class="hint">worum es geht</span></label>
+      <label for="gw-summary"><span data-i18n="section.create.summary_label">Kurzbeschreibung</span> <span class="hint" data-i18n="section.create.summary_hint">worum es geht</span></label>
       <textarea id="gw-summary" rows="2"></textarea>
     </div>
     <div style="display:flex;gap:var(--gap-md);flex-wrap:wrap">
       <div style="flex:1 1 160px">
-        <label for="gw-fc">Faktencheck</label>
+        <label for="gw-fc"><span data-i18n="section.create.fact_check_label">Faktencheck</span></label>
         <select id="gw-fc">
-          <option value="disabled">aus</option>
+          <option value="disabled" data-i18n="section.create.fact_check_disabled">aus</option>
           <option value="optional">optional</option>
-          <option value="requested">angefordert</option>
+          <option value="requested" data-i18n="section.create.fact_check_requested">angefordert</option>
         </select>
       </div>
       <div style="flex:2 1 240px">
-        <label for="gw-pos">Position</label>
+        <label for="gw-pos"><span data-i18n="section.create.position_label">Position</span></label>
         <select id="gw-pos">
           {{#POSITIONS}}
           <option {{POSITION_SELECTED}}>{{POSITION_LABEL}}</option>
@@ -81,8 +81,8 @@
       </div>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
-      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">Abschnitt anlegen</button>
+      <button type="button" class="gw-btn" id="gw-cancel" data-i18n="section.create.cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
+      <button type="button" class="gw-btn" id="gw-save" data-i18n="section.create.submit" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">Abschnitt anlegen</button>
     </div>
   </form>
 </div>
@@ -101,8 +101,8 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     var g=function(k){return $(k).value.trim();},s=$('gw-pos');
     var d={chapter_id:id,title:g('gw-title'),goal:g('gw-goal'),summary:g('gw-summary'),fact_check:$('gw-fc').value,position:s.selectedIndex,position_label:s.value};
     lock();
-    gwSend('Neuer Abschnitt in Kapitel '+num+': '+d.title,'section.create',d);
+    gwSend(GW.t('section.create.prompt')+' '+num+': '+d.title,'section.create',d);
   });
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Neuer Abschnitt in Kapitel '+num+' abgebrochen','form.cancel',{form:'section.create',chapter_id:id});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(GW.t('section.create.cancel_prompt')+' '+num,'form.cancel',{form:'section.create',chapter_id:id});});
 })();
 </script>
