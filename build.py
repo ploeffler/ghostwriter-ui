@@ -93,10 +93,21 @@ def main():
             for key, value in dictionary.get(group, {}).items():
                 if not isinstance(value, str) or not value.strip():
                     raise SystemExit(f'Empty or invalid translation: {lang}.{group}.{key}')
+    template_paths = sorted((ROOT / 'templates').glob('*.html'))
+    used_keys = set()
+    for path in template_paths:
+        source = path.read_text(encoding='utf-8')
+        used_keys.update(re.findall(r'data-i18n(?:-(?:placeholder|title|aria-label))?="([^"]+)"', source))
+        used_keys.update(re.findall(r"GW\\.t\\(['\"]([^'\"]+)['\"]\\)", source))
+    declared_keys = set(dictionaries['de'].get('keys', {}))
+    missing_keys = used_keys - declared_keys
+    orphaned_keys = declared_keys - used_keys
+    if missing_keys or orphaned_keys:
+        raise SystemExit(f'i18n key usage mismatch: missing={sorted(missing_keys)}, orphaned={sorted(orphaned_keys)}')
     runtime = RUNTIME.replace('DICTIONARIES', json.dumps(dictionaries, ensure_ascii=False, separators=(',', ':')))
     parts = ['/* GhostWriter UI ' + VERSION + ' – gebaut aus templates/*.html mit build.py, nicht von Hand ändern */',
              '(function(){', f'  var VERSION={json.dumps(VERSION)};', '  var T={};']
-    for path in sorted((ROOT / 'templates').glob('*.html')):
+    for path in template_paths:
         html, script = split(path)
         parts.append(f'  T[{json.dumps(path.stem)}]={{html:{json.dumps(html, ensure_ascii=False)},run:function(){{\n{script}\n}}}};')
     parts.append(runtime)
