@@ -98,7 +98,7 @@ def main():
     for path in template_paths:
         source = path.read_text(encoding='utf-8')
         used_keys.update(re.findall(r'data-i18n(?:-(?:placeholder|title|aria-label))?="([^"]+)"', source))
-        used_keys.update(re.findall(r"GW\\.t\\(['\"]([^'\"]+)['\"]\\)", source))
+        used_keys.update(re.findall(r"GW\.t\(['\"]([^'\"]+)['\"]\)", source))
     declared_keys = set(dictionaries['de'].get('keys', {}))
     missing_keys = used_keys - declared_keys
     orphaned_keys = declared_keys - used_keys
