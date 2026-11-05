@@ -2,7 +2,7 @@
 (function(){
   var VERSION="0.42.0";
   var T={};
-  T["abschnitt-anlegen"]={html:"<h2 class=\"sr-only\">Formular zum Anlegen eines neuen Abschnitts in Kapitel {{CHAPTER_NUMBER}}: Titel, Ziel, Kurzbeschreibung, Faktencheck und Position.</h2>\n<style>\n.gw-f label{display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}\n.gw-f .hint{font-size:12px;color:var(--text-muted);font-weight:400}\n.gw-f input,.gw-f textarea,.gw-f select{width:100%;box-sizing:border-box;padding:9px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px}\n.gw-f input:focus,.gw-f textarea:focus,.gw-f select:focus{outline:none;border-color:var(--border-accent)}\n.gw-f textarea{resize:vertical;line-height:1.6}\n.gw-err{font-size:13px;color:var(--text-danger);margin-top:4px}\n.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}\n</style>\n<div style=\"padding:1rem 0\">\n  <form class=\"gw-f\" id=\"gw-abschnitt-anlegen\" data-chapter=\"{{CHAPTER_ID}}\" data-num=\"{{CHAPTER_NUMBER}}\" data-fc=\"{{FACT_CHECK_DEFAULT}}\" novalidate style=\"border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)\">\n    <div style=\"display:flex;align-items:center;gap:var(--gap-sm)\">\n      <i class=\"ti ti-plus\" style=\"font-size:18px;color:var(--text-secondary)\" aria-hidden=\"true\"></i>\n      <span style=\"font-size:16px;font-weight:500\">Neuer Abschnitt in Kapitel {{CHAPTER_NUMBER}}</span>\n      <span style=\"font-size:13px;color:var(--text-secondary);margin-left:auto\">{{CHAPTER_TITLE}}</span>\n    </div>\n    <div>\n      <label for=\"gw-title\">Titel</label>\n      <input id=\"gw-title\" placeholder=\"Titel des Abschnitts\">\n      <div class=\"gw-err\" id=\"gw-title-err\" hidden>Bitte einen Titel eingeben.</div>\n    </div>\n    <div>\n      <label for=\"gw-goal\">Ziel des Abschnitts <span class=\"hint\">was soll dieser Abschnitt leisten?</span></label>\n      <textarea id=\"gw-goal\" rows=\"2\"></textarea>\n    </div>\n    <div>\n      <label for=\"gw-summary\">Kurzbeschreibung <span class=\"hint\">worum es geht</span></label>\n      <textarea id=\"gw-summary\" rows=\"2\"></textarea>\n    </div>\n    <div style=\"display:flex;gap:var(--gap-md);flex-wrap:wrap\">\n      <div style=\"flex:1 1 160px\">\n        <label for=\"gw-fc\">Faktencheck</label>\n        <select id=\"gw-fc\">\n          <option value=\"disabled\">aus</option>\n          <option value=\"optional\">optional</option>\n          <option value=\"requested\">angefordert</option>\n        </select>\n      </div>\n      <div style=\"flex:2 1 240px\">\n        <label for=\"gw-pos\">Position</label>\n        <select id=\"gw-pos\">\n          {{#POSITIONS}}\n          <option {{POSITION_SELECTED}}>{{POSITION_LABEL}}</option>\n          {{/POSITIONS}}\n        </select>\n      </div>\n    </div>\n    <div style=\"display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)\">\n      <button type=\"button\" class=\"gw-btn\" id=\"gw-cancel\" style=\"border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)\">Abbrechen</button>\n      <button type=\"button\" class=\"gw-btn\" id=\"gw-save\" style=\"border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)\">Abschnitt anlegen</button>\n    </div>\n  </form>\n</div>\n",run:function(){
+  T["abschnitt-anlegen"]={html:"<h2 class=\"sr-only\" data-i18n=\"section.create.accessible_title\">Formular zum Anlegen eines neuen Abschnitts.</h2>\n<style>\n.gw-f label{display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}\n.gw-f .hint{font-size:12px;color:var(--text-muted);font-weight:400}\n.gw-f input,.gw-f textarea,.gw-f select{width:100%;box-sizing:border-box;padding:9px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px}\n.gw-f input:focus,.gw-f textarea:focus,.gw-f select:focus{outline:none;border-color:var(--border-accent)}\n.gw-f textarea{resize:vertical;line-height:1.6}\n.gw-err{font-size:13px;color:var(--text-danger);margin-top:4px}\n.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}\n</style>\n<div style=\"padding:1rem 0\">\n  <form class=\"gw-f\" id=\"gw-abschnitt-anlegen\" data-chapter=\"{{CHAPTER_ID}}\" data-num=\"{{CHAPTER_NUMBER}}\" data-fc=\"{{FACT_CHECK_DEFAULT}}\" novalidate style=\"border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)\">\n    <div style=\"display:flex;align-items:center;gap:var(--gap-sm)\">\n      <i class=\"ti ti-plus\" style=\"font-size:18px;color:var(--text-secondary)\" aria-hidden=\"true\"></i>\n      <span style=\"font-size:16px;font-weight:500\"><span data-i18n=\"section.create.heading\">Neuer Abschnitt in Kapitel</span> {{CHAPTER_NUMBER}}</span>\n      <span style=\"font-size:13px;color:var(--text-secondary);margin-left:auto\">{{CHAPTER_TITLE}}</span>\n    </div>\n    <div>\n      <label for=\"gw-title\"><span data-i18n=\"section.create.title_label\">Titel</span></label>\n      <input id=\"gw-title\" data-i18n-placeholder=\"section.create.title_placeholder\" placeholder=\"Titel des Abschnitts\">\n      <div class=\"gw-err\" id=\"gw-title-err\" data-i18n=\"section.create.title_required\" hidden>Bitte einen Titel eingeben.</div>\n    </div>\n    <div>\n      <label for=\"gw-goal\"><span data-i18n=\"section.create.goal_label\">Ziel des Abschnitts</span> <span class=\"hint\" data-i18n=\"section.create.goal_hint\">was soll dieser Abschnitt leisten?</span></label>\n      <textarea id=\"gw-goal\" rows=\"2\"></textarea>\n    </div>\n    <div>\n      <label for=\"gw-summary\"><span data-i18n=\"section.create.summary_label\">Kurzbeschreibung</span> <span class=\"hint\" data-i18n=\"section.create.summary_hint\">worum es geht</span></label>\n      <textarea id=\"gw-summary\" rows=\"2\"></textarea>\n    </div>\n    <div style=\"display:flex;gap:var(--gap-md);flex-wrap:wrap\">\n      <div style=\"flex:1 1 160px\">\n        <label for=\"gw-fc\"><span data-i18n=\"section.create.fact_check_label\">Faktencheck</span></label>\n        <select id=\"gw-fc\">\n          <option value=\"disabled\" data-i18n=\"section.create.fact_check_disabled\">aus</option>\n          <option value=\"optional\">optional</option>\n          <option value=\"requested\" data-i18n=\"section.create.fact_check_requested\">angefordert</option>\n        </select>\n      </div>\n      <div style=\"flex:2 1 240px\">\n        <label for=\"gw-pos\"><span data-i18n=\"section.create.position_label\">Position</span></label>\n        <select id=\"gw-pos\">\n          {{#POSITIONS}}\n          <option {{POSITION_SELECTED}}>{{POSITION_LABEL}}</option>\n          {{/POSITIONS}}\n        </select>\n      </div>\n    </div>\n    <div style=\"display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)\">\n      <button type=\"button\" class=\"gw-btn\" id=\"gw-cancel\" data-i18n=\"section.create.cancel\" style=\"border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)\">Abbrechen</button>\n      <button type=\"button\" class=\"gw-btn\" id=\"gw-save\" data-i18n=\"section.create.submit\" style=\"border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)\">Abschnitt anlegen</button>\n    </div>\n  </form>\n</div>\n",run:function(){
 function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 (function(){
   var f=document.getElementById('gw-abschnitt-anlegen');
@@ -17,9 +17,9 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     var g=function(k){return $(k).value.trim();},s=$('gw-pos');
     var d={chapter_id:id,title:g('gw-title'),goal:g('gw-goal'),summary:g('gw-summary'),fact_check:$('gw-fc').value,position:s.selectedIndex,position_label:s.value};
     lock();
-    gwSend('Neuer Abschnitt in Kapitel '+num+': '+d.title,'section.create',d);
+    gwSend(GW.t('section.create.prompt')+' '+num+': '+d.title,'section.create',d);
   });
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Neuer Abschnitt in Kapitel '+num+' abgebrochen','form.cancel',{form:'section.create',chapter_id:id});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(GW.t('section.create.cancel_prompt')+' '+num,'form.cancel',{form:'section.create',chapter_id:id});});
 })();
 
 }};
@@ -1367,16 +1367,28 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     });
     return fillText(t,d);
   }
-  var STATUS={planned:'geplant',in_progress:'in Arbeit',ready_for_assembly:'bereit zum Zusammenführen',assembly:'wird zusammengeführt',review:'Durchsicht',ready_for_approval:'bereit zur Freigabe',approved:'freigegeben',research:'Recherche',brainstorming:'Ideensammlung',ready_to_write:'bereit zum Schreiben',writing:'Schreiben',revision:'Überarbeitung',fact_check:'Faktencheck'};
-  function german(d){
+  var I18N={"de":{"keys":{"section.create.accessible_title":"Formular zum Anlegen eines neuen Abschnitts.","section.create.heading":"Neuer Abschnitt in Kapitel","section.create.title_label":"Titel","section.create.title_placeholder":"Titel des Abschnitts","section.create.title_required":"Bitte einen Titel eingeben.","section.create.goal_label":"Ziel des Abschnitts","section.create.goal_hint":"was soll dieser Abschnitt leisten?","section.create.summary_label":"Kurzbeschreibung","section.create.summary_hint":"worum es geht","section.create.fact_check_label":"Faktencheck","section.create.fact_check_disabled":"aus","section.create.fact_check_requested":"angefordert","section.create.position_label":"Position","section.create.cancel":"Abbrechen","section.create.submit":"Abschnitt anlegen","section.create.prompt":"Neuer Abschnitt in Kapitel","section.create.cancel_prompt":"Neuer Abschnitt in Kapitel abgebrochen"},"status":{"planned":"geplant","in_progress":"in Arbeit","ready_for_assembly":"bereit zum Zusammenführen","assembly":"wird zusammengeführt","review":"Durchsicht","ready_for_approval":"bereit zur Freigabe","approved":"freigegeben","research":"Recherche","brainstorming":"Ideensammlung","ready_to_write":"bereit zum Schreiben","writing":"Schreiben","revision":"Überarbeitung","fact_check":"Faktencheck"}},"en":{"keys":{"section.create.accessible_title":"Form to create a new section.","section.create.heading":"New section in chapter","section.create.title_label":"Title","section.create.title_placeholder":"Section title","section.create.title_required":"Please enter a title.","section.create.goal_label":"Section goal","section.create.goal_hint":"what should this section achieve?","section.create.summary_label":"Short description","section.create.summary_hint":"what it is about","section.create.fact_check_label":"Fact-check","section.create.fact_check_disabled":"off","section.create.fact_check_requested":"requested","section.create.position_label":"Position","section.create.cancel":"Cancel","section.create.submit":"Create section","section.create.prompt":"New section in chapter","section.create.cancel_prompt":"New section in chapter cancelled"},"status":{"planned":"planned","in_progress":"in progress","ready_for_assembly":"ready for assembly","assembly":"assembling","review":"review","ready_for_approval":"ready for approval","approved":"approved","research":"research","brainstorming":"brainstorming","ready_to_write":"ready to write","writing":"writing","revision":"revision","fact_check":"fact-check"}}};
+  function languageCode(value){return String(value||'de').toLowerCase().split(/[-_]/)[0]==='en'?'en':'de';}
+  function translate(key,language){
+    var lang=languageCode(language), value=(I18N[lang]&&I18N[lang].keys[key]);
+    if(value==null)value=I18N.de.keys[key];
+    return value==null?key:value;
+  }
+  function localizeData(d,lang){
     var o={};
-    Object.keys(d).forEach(function(k){
+    Object.keys(d||{}).forEach(function(k){
       var v=d[k];
-      if(Array.isArray(v))v=v.map(function(r){return r&&typeof r==='object'?german(r):r;});
-      else if(/_STATUS$/.test(k)&&Object.prototype.hasOwnProperty.call(STATUS,v))v=STATUS[v];
+      if(Array.isArray(v))v=v.map(function(r){return r&&typeof r==='object'?localizeData(r,lang):r;});
+      else if(/_STATUS$/.test(k)&&I18N[lang].status&&Object.prototype.hasOwnProperty.call(I18N[lang].status,v))v=I18N[lang].status[v];
       o[k]=v;
     });
     return o;
+  }
+  function translateDOM(el,lang){
+    el.querySelectorAll('[data-i18n]').forEach(function(n){n.textContent=translate(n.getAttribute('data-i18n'),lang);});
+    [['data-i18n-placeholder','placeholder'],['data-i18n-title','title'],['data-i18n-aria-label','aria-label']].forEach(function(pair){
+      el.querySelectorAll('['+pair[0]+']').forEach(function(n){n.setAttribute(pair[1],translate(n.getAttribute(pair[0]),lang));});
+    });
   }
   var head='';
   function withHead(action,d){
@@ -1384,19 +1396,25 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     if(!head||!writes||Object.prototype.hasOwnProperty.call(d,'expected_head_sha'))return d;
     var o={};Object.keys(d).forEach(function(k){o[k]=d[k];});o.expected_head_sha=head;return o;
   }
-  function render(name,data,el){
+  function render(name,data,el,language){
     var t=T[name];
-    if(!t)throw new Error('GhostWriter-Vorlage unbekannt: '+name);
+    if(!t)throw new Error('Unknown GhostWriter template: '+name);
+    if(typeof el==='string'&&language==null){language=el;el=null;}
+    data=data||{};
+    var lang=languageCode(language||data.INTERFACE_LANGUAGE||'de');
     el=el||document.getElementById('gw');
-    data=german(data||{});
+    data=localizeData(data,lang);
     head=String(data.HEAD_SHA||'');
     el.innerHTML=fill(t.html,data);
     el.querySelectorAll('[data-gw-if]').forEach(function(n){
       var v=data[n.getAttribute('data-gw-if')];
       if(!v||(Array.isArray(v)&&!v.length))n.remove();
     });
+    translateDOM(el,lang);
     t.run();
+    GW.language=lang;
   }
-  window.GW={version:VERSION,templates:Object.keys(T),render:render,withHead:withHead};
+  window.GW={version:VERSION,templates:Object.keys(T),language:'de',render:render,withHead:withHead,t:function(key){return translate(key,GW.language);}};
+
 
 })();

@@ -1,0 +1,36 @@
+{
+  "keys": {
+    "section.create.accessible_title": "Formular zum Anlegen eines neuen Abschnitts.",
+    "section.create.heading": "Neuer Abschnitt in Kapitel",
+    "section.create.title_label": "Titel",
+    "section.create.title_placeholder": "Titel des Abschnitts",
+    "section.create.title_required": "Bitte einen Titel eingeben.",
+    "section.create.goal_label": "Ziel des Abschnitts",
+    "section.create.goal_hint": "was soll dieser Abschnitt leisten?",
+    "section.create.summary_label": "Kurzbeschreibung",
+    "section.create.summary_hint": "worum es geht",
+    "section.create.fact_check_label": "Faktencheck",
+    "section.create.fact_check_disabled": "aus",
+    "section.create.fact_check_requested": "angefordert",
+    "section.create.position_label": "Position",
+    "section.create.cancel": "Abbrechen",
+    "section.create.submit": "Abschnitt anlegen",
+    "section.create.prompt": "Neuer Abschnitt in Kapitel",
+    "section.create.cancel_prompt": "Neuer Abschnitt in Kapitel abgebrochen"
+  },
+  "status": {
+    "planned": "geplant",
+    "in_progress": "in Arbeit",
+    "ready_for_assembly": "bereit zum Zusammenführen",
+    "assembly": "wird zusammengeführt",
+    "review": "Durchsicht",
+    "ready_for_approval": "bereit zur Freigabe",
+    "approved": "freigegeben",
+    "research": "Recherche",
+    "brainstorming": "Ideensammlung",
+    "ready_to_write": "bereit zum Schreiben",
+    "writing": "Schreiben",
+    "revision": "Überarbeitung",
+    "fact_check": "Faktencheck"
+  }
+}

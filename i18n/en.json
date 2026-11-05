@@ -1,0 +1,36 @@
+{
+  "keys": {
+    "section.create.accessible_title": "Form to create a new section.",
+    "section.create.heading": "New section in chapter",
+    "section.create.title_label": "Title",
+    "section.create.title_placeholder": "Section title",
+    "section.create.title_required": "Please enter a title.",
+    "section.create.goal_label": "Section goal",
+    "section.create.goal_hint": "what should this section achieve?",
+    "section.create.summary_label": "Short description",
+    "section.create.summary_hint": "what it is about",
+    "section.create.fact_check_label": "Fact-check",
+    "section.create.fact_check_disabled": "off",
+    "section.create.fact_check_requested": "requested",
+    "section.create.position_label": "Position",
+    "section.create.cancel": "Cancel",
+    "section.create.submit": "Create section",
+    "section.create.prompt": "New section in chapter",
+    "section.create.cancel_prompt": "New section in chapter cancelled"
+  },
+  "status": {
+    "planned": "planned",
+    "in_progress": "in progress",
+    "ready_for_assembly": "ready for assembly",
+    "assembly": "assembling",
+    "review": "review",
+    "ready_for_approval": "ready for approval",
+    "approved": "approved",
+    "research": "research",
+    "brainstorming": "brainstorming",
+    "ready_to_write": "ready to write",
+    "writing": "writing",
+    "revision": "revision",
+    "fact_check": "fact-check"
+  }
+}
