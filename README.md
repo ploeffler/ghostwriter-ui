@@ -28,6 +28,19 @@ Der Assistent gibt statt der fertigen Ansicht nur eine Ladezeile und die Daten a
 
 `<commit>` ist ein fester Commit dieses Repos. So ändert sich eine Ansicht nicht unbemerkt, und jsDelivr kann die Datei dauerhaft zwischenspeichern. `@main` funktioniert auch, wird von jsDelivr aber bis zu zwölf Stunden zwischengespeichert.
 
+## Sprachen der Oberfläche
+
+Die Sprache des Buchmanuskripts (`project.language`) ist unabhängig von der Sprache der GhostWriter-Oberfläche.
+
+- `GW.render(name, data, element)` bleibt unverändert und verwendet standardmäßig Deutsch.
+- Die Sprache kann zusätzlich als viertes Argument übergeben werden: `GW.render(name, data, element, "en")`.
+- Alternativ kann `data.INTERFACE_LANGUAGE` den Wert `de` oder `en` enthalten. Ein explizites viertes Argument hat Vorrang.
+- Für Aufrufe ohne Element kann die Sprache als drittes Argument übergeben werden: `GW.render(name, data, "en")`.
+- Fehlende Übersetzungen fallen zur Laufzeit auf Deutsch zurück. Der Build prüft die Schlüssel auf Vollständigkeit, Gleichstand zwischen den Sprachdateien und tatsächliche Verwendung in den Vorlagen.
+- Die Übersetzungsdateien liegen unter `i18n/de.json` und `i18n/en.json`. Dynamische Buchinhalte und Nutzereingaben werden nicht übersetzt.
+
+Die Sprachunterstützung wird schrittweise in die Vorlagen übernommen; noch nicht migrierte Vorlagen bleiben vorerst deutsch.
+
 ## Entwickeln
 
 Die Vorlagen in `templates/` sind die Quelle; `dist/gw.js` wird daraus gebaut und nicht von Hand geändert:
