@@ -40,7 +40,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Sammelband der Serie {{SERIES_TITLE}}: Bände wählen, Titel, Vorwort, Freigabe und Veröffentlichung.</h2>
+<h2 class="sr-only">{{t:ui.omnibus_for_series_select_volumes_title_foreword_approval_and_publication}}</h2>
 <style>
 .gw-f label.l{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--text-primary)}
 .gw-f .hint{font-weight:400;color:var(--text-muted)}
@@ -60,29 +60,29 @@
   <form class="gw-f" id="gw-om" data-id="{{SERIES_ID}}" data-state="{{OMNIBUS_STATE}}" data-edition="{{OMNIBUS_EDITION}}" novalidate style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div style="display:flex;align-items:flex-start;gap:var(--gap-md)">
       <div style="flex:1">
-        <div style="font-size:12px;color:var(--text-muted)">Serie „{{SERIES_TITLE}}“ · <span id="gw-state"></span></div>
-        <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-books" style="color:var(--text-secondary)" aria-hidden="true"></i>Sammelband</div>
+        <div style="font-size:12px;color:var(--text-muted)">{{t:ui.series_2}} <span id="gw-state"></span></div>
+        <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-books" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.omnibus}}</div>
       </div>
-      <button type="button" class="gw-btn" id="gw-back" title="Zur Serie" style="padding:6px 10px"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
+      <button type="button" class="gw-btn" id="gw-back" title="{{t:ui.to_series}}" style="padding:6px 10px"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
     </div>
     <div class="grid2">
-      <div><label class="l" for="gw-title">Titel</label><input type="text" id="gw-title" value="{{OMNIBUS_TITLE}}" autocomplete="off"></div>
-      <div><label class="l" for="gw-sub">Untertitel <span class="hint">optional</span></label><input type="text" id="gw-sub" value="{{OMNIBUS_SUBTITLE}}" autocomplete="off"></div>
+      <div><label class="l" for="gw-title">{{t:ui.title}}</label><input type="text" id="gw-title" value="{{OMNIBUS_TITLE}}" autocomplete="off"></div>
+      <div><label class="l" for="gw-sub">{{t:ui.subtitle}} <span class="hint">{{t:ui.optional}}</span></label><input type="text" id="gw-sub" value="{{OMNIBUS_SUBTITLE}}" autocomplete="off"></div>
     </div>
     <div>
-      <div class="sec">Bände <span class="hint">je Band eine erschienene Auflage; leer = die neueste</span></div>
+      <div class="sec">{{t:ui.volumes}} <span class="hint">{{t:ui.one_published_edition_per_volume_blank_latest}}</span></div>
       <div id="gw-vols" style="display:flex;flex-direction:column;gap:6px">
         {{#OVOLUMES}}
         <label class="row" data-branch="{{OV_BRANCH}}" data-on="{{OV_ON}}" data-last="{{OV_LAST}}" data-ed="{{OV_EDITION}}">
-          <input type="checkbox" class="on" aria-label="im Sammelband">
-          <span style="flex:1;min-width:0">Band {{OV_NUMBER}}: {{OV_TITLE}} <span style="display:block;font-size:12px;color:var(--text-muted)">{{OV_TEXT}}</span></span>
-          <input type="number" class="ed" min="1" placeholder="neueste" aria-label="Auflage">
+          <input type="checkbox" class="on" aria-label="{{t:ui.in_the_omnibus}}">
+          <span style="flex:1;min-width:0">{{t:ui.volume}} <span style="display:block;font-size:12px;color:var(--text-muted)">{{OV_TEXT}}</span></span>
+          <input type="number" class="ed" min="1" placeholder="{{t:ui.latest}}" aria-label="{{t:ui.edition}}">
         </label>
         {{/OVOLUMES}}
       </div>
     </div>
     <div>
-      <div class="sec">Aus den Bänden übernehmen</div>
+      <div class="sec">{{t:ui.use_from_volumes}}</div>
       <div class="chips">
         {{#KEEP}}
         <label><input type="checkbox" class="keep" value="{{K_KIND}}" data-on="{{K_ON}}"> {{K_LABEL}}</label>
@@ -90,22 +90,22 @@
       </div>
     </div>
     <div class="grid2">
-      <div><label class="l" for="gw-fw">Vorwort zum Sammelband <span class="hint">optional</span></label><textarea id="gw-fw">{{OMNIBUS_FOREWORD}}</textarea></div>
-      <div><label class="l" for="gw-aw">Nachwort <span class="hint">optional</span></label><textarea id="gw-aw">{{OMNIBUS_AFTERWORD}}</textarea></div>
+      <div><label class="l" for="gw-fw">{{t:ui.omnibus_foreword}} <span class="hint">{{t:ui.optional}}</span></label><textarea id="gw-fw">{{OMNIBUS_FOREWORD}}</textarea></div>
+      <div><label class="l" for="gw-aw">{{t:ui.afterword}} <span class="hint">{{t:ui.optional}}</span></label><textarea id="gw-aw">{{OMNIBUS_AFTERWORD}}</textarea></div>
     </div>
     <div class="grid2">
-      <div><label class="l" for="gw-ip">ISBN Druckausgabe</label><input type="text" id="gw-ip" value="{{OMNIBUS_ISBN_PRINT}}" autocomplete="off"></div>
-      <div><label class="l" for="gw-ie">ISBN E-Book</label><input type="text" id="gw-ie" value="{{OMNIBUS_ISBN_EBOOK}}" autocomplete="off"></div>
+      <div><label class="l" for="gw-ip">{{t:ui.print_isbn}}</label><input type="text" id="gw-ip" value="{{OMNIBUS_ISBN_PRINT}}" autocomplete="off"></div>
+      <div><label class="l" for="gw-ie">{{t:ui.e_book_isbn}}</label><input type="text" id="gw-ie" value="{{OMNIBUS_ISBN_EBOOK}}" autocomplete="off"></div>
     </div>
-    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Glossar und Figuren werden zusammengeführt; bei Begriffen der Serie gilt deren Fassung. Jede Änderung setzt die Freigabe zurück.</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.glossary_and_characters_are_combined_series_terms_take_precedence_every_change_resets_approval}}</div>
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-cancel">Abbrechen</button>
-      <button type="button" class="gw-btn pri" id="gw-save" disabled>Speichern</button>
+      <button type="button" class="gw-btn" id="gw-cancel">{{t:ui.cancel}}</button>
+      <button type="button" class="gw-btn pri" id="gw-save" disabled>{{t:ui.save}}</button>
     </div>
     <div id="gw-rel" style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <label id="gw-chk-l" style="font-size:13px;flex:1;min-width:200px"><input type="checkbox" id="gw-chk"> Ich habe den Sammelband geprüft und gebe ihn frei</label>
-      <button type="button" class="gw-btn" id="gw-approve" disabled>Freigeben</button>
-      <button type="button" class="gw-btn" id="gw-revoke">Freigabe zurücknehmen</button>
+      <label id="gw-chk-l" style="font-size:13px;flex:1;min-width:200px"><input type="checkbox" id="gw-chk"> {{t:ui.i_have_reviewed_the_omnibus_and_approve_it}}</label>
+      <button type="button" class="gw-btn" id="gw-approve" disabled>{{t:ui.approve}}</button>
+      <button type="button" class="gw-btn" id="gw-revoke">{{t:ui.withdraw_approval}}</button>
       <button type="button" class="gw-btn pri" id="gw-publish"></button>
     </div>
   </form>
@@ -115,7 +115,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
 (function(){
   var f=document.getElementById('gw-om'),ds=f.dataset,$=function(id){return document.getElementById(id);},sid=ds.id;
   var state=ds.state,next=(+ds.edition||0)+1;
-  $('gw-state').textContent=state==='approved'?'freigegeben':state==='draft'?'Entwurf, nicht freigegeben':'noch nicht angelegt';
+  $('gw-state').textContent=state==='approved'?'freigegeben':state==='draft'?tr("ui.draft_not_approved"):tr("ui.not_created_yet");
   f.querySelectorAll('#gw-vols .row').forEach(function(r){
     var on=r.querySelector('.on'),ed=r.querySelector('.ed');
     on.checked=!!r.dataset.on;ed.value=r.dataset.ed||'';
@@ -139,19 +139,19 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     $('gw-approve').disabled=done||dirty()||!$('gw-chk').checked;
     $('gw-publish').disabled=done||dirty();$('gw-revoke').disabled=done||dirty();
   }
-  $('gw-publish').textContent='Auflage '+next+' veröffentlichen';
+  $('gw-publish').textContent=tr("ui.edition_2")+next+tr("ui.publish");
   f.addEventListener('input',refresh);f.addEventListener('change',refresh);
   function lock(){done=true;f.querySelectorAll('input,textarea,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
-  $('gw-save').addEventListener('click',function(){var d=data();lock();gwSend('Sammelband „'+d.title+'“ speichern','series.omnibus.update',Object.assign({series_id:sid},d));});
-  $('gw-approve').addEventListener('click',function(){lock();gwSend('Sammelband „'+$('gw-title').value.trim()+'“ freigeben','series.omnibus.approve',{series_id:sid});});
-  $('gw-revoke').addEventListener('click',function(){lock();gwSend('Freigabe des Sammelbands zurücknehmen','series.omnibus.revoke',{series_id:sid});});
+  $('gw-save').addEventListener('click',function(){var d=data();lock();gwSend(tr("ui.omnibus_2")+d.title+tr("ui.action_fragment_0"),'series.omnibus.update',Object.assign({series_id:sid},d));});
+  $('gw-approve').addEventListener('click',function(){lock();gwSend(tr("ui.omnibus_2")+$('gw-title').value.trim()+'“ freigeben','series.omnibus.approve',{series_id:sid});});
+  $('gw-revoke').addEventListener('click',function(){lock();gwSend(tr("ui.withdraw_omnibus_approval"),'series.omnibus.revoke',{series_id:sid});});
   var pub=$('gw-publish');
   pub.addEventListener('click',function(){
-    if(!pub.dataset.ask){pub.dataset.ask='1';pub.textContent='Wirklich Auflage '+next+' veröffentlichen? Nochmal klicken';return;}
-    lock();gwSend('Sammelband: Auflage '+next+' veröffentlichen','series.omnibus.publish',{series_id:sid});
+    if(!pub.dataset.ask){pub.dataset.ask='1';pub.textContent=tr("ui.really_publish_edition")+next+tr("ui.click_again_to_publish");return;}
+    lock();gwSend(tr("ui.omnibus_edition")+next+tr("ui.publish"),'series.omnibus.publish',{series_id:sid});
   });
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Sammelband abgebrochen','form.cancel',{form:'series.omnibus.update'});});
-  $('gw-back').addEventListener('click',function(){gwSend('Zur Serie','view.series',{series_id:sid});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.omnibus_cancelled"),'form.cancel',{form:'series.omnibus.update'});});
+  $('gw-back').addEventListener('click',function(){gwSend(tr("ui.to_series"),'view.series',{series_id:sid});});
   refresh();
 })();
 </script>

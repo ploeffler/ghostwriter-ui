@@ -45,8 +45,8 @@ assert.match(german,/Projektdaten bearbeiten/);
 assert.match(german,/freigegeben/);
 assert.equal(GW.renderHtml('projektuebersicht',input,'fr'),german);
 assert.equal(GW.renderHtml('projektuebersicht',input,'en-US'),english);
-assert.equal(GW.supports('ki-dienste','en'),false);
-assert.throws(()=>GW.renderHtml('ki-dienste',{},'en'),/not yet available/);
+assert.equal(GW.supports('ki-dienste','en'),true);
+assert.match(GW.renderHtml('ki-dienste',{},'en'),/Your services/);
 assert.equal(GW.supports('ki-dienste','de'),true);
 for(const name of ['projektuebersicht','buecherregal','kapitelansicht']){
   const html=GW.renderHtml(name,{},'en');

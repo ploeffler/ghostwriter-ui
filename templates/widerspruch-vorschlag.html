@@ -39,7 +39,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Mögliche Widersprüche: {{SUGGEST_COUNT_TEXT}} für {{SCOPE_TEXT}}. Auswählen, wo ein Marker gesetzt wird.</h2>
+<h2 class="sr-only">{{t:ui.possible_contradictions_for_select_where_to_insert_a_marker}}</h2>
 <style>
 .gw-wv .card{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;display:flex;gap:var(--gap-sm);align-items:flex-start}
 .gw-wv .card.off{opacity:0.55}
@@ -58,14 +58,14 @@
   <div class="gw-wv" id="gw-wv" data-kind="{{KIND}}" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div>
       <div style="font-size:12px;color:var(--text-muted)">{{SCOPE_TEXT}} · {{SUGGEST_COUNT_TEXT}} · {{FACTS_TEXT}}<span data-gw-if="RUN_TEXT"> · {{RUN_TEXT}}</span></div>
-      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-link" style="color:var(--text-secondary)" aria-hidden="true"></i>Mögliche Widersprüche</div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-link" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.possible_contradictions}}</div>
     </div>
     <div id="gw-list" style="display:flex;flex-direction:column;gap:6px">
       {{#SUGGESTIONS}}
       <div class="card" data-idx="{{S_IDX}}">
-        <input type="checkbox" class="on" checked aria-label="Marker setzen" style="margin-top:8px">
+        <input type="checkbox" class="on" checked aria-label="{{t:ui.insert_marker}}" style="margin-top:8px">
         <div class="main">
-          <input type="text" class="tx" value="{{S_TEXT}}" aria-label="Text des Markers">
+          <input type="text" class="tx" value="{{S_TEXT}}" aria-label="{{t:ui.marker_text}}">
           <div class="facts"></div>
         </div>
       </div>
@@ -76,15 +76,15 @@
       <div class="fact" data-idx="{{F_IDX}}" data-k="{{F_K}}" data-on="{{F_ON}}">
         <span class="w">{{F_WHERE}}</span>
         <span style="flex:1;min-width:0"><span class="q">„{{F_QUOTE}}“</span><br><span class="t">{{F_ABOUT}}: {{F_FACT}}</span></span>
-        <label class="lb"><input type="checkbox" class="mk"> Marker hier</label>
+        <label class="lb"><input type="checkbox" class="mk"> {{t:ui.marker_here}}</label>
       </div>
       {{/FACTS}}
     </div>
-    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">Keine Widersprüche zwischen Stellen mit Fundstelle gefunden.</div>
-    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Nur Widersprüche zwischen Tatsachen mit wörtlicher Fundstelle; entschieden wird nichts. Übernehmen setzt den Marker [KONTINUITÄT PRÜFEN: …] hinter den Satz der gewählten Fundstelle, sonst bleibt der Text unverändert. Offene Marker verhindern eine Auflage, bis sie geklärt sind.</div>
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">{{t:ui.no_contradictions_found_between_passages_with_text_references}}</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.only_contradictions_between_facts_with_verbatim_references_no_decision_is_made_applying_inserts_kontinuit_t_pr}}</div>
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-cancel">Verwerfen</button>
-      <button type="button" class="gw-btn pri" id="gw-apply">Marker setzen</button>
+      <button type="button" class="gw-btn" id="gw-cancel">{{t:ui.discard}}</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">{{t:ui.insert_marker}}</button>
     </div>
   </div>
 </div>
@@ -107,10 +107,10 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   function choices(){return cards.filter(function(c){return c.querySelector('.on').checked;}).map(function(c){
     var mk=[];c.querySelectorAll('.fact').forEach(function(f){if(f.querySelector('.mk').checked)mk.push(+f.dataset.k);});
     return {index:+c.dataset.idx,text:c.querySelector('.tx').value.trim(),mark:mk};});}
-  function refresh(){var ch=choices(),n=0,bad=false;ch.forEach(function(o){n+=o.mark.length;if(!o.mark.length||!o.text)bad=true;});$('gw-apply').disabled=!ch.length||bad;$('gw-apply').textContent=bad?'Fundstelle für den Marker wählen':(n?n+' Marker setzen':'Marker setzen');}
+  function refresh(){var ch=choices(),n=0,bad=false;ch.forEach(function(o){n+=o.mark.length;if(!o.mark.length||!o.text)bad=true;});$('gw-apply').disabled=!ch.length||bad;$('gw-apply').textContent=bad?tr("ui.choose_a_text_reference_for_the_marker"):(n?n+tr("ui.markers_insert"):tr("ui.insert_marker"));}
   function lock(){box.querySelectorAll('input,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
-  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend('Widersprüche als Marker setzen ('+ch.length+')','analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Vorschläge verworfen','form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
+  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend(tr("ui.insert_contradiction_markers")+ch.length+')','analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.suggestions_discarded"),'form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
   refresh();
 })();
 </script>

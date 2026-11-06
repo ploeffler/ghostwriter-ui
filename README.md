@@ -28,11 +28,11 @@ Der Assistent gibt statt der fertigen Ansicht nur eine Ladezeile und die Daten a
 
 `<commit>` ist ein fester Commit dieses Repos. So ändert sich eine Ansicht nicht unbemerkt, und jsDelivr kann die Datei dauerhaft zwischenspeichern. `@main` funktioniert auch, wird von jsDelivr aber bis zu zwölf Stunden zwischengespeichert.
 
-## Deutsch und Englisch (erste Ansichten und Formulare)
+## Deutsch und Englisch
 
 Deutsch bleibt rückwärtskompatibel die Vorgabe. Die explizite vierte Angabe von `GW.render` hat Vorrang vor `data.LANGUAGE`; unbekannte Sprachen fallen auf Deutsch zurück, Varianten wie `en-GB` auf `en`.
 
-Englische feste Texte einschließlich Tooltips, barrierefreier Beschriftungen und Skriptmeldungen sind für acht Vorlagen verfügbar: `projektuebersicht`, `kapitelansicht`, `buecherregal`, `buch-anlegen`, `kapitel-anlegen`, `kapitel-bearbeiten`, `abschnitt-anlegen` und `projektdaten-bearbeiten`. Die übrigen 30 Vorlagen bleiben deutsch. Pflichtfeld- und Kollisionsprüfungen der Formulare bleiben erhalten; branchbezogene Namen, IDs, Faktencheck-Werte und numerische Positionen werden nicht übersetzt. Erläuternde Positionsbeschriftungen sind Anzeigetexte und dürfen englisch sein. `GW.supports(name, language)` prüft die Verfügbarkeit. Ein expliziter englischer Aufruf einer noch nicht migrierten Vorlage bricht mit einer verständlichen Meldung ab, statt eine deutsche Oberfläche als Englisch auszugeben.
+Alle 38 Vorlagen bieten deutsche und englische feste Texte einschließlich Tooltips, barrierefreier Attribute, Formularkontrollen und Skriptmeldungen. Pflichtfeld-, Kollisions- und Freigabeprüfungen bleiben erhalten; Aktionsnamen, branchbezogene Namen, IDs, Faktencheck-Werte und numerische Positionen werden nicht übersetzt. `GW.supports(name, language)` prüft die Verfügbarkeit. Die reinen Textansichten und erzeugte Beschriftungen aus `render_view.py` werden im Programm-Repository separat migriert.
 
 ```js
 GW.render('projektuebersicht', { LANGUAGE: 'en', PROJECT_TITLE: 'Mein deutsches Buch', CHAPTERS: [] });
@@ -42,7 +42,7 @@ Dynamische Titel, Beschreibungen und Benutzereingaben werden nicht übersetzt. E
 
 Sprachdateien liegen in `i18n/de.json` und `i18n/en.json`. `{{t:schluessel}}` übersetzt Markup-Beschriftungen; jedes Vorlagenskript erhält eine lokale Funktion `tr(key, values?)` für seine Meldungen. Strukturierte Aktionen, IDs und `expected_head_sha` bleiben unverändert. Der Namensraum `native.*` wird von den nativen Chat-Ansichten im Programm-Repository verwendet; `native-keys.json` beschreibt diesen geteilten Vertrag, `template-keys.json` wird aus den UI-Vorlagen erzeugt. Das Programm hält eine geprüfte Kopie desselben Katalogs.
 
-Der Build prüft gleiche Schlüssel, nichtleere Texte, identische Platzhalter und die verbrauchten Schlüssel. Die CI baut die Datei neu, prüft, dass sie eingecheckt ist, und führt `node tests/runtime.test.cjs` aus. Die Sprachdateien und `dist/gw.js` gehören gemeinsam in einen Commit.
+Der Build prüft gleiche Schlüssel, nichtleere Texte, identische Platzhalter und die verbrauchten Schlüssel. Die CI baut die Datei neu, prüft, dass sie eingecheckt ist, und führt die drei JavaScript-Tests unter `tests/` sowie die Python-Buildtests aus. Die Sprachdateien und `dist/gw.js` gehören gemeinsam in einen Commit.
 
 ## Entwickeln
 

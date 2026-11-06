@@ -36,7 +36,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Sprachliche Hinweise: {{SUGGEST_COUNT_TEXT}} für {{SCOPE_TEXT}}. Auswählen und übernehmen.</h2>
+<h2 class="sr-only">{{t:ui.language_notes_for_select_and_apply}}</h2>
 <style>
 .gw-pv .row{display:grid;grid-template-columns:auto 3em minmax(0,1fr);gap:8px;align-items:start;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:13px;line-height:1.45}
 .gw-pv .row:last-child{border-bottom:0}
@@ -54,24 +54,24 @@
   <div class="gw-pv" id="gw-pv" data-kind="{{KIND}}" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div>
       <div style="font-size:12px;color:var(--text-muted)">{{SCOPE_TEXT}} · {{SUGGEST_COUNT_TEXT}}<span data-gw-if="RUN_TEXT"> · {{RUN_TEXT}}</span></div>
-      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-text-spellcheck" style="color:var(--text-secondary)" aria-hidden="true"></i>Sprachliche Hinweise</div>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Gezählt ohne KI: {{RULES_TEXT}}</div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-text-spellcheck" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.language_notes}}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">{{t:ui.counted_without_ai}}</div>
     </div>
     <div class="flt" id="gw-flt"></div>
     <div id="gw-list">
       {{#SUGGESTIONS}}
       <div class="row" data-idx="{{S_IDX}}" data-k="{{S_KIND}}" data-kt="{{S_KIND_TEXT}}">
-        <input type="checkbox" class="on" checked aria-label="übernehmen" style="margin-top:3px">
+        <input type="checkbox" class="on" checked aria-label="{{t:ui.apply_2}}" style="margin-top:3px">
         <span class="w">{{S_WHERE}}</span>
         <span><span class="k">{{S_KIND_TEXT}}</span> · {{S_TEXT}}<br><span class="q">„{{S_QUOTE}}“</span></span>
       </div>
       {{/SUGGESTIONS}}
     </div>
-    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">Keine Auffälligkeiten.</div>
-    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Nur Hinweise zur Durchsicht: Sie erscheinen beim Abschnitt und ersetzen dort die Hinweise eines früheren Laufs. Der Text des Buchs bleibt unverändert.</div>
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">{{t:ui.no_issues_found}}</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.notes_for_review_only_shown_alongside_the_section_replacing_notes_from_an_earlier_run_the_book_text_remains_un}}</div>
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-cancel">Verwerfen</button>
-      <button type="button" class="gw-btn pri" id="gw-apply">Übernehmen</button>
+      <button type="button" class="gw-btn" id="gw-cancel">{{t:ui.discard}}</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">{{t:ui.apply}}</button>
     </div>
   </div>
 </div>
@@ -90,10 +90,10 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   });
   rows.forEach(function(r){var on=r.querySelector('.on');on.addEventListener('change',function(){r.classList.toggle('off',!on.checked);refresh();});});
   function choices(){return rows.filter(function(r){return r.querySelector('.on').checked;}).map(function(r){return {index:+r.dataset.idx};});}
-  function refresh(){var n=choices().length;$('gw-apply').disabled=!rows.length;$('gw-apply').textContent=n?n+' Hinweise übernehmen':'Keine übernehmen (alte entfernen)';}
+  function refresh(){var n=choices().length;$('gw-apply').disabled=!rows.length;$('gw-apply').textContent=n?n+tr("ui.notes_apply"):tr("ui.apply_none_remove_previous_notes");}
   function lock(){box.querySelectorAll('input,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
-  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend('Sprachliche Hinweise übernehmen ('+ch.length+')','analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Vorschläge verworfen','form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
+  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend(tr("ui.apply_language_notes")+ch.length+')','analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.suggestions_discarded"),'form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
   refresh();
 })();
 </script>

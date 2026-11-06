@@ -38,7 +38,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
   --font-mono), Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Bestätigung: {{PENDING_TEXT}} aus Pull Request #{{PENDING_PR}} in {{BOOK_BRANCH}} übernehmen.</h2>
+<h2 class="sr-only">{{t:ui.confirm_apply_from_pull_request_to}}</h2>
 <style>
 .gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
 .gw-chg{display:flex;align-items:baseline;gap:var(--gap-md);padding:8px 12px;border-top:0.5px solid var(--border)}
@@ -49,9 +49,9 @@
   <div id="gw-merge-form" data-pr="{{PENDING_PR}}" data-text="{{PENDING_TEXT}}" data-branch="{{BOOK_BRANCH}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div style="display:flex;align-items:center;gap:var(--gap-sm)">
       <i class="ti ti-git-merge" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
-      <span style="font-size:16px;font-weight:500">Änderungen übernehmen</span>
+      <span style="font-size:16px;font-weight:500">{{t:ui.apply_changes}}</span>
     </div>
-    <p style="margin:0;font-size:14px;line-height:1.6;color:var(--text-secondary)">In <span style="font-family:var(--font-mono);font-size:13px">{{BOOK_BRANCH}}</span> übernehmen: {{PENDING_TEXT}} aus <span style="font-family:var(--font-mono);font-size:13px">{{WORK_BRANCH}}</span> (Pull Request #{{PENDING_PR}}).</p>
+    <p style="margin:0;font-size:14px;line-height:1.6;color:var(--text-secondary)">{{t:ui.to}} <span style="font-family:var(--font-mono);font-size:13px">{{BOOK_BRANCH}}</span> {{t:ui.apply_from}} <span style="font-family:var(--font-mono);font-size:13px">{{WORK_BRANCH}}</span> {{t:ui.pull_request_2}}</p>
     <div style="border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2)">
       {{#CHANGES}}
       <div class="gw-chg"><span style="flex:1;min-width:0;font-size:14px;color:var(--text-primary)">{{CHANGE_MESSAGE}}</span><span class="gw-meta">{{CHANGE_DATE}}</span><span class="gw-meta" style="font-family:var(--font-mono)">{{CHANGE_SHA}}</span></div>
@@ -59,11 +59,11 @@
     </div>
     <div style="display:flex;align-items:flex-start;gap:var(--gap-sm);font-size:13px;line-height:1.5;color:var(--text-secondary)">
       <i class="ti ti-info-circle" style="font-size:16px;margin-top:1px" aria-hidden="true"></i>
-      <span>Danach gehören die Änderungen zum Buch. Rückgängig machen geht nur mit einer neuen Änderung.</span>
+      <span>{{t:ui.the_changes_will_become_part_of_the_book_undoing_them_requires_another_change}}</span>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
-      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">Übernehmen</button>
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">{{t:ui.cancel}}</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{t:ui.apply}}</button>
     </div>
   </div>
 </div>
@@ -73,7 +73,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var f=document.getElementById('gw-merge-form');
   var $=function(id){return document.getElementById(id);};
   function lock(){f.querySelectorAll('button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
-  $('gw-save').addEventListener('click',function(){lock();gwSend(f.dataset.text+' übernehmen (Pull Request #'+f.dataset.pr+' in '+f.dataset.branch+')','changes.merge',{pull_request:Number(f.dataset.pr)});});
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Änderungen übernehmen abgebrochen','form.cancel',{form:'changes.merge'});});
+  $('gw-save').addEventListener('click',function(){lock();gwSend(f.dataset.text+tr("ui.apply_pull_request")+f.dataset.pr+' in '+f.dataset.branch+')','changes.merge',{pull_request:Number(f.dataset.pr)});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.applying_changes_cancelled"),'form.cancel',{form:'changes.merge'});});
 })();
 </script>

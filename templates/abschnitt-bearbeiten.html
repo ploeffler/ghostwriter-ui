@@ -79,7 +79,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
   --font-mono), Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Abschnitt {{SECTION_NUMBER}} „{{SECTION_TITLE}}“ bearbeiten: Ziel, Kurzbeschreibung, offene Marker, Manuskript, Faktencheck, Freigaben und Abschnittssteuerung.</h2>
+<h2 class="sr-only">{{t:ui.edit_section_goal_summary_open_markers_manuscript_fact_check_approvals_and_section_controls}}</h2>
 <style>
 .gw-sq{width:40px;height:40px;flex:none;border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0}
 .gw-sq:hover:not(:disabled){border-color:var(--border-strong);color:var(--text-primary)}
@@ -117,17 +117,17 @@
         <div style="flex:1;min-width:220px">
           <div style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;margin-bottom:4px">
             <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{PROJECT_TITLE_SHORT}}</span>
-            <span style="font-size:12px;color:var(--text-muted)">Kapitel {{CHAPTER_NUMBER}} · Abschnitt {{SECTION_NUMBER}}</span>
+            <span style="font-size:12px;color:var(--text-muted)">{{t:ui.chapter_section}}</span>
           </div>
           <div style="font-size:20px;font-weight:500;line-height:1.3">{{SECTION_TITLE}}</div>
         </div>
         <div style="display:flex;gap:var(--gap-sm);margin-left:auto">
-          <button type="button" class="gw-sq" data-p="Zurück zu Kapitel {{CHAPTER_NUMBER}}" data-a="view.chapter" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Zum Kapitel" aria-label="Zum Kapitel"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
-          <button type="button" class="gw-sq" id="gw-prev" title="Vorheriger Abschnitt" aria-label="Vorheriger Abschnitt"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
-          <button type="button" class="gw-sq" id="gw-next" title="Nächster Abschnitt" aria-label="Nächster Abschnitt"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
-          <button type="button" class="gw-sq" data-p="Bilder zu Abschnitt {{SECTION_NUMBER}}" data-a="view.images" data-args='{"section_id":"{{SECTION_ID}}"}' title="Bilder" aria-label="Bilder"><i class="ti ti-photo" aria-hidden="true"></i></button>
-          <button type="button" class="gw-sq" data-p="Figuren aus dem Text von Abschnitt {{SECTION_NUMBER}} vorschlagen" data-a="character.suggest" data-args='{"scope":"{{SECTION_NUMBER}}"}' title="Figuren aus dem Text von Abschnitt {{SECTION_NUMBER}} vorschlagen" aria-label="Figuren aus dem Text von Abschnitt {{SECTION_NUMBER}} vorschlagen"><i class="ti ti-user-search" aria-hidden="true"></i></button>
-          <button type="button" class="gw-sq" id="gw-lock" aria-pressed="false" title="Abschnitt sperren" aria-label="Abschnitt sperren"><i class="ti ti-lock-open" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="{{t:ui.back_to_chapter}}" data-a="view.chapter" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="{{t:ui.to_chapter}}" aria-label="{{t:ui.to_chapter}}"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" id="gw-prev" title="{{t:ui.previous_section}}" aria-label="{{t:ui.previous_section}}"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" id="gw-next" title="{{t:ui.next_section}}" aria-label="{{t:ui.next_section}}"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="{{t:ui.images_for_section}}" data-a="view.images" data-args='{"section_id":"{{SECTION_ID}}"}' title="{{t:ui.images}}" aria-label="{{t:ui.images}}"><i class="ti ti-photo" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="{{t:ui.suggest_characters_from_the_text_of_section}}" data-a="character.suggest" data-args='{"scope":"{{SECTION_NUMBER}}"}' title="{{t:ui.suggest_characters_from_the_text_of_section}}" aria-label="{{t:ui.suggest_characters_from_the_text_of_section}}"><i class="ti ti-user-search" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" id="gw-lock" aria-pressed="false" title="{{t:ui.lock_section}}" aria-label="{{t:ui.lock_section}}"><i class="ti ti-lock-open" aria-hidden="true"></i></button>
         </div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--gap-md);flex-wrap:wrap;margin-top:8px">
@@ -142,17 +142,17 @@
     <div class="gw-lockable" style="display:flex;flex-direction:column;gap:var(--gap-md)">
       <div class="gw-two" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-md);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
         <div>
-          <label class="gw-lbl" for="gw-goal">Ziel des Abschnitts</label>
+          <label class="gw-lbl" for="gw-goal">{{t:ui.section_goal}}</label>
           <textarea class="gw-in" id="gw-goal" rows="3">{{SECTION_GOAL}}</textarea>
         </div>
         <div>
-          <label class="gw-lbl" for="gw-summary">Kurzbeschreibung</label>
+          <label class="gw-lbl" for="gw-summary">{{t:ui.summary}}</label>
           <textarea class="gw-in" id="gw-summary" rows="3">{{SECTION_SUMMARY}}</textarea>
         </div>
       </div>
 
       <div data-gw-if="MARKERS" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-        <div class="gw-lbl">Offene Marker</div>
+        <div class="gw-lbl">{{t:ui.open_markers}}</div>
         <div style="display:flex;flex-direction:column;gap:var(--gap-xs)">
           {{#MARKERS}}
           <div class="gw-mk gw-mk-{{MARKER_TYPE}}"><i class="ti gw-mk-icon" data-type="{{MARKER_TYPE}}" style="font-size:16px;margin-top:2px" aria-hidden="true"></i><span style="flex:1"><span class="gw-mk-label">{{MARKER_LABEL}}</span> · {{MARKER_TEXT}}</span></div>
@@ -161,7 +161,7 @@
       </div>
 
       <div data-gw-if="HINTS" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-        <div class="gw-lbl">Sprachliche Hinweise <span class="gw-hint">nur zur Durchsicht, der Text bleibt unverändert</span></div>
+        <div class="gw-lbl">{{t:ui.language_notes}} <span class="gw-hint">{{t:ui.for_review_only_the_text_remains_unchanged}}</span></div>
         <div style="display:flex;flex-direction:column;gap:4px;font-size:13px;line-height:1.45">
           {{#HINTS}}
           <div style="display:flex;gap:6px;align-items:flex-start"><i class="ti ti-text-spellcheck" style="font-size:15px;margin-top:2px;color:var(--text-muted)" aria-hidden="true"></i><span style="flex:1"><b style="font-weight:500">{{H_KIND_TEXT}}</b> · {{H_TEXT}} <span style="color:var(--text-muted);font-style:italic">„{{H_QUOTE}}“</span></span></div>
@@ -170,7 +170,7 @@
       </div>
 
       <div data-gw-if="CHARACTERS_ENABLED" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-        <div class="gw-lbl">Figuren in diesem Abschnitt <span class="gw-hint">gehen als Kontext in Brainstorming und Ghostwriting</span></div>
+        <div class="gw-lbl">{{t:ui.characters_in_this_section}} <span class="gw-hint">{{t:ui.used_as_context_for_brainstorming_and_ghostwriting}}</span></div>
         <div style="display:flex;gap:6px 14px;flex-wrap:wrap" id="gw-chars">
           {{#ALL_CHARACTERS}}
           <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer"><input type="checkbox" value="{{C_ID}}" data-on="{{C_ON}}" style="width:16px;height:16px;margin:0;accent-color:var(--text-accent)">{{C_NAME}}</label>
@@ -179,45 +179,45 @@
       </div>
 
       <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-        <label class="gw-lbl" for="gw-ms">Manuskript <span class="gw-hint">Markdown</span></label>
+        <label class="gw-lbl" for="gw-ms">{{t:ui.manuscript}} <span class="gw-hint">{{t:ui.markdown}}</span></label>
         <textarea class="gw-in" id="gw-ms" rows="14" style="font-family:var(--font-mono);font-size:13px">{{SECTION_MANUSCRIPT}}</textarea>
       </div>
 
       <div class="gw-two" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-md);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
         <div>
-          <label class="gw-lbl" for="gw-fc">Faktencheck</label>
+          <label class="gw-lbl" for="gw-fc">{{t:ui.fact_check}}</label>
           <select id="gw-fc" class="gw-in" style="width:auto;padding:6px 10px">
-            <option value="disabled">aus</option>
-            <option value="optional">optional</option>
-            <option value="requested">angefordert</option>
+            <option value="disabled">{{t:ui.off}}</option>
+            <option value="optional">{{t:ui.optional}}</option>
+            <option value="requested">{{t:ui.requested}}</option>
           </select>
         </div>
         <div>
-          <div class="gw-lbl">Freigaben <span class="gw-hint">nur mit Bestätigung</span></div>
+          <div class="gw-lbl">{{t:ui.approvals}} <span class="gw-hint">{{t:ui.confirmation_required}}</span></div>
           <div class="gw-apr" data-kind="writing"><i class="ti" aria-hidden="true"></i><span></span><button type="button" class="gw-mini"></button></div>
           <div class="gw-apr" data-kind="section" style="margin-top:6px"><i class="ti" aria-hidden="true"></i><span></span><button type="button" class="gw-mini"></button></div>
         </div>
       </div>
 
       <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-        <div class="gw-lbl">Abschnittssteuerung</div>
+        <div class="gw-lbl">{{t:ui.section_controls}}</div>
         <div class="gw-two" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-sm)">
           <div class="gw-card" data-task="Recherche">
-            <div style="display:flex;align-items:center;gap:var(--gap-sm)"><div class="gw-ico"><i class="ti ti-search" aria-hidden="true"></i></div><div><div style="font-size:14px;font-weight:500">Recherche</div><div style="font-size:12px;color:var(--text-secondary)">Quellen finden und auswerten</div></div></div>
-            <button type="button" class="gw-opt" data-mode="zeitgesteuert" data-available="false"><i class="ti ti-clock" style="font-size:16px;color:var(--text-secondary)" aria-hidden="true"></i><span style="font-size:13px"><span style="font-weight:500">Zeitgesteuert</span> · Cloud-Warteschlange</span></button>
-            <button type="button" class="gw-opt" data-mode="sofort"><i class="ti ti-bolt" style="font-size:16px;color:var(--text-secondary)" aria-hidden="true"></i><span style="font-size:13px"><span style="font-weight:500">Sofort</span> · hier im Chat</span></button>
+            <div style="display:flex;align-items:center;gap:var(--gap-sm)"><div class="gw-ico"><i class="ti ti-search" aria-hidden="true"></i></div><div><div style="font-size:14px;font-weight:500">Recherche</div><div style="font-size:12px;color:var(--text-secondary)">{{t:ui.find_and_evaluate_sources}}</div></div></div>
+            <button type="button" class="gw-opt" data-mode="zeitgesteuert" data-available="false"><i class="ti ti-clock" style="font-size:16px;color:var(--text-secondary)" aria-hidden="true"></i><span style="font-size:13px"><span style="font-weight:500">{{t:ui.scheduled}}</span> {{t:ui.cloud_queue}}</span></button>
+            <button type="button" class="gw-opt" data-mode="sofort"><i class="ti ti-bolt" style="font-size:16px;color:var(--text-secondary)" aria-hidden="true"></i><span style="font-size:13px"><span style="font-weight:500">{{t:ui.now}}</span> {{t:ui.here_in_the_chat}}</span></button>
           </div>
           <div class="gw-card" data-task="Ghostwriting">
-            <div style="display:flex;align-items:center;gap:var(--gap-sm)"><div class="gw-ico"><i class="ti ti-feather" aria-hidden="true"></i></div><div><div style="font-size:14px;font-weight:500">Ghostwriting</div><div style="font-size:12px;color:var(--text-secondary)">Automated Content Generation</div></div></div>
-            <button type="button" class="gw-opt" data-mode="zeitgesteuert" data-available="false"><i class="ti ti-clock" style="font-size:16px;color:var(--text-secondary)" aria-hidden="true"></i><span style="font-size:13px"><span style="font-weight:500">Zeitgesteuert</span> · Cloud-Warteschlange</span></button>
-            <button type="button" class="gw-opt" data-mode="sofort"><i class="ti ti-bolt" style="font-size:16px;color:var(--text-secondary)" aria-hidden="true"></i><span style="font-size:13px"><span style="font-weight:500">Sofort</span> · hier im Chat</span></button>
+            <div style="display:flex;align-items:center;gap:var(--gap-sm)"><div class="gw-ico"><i class="ti ti-feather" aria-hidden="true"></i></div><div><div style="font-size:14px;font-weight:500">{{t:ui.ghostwriting}}</div><div style="font-size:12px;color:var(--text-secondary)">{{t:ui.automated_content_generation}}</div></div></div>
+            <button type="button" class="gw-opt" data-mode="zeitgesteuert" data-available="false"><i class="ti ti-clock" style="font-size:16px;color:var(--text-secondary)" aria-hidden="true"></i><span style="font-size:13px"><span style="font-weight:500">{{t:ui.scheduled}}</span> {{t:ui.cloud_queue}}</span></button>
+            <button type="button" class="gw-opt" data-mode="sofort"><i class="ti ti-bolt" style="font-size:16px;color:var(--text-secondary)" aria-hidden="true"></i><span style="font-size:13px"><span style="font-weight:500">{{t:ui.now}}</span> {{t:ui.here_in_the_chat}}</span></button>
           </div>
         </div>
       </div>
 
       <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-        <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Verwerfen</button>
-        <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">Speichern</button>
+        <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">{{t:ui.discard}}</button>
+        <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{t:ui.save}}</button>
       </div>
     </div>
   </div>
@@ -226,25 +226,25 @@
 function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 (function(){
   var wrap=document.getElementById('gw-abschnitt'),d=wrap.dataset;
-  var ref='Abschnitt '+d.sectionNumber+' „'+d.sectionTitle+'“ (ID '+d.sectionId+')';
+  var ref=tr("ui.section")+d.sectionNumber+' „'+d.sectionTitle+tr("ui.id")+d.sectionId+')';
   var $=function(id){return document.getElementById(id);};
 
   var icons={anekdote:'ti-quote',quelle:'ti-book',medizin:'ti-stethoscope',recht:'ti-scale'};
   wrap.querySelectorAll('.gw-mk-icon').forEach(function(i){i.classList.add(icons[i.dataset.type]||'ti-alert-triangle');});
 
-  $('gw-fc').value=d.factCheck||'optional';
+  $('gw-fc').value=d.factCheck||tr("ui.optional");
   document.querySelectorAll('#gw-chars input').forEach(function(c){c.checked=c.dataset.on==='1';});
-  var apr={writing:{on:d.approvalWriting==='true',yes:'Schreiben freigegeben',no:'Schreiben nicht freigegeben',grant:'Schreibfreigabe für ',revoke:'Schreibfreigabe zurücknehmen für '},
-    section:{on:d.approvalSection==='true',yes:'Abschnitt freigegeben',no:'Abschnitt nicht freigegeben',grant:'Freigabe für ',revoke:'Freigabe zurücknehmen für '}};
+  var apr={writing:{on:d.approvalWriting==='true',yes:tr("ui.writing_permitted"),no:tr("ui.writing_not_permitted"),grant:tr("ui.writing_permission_for"),revoke:tr("ui.withdraw_writing_permission_for")},
+    section:{on:d.approvalSection==='true',yes:tr("ui.section_approved"),no:tr("ui.section_not_approved"),grant:tr("ui.approval_for"),revoke:tr("ui.withdraw_approval_for")}};
   wrap.querySelectorAll('.gw-apr').forEach(function(row){
     var a=apr[row.dataset.kind],b=row.querySelector('button');
     row.classList.toggle('on',a.on);
     row.querySelector('i').className='ti '+(a.on?'ti-circle-check':'ti-circle-dashed');
     row.querySelector('span').textContent=a.on?a.yes:a.no;
-    b.textContent=a.on?'Zurücknehmen':'Freigeben';
+    b.textContent=a.on?tr("ui.withdraw"):tr("ui.approve");
     b.addEventListener('click',function(){
       var data={kind:row.dataset.kind,section_id:d.sectionId};if(a.on)data.revoke=true;
-      gwSend((a.on?a.revoke:a.grant)+ref+' bestätigen','approval.open',data);
+      gwSend((a.on?a.revoke:a.grant)+ref+tr("ui.confirm"),'approval.open',data);
     });
   });
 
@@ -257,14 +257,14 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   wrap.querySelectorAll('.gw-sq[data-p]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,b.dataset.args?JSON.parse(b.dataset.args):{});});});
 
   var texts={
-    'Recherche|zeitgesteuert':'Recherche für '+ref+' zeitgesteuert als Job in die Cloud-Warteschlange übergeben',
-    'Recherche|sofort':ref+' jetzt sofort hier im Chat recherchieren',
-    'Ghostwriting|zeitgesteuert':'Ghostwriting für '+ref+' zeitgesteuert als Job in die Cloud-Warteschlange übergeben',
-    'Ghostwriting|sofort':ref+' jetzt sofort hier im Chat schreiben (Ghostwriting)'
+    'Recherche|zeitgesteuert':tr("ui.research_for")+ref+tr("ui.schedule_as_a_job_in_the_cloud_queue"),
+    'Recherche|sofort':ref+tr("ui.research_now_here_in_the_chat"),
+    'Ghostwriting|zeitgesteuert':tr("ui.ghostwriting_for")+ref+tr("ui.schedule_as_a_job_in_the_cloud_queue"),
+    'Ghostwriting|sofort':ref+tr("ui.write_now_here_in_the_chat_ghostwriting")
   };
   wrap.querySelectorAll('.gw-opt[data-available="false"]').forEach(function(x){
-    x.disabled=true;x.title='Nicht verfügbar in v0.5';
-    var s=document.createElement('span');s.className='gw-later';s.textContent='nach v0.5';x.appendChild(s);
+    x.disabled=true;x.title=tr("ui.unavailable_in_v0_5");
+    var s=document.createElement('span');s.className='gw-later';s.textContent=tr("ui.after_v0_5");x.appendChild(s);
   });
   wrap.querySelectorAll('.gw-card').forEach(function(card){
     var o=card.querySelectorAll('.gw-opt');
@@ -280,21 +280,21 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     wrap.classList.toggle('locked',locked);
     lock.classList.toggle('on',locked);
     lock.setAttribute('aria-pressed',String(locked));
-    var l=locked?'Abschnitt entsperren':'Abschnitt sperren';
+    var l=locked?tr("ui.unlock_section"):tr("ui.lock_section");
     lock.title=l;lock.setAttribute('aria-label',l);
     lock.querySelector('i').className=locked?'ti ti-lock':'ti ti-lock-open';
   });
 
   function done(){wrap.querySelectorAll('.gw-lockable input,.gw-lockable textarea,.gw-lockable select,.gw-lockable button').forEach(function(x){x.disabled=true;});}
-  var fcText={disabled:'aus',optional:'optional',requested:'angefordert'};
+  var fcText={disabled:tr("ui.off"),optional:tr("ui.optional"),requested:tr("ui.requested")};
   $('gw-save').addEventListener('click',function(){
     var data={section_id:d.sectionId,goal:$('gw-goal').value.trim(),summary:$('gw-summary').value.trim(),
       fact_check:$('gw-fc').value,
       manuscript:$('gw-ms').value};
     var cb=document.querySelectorAll('#gw-chars input');
     if(cb.length){data.characters=[];cb.forEach(function(c){if(c.checked)data.characters.push(c.value);});}
-    done();gwSend(ref+' speichern (Faktencheck: '+fcText[data.fact_check]+')','section.update',data);
+    done();gwSend(ref+tr("ui.save_fact_check")+fcText[data.fact_check]+')','section.update',data);
   });
-  $('gw-cancel').addEventListener('click',function(){done();gwSend('Änderungen an '+ref+' verworfen','form.cancel',{form:'section.update',section_id:d.sectionId});});
+  $('gw-cancel').addEventListener('click',function(){done();gwSend(tr("ui.discard_changes_to")+ref+tr("ui.discarded"),'form.cancel',{form:'section.update',section_id:d.sectionId});});
 })();
 </script>
