@@ -19,14 +19,30 @@ Der Assistent gibt statt der fertigen Ansicht nur eine Ladezeile und die Daten a
 <script>GW.render("kapitelansicht", { "CHAPTER_TITLE": "…", "SECTIONS": [ … ] })</script>
 ```
 
-- `GW.render(name, data, element?)` befüllt die Vorlage `templates/<name>.html` mit `data` und startet ihr Skript. Ohne `element` wird `#gw` verwendet.
+- `GW.render(name, data, element?, language?)` befüllt die Vorlage `templates/<name>.html` mit `data` und startet ihr Skript. Ohne `element` wird `#gw` verwendet.
 - Die Datenfelder sind die Platzhalter der Vorlage; Wiederholblöcke (`{{#SECTIONS}}`) sind Arrays. Welche Felder woher kommen, steht in GhostWriter unter `templates/ui/BEFUELLUNG.md`.
 - `HEAD_SHA` in den Daten ist der Commit, aus dem gelesen wurde. `gw.js` hängt ihn an jede schreibende Aktion (`….update`, `….create` außer `edition.create`, `….reorder`, `changes.merge`, `approval.confirm`) als `expected_head_sha` an, damit der Assistent vor dem Schreiben prüfen kann, ob sich die Dateien inzwischen geändert haben.
-- Statuswerte in Feldern auf `_STATUS` (z. B. `writing`) zeigt `gw.js` deutsch an (`Schreiben`); unbekannte Werte bleiben, wie sie sind.
+- Statuswerte in Feldern auf `_STATUS` (z. B. `writing`) zeigt `gw.js` in der gewählten Sprache an. Die übergebenen Daten und internen Statuscodes werden nicht verändert; unbekannte Werte bleiben erhalten.
 - Bereiche mit `data-gw-if="NAME"` entfallen, wenn `NAME` fehlt oder leer ist.
 - Klicks senden über `sendPrompt` eine Textzeile plus einen Block `gw` mit JSON in den Chat.
 
 `<commit>` ist ein fester Commit dieses Repos. So ändert sich eine Ansicht nicht unbemerkt, und jsDelivr kann die Datei dauerhaft zwischenspeichern. `@main` funktioniert auch, wird von jsDelivr aber bis zu zwölf Stunden zwischengespeichert.
+
+## Deutsch und Englisch (erste Kernansichten)
+
+Deutsch bleibt rückwärtskompatibel die Vorgabe. Die explizite vierte Angabe von `GW.render` hat Vorrang vor `data.LANGUAGE`; unbekannte Sprachen fallen auf Deutsch zurück, Varianten wie `en-GB` auf `en`.
+
+Englische feste Texte einschließlich Tooltips, barrierefreier Beschriftungen und Skriptmeldungen sind zunächst für `projektuebersicht`, `kapitelansicht` und `buecherregal` verfügbar. Die übrigen 35 Vorlagen bleiben deutsch. `GW.supports(name, language)` prüft die Verfügbarkeit. Ein expliziter englischer Aufruf einer noch nicht migrierten Vorlage bricht mit einer verständlichen Meldung ab, statt eine deutsche Oberfläche als Englisch auszugeben.
+
+```js
+GW.render('projektuebersicht', { LANGUAGE: 'en', PROJECT_TITLE: 'Mein deutsches Buch', CHAPTERS: [] });
+```
+
+Dynamische Titel, Beschreibungen und Benutzereingaben werden nicht übersetzt. Erzeugte Texte wie Auflagen- und Fortschrittsangaben müssen vom aufrufenden Programm sprachgerecht geliefert werden. `GW.renderHtml(name, data, language?)` liefert dieselbe befüllte HTML-Fassung ohne DOM-Zugriff; `GW.render` ergänzt Sichtbarkeitsregeln und Ereignisse. Sprachtexte werden vor dem Einsetzen maskierter Nutzdaten aufgelöst. Nutzdaten mit Zeichenfolgen wie `{{PROJECT_TITLE}}` oder `{{t:ui.description}}` bleiben wörtliche Daten und werden auch in Wiederholblöcken nicht erneut ausgewertet.
+
+Sprachdateien liegen in `i18n/de.json` und `i18n/en.json`. `{{t:schluessel}}` übersetzt Markup-Beschriftungen; jedes Vorlagenskript erhält eine lokale Funktion `tr(key, values?)` für seine Meldungen. Strukturierte Aktionen, IDs und `expected_head_sha` bleiben unverändert. Der Namensraum `native.*` wird von den nativen Chat-Ansichten im Programm-Repository verwendet; `native-keys.json` beschreibt diesen geteilten Vertrag, `template-keys.json` wird aus den UI-Vorlagen erzeugt. Das Programm hält eine geprüfte Kopie desselben Katalogs.
+
+Der Build prüft gleiche Schlüssel, nichtleere Texte, identische Platzhalter und die verbrauchten Schlüssel. Die CI baut die Datei neu, prüft, dass sie eingecheckt ist, und führt `node tests/runtime.test.cjs` aus. Die Sprachdateien und `dist/gw.js` gehören gemeinsam in einen Commit.
 
 ## Entwickeln
 
