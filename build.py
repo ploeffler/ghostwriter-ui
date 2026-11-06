@@ -78,7 +78,7 @@ def split(path):
     return html, script
 
 
-LOCALIZED = ['projektuebersicht', 'kapitelansicht', 'buecherregal']
+LOCALIZED = ['projektuebersicht', 'kapitelansicht', 'buecherregal', 'buch-anlegen', 'kapitel-anlegen', 'kapitel-bearbeiten', 'abschnitt-anlegen', 'projektdaten-bearbeiten']
 
 
 def validate_translations():

@@ -28,11 +28,11 @@ Der Assistent gibt statt der fertigen Ansicht nur eine Ladezeile und die Daten a
 
 `<commit>` ist ein fester Commit dieses Repos. So ändert sich eine Ansicht nicht unbemerkt, und jsDelivr kann die Datei dauerhaft zwischenspeichern. `@main` funktioniert auch, wird von jsDelivr aber bis zu zwölf Stunden zwischengespeichert.
 
-## Deutsch und Englisch (erste Kernansichten)
+## Deutsch und Englisch (erste Ansichten und Formulare)
 
 Deutsch bleibt rückwärtskompatibel die Vorgabe. Die explizite vierte Angabe von `GW.render` hat Vorrang vor `data.LANGUAGE`; unbekannte Sprachen fallen auf Deutsch zurück, Varianten wie `en-GB` auf `en`.
 
-Englische feste Texte einschließlich Tooltips, barrierefreier Beschriftungen und Skriptmeldungen sind zunächst für `projektuebersicht`, `kapitelansicht` und `buecherregal` verfügbar. Die übrigen 35 Vorlagen bleiben deutsch. `GW.supports(name, language)` prüft die Verfügbarkeit. Ein expliziter englischer Aufruf einer noch nicht migrierten Vorlage bricht mit einer verständlichen Meldung ab, statt eine deutsche Oberfläche als Englisch auszugeben.
+Englische feste Texte einschließlich Tooltips, barrierefreier Beschriftungen und Skriptmeldungen sind für acht Vorlagen verfügbar: `projektuebersicht`, `kapitelansicht`, `buecherregal`, `buch-anlegen`, `kapitel-anlegen`, `kapitel-bearbeiten`, `abschnitt-anlegen` und `projektdaten-bearbeiten`. Die übrigen 30 Vorlagen bleiben deutsch. Pflichtfeld- und Kollisionsprüfungen der Formulare bleiben erhalten; branchbezogene Namen, IDs, Faktencheck-Werte und numerische Positionen werden nicht übersetzt. Erläuternde Positionsbeschriftungen sind Anzeigetexte und dürfen englisch sein. `GW.supports(name, language)` prüft die Verfügbarkeit. Ein expliziter englischer Aufruf einer noch nicht migrierten Vorlage bricht mit einer verständlichen Meldung ab, statt eine deutsche Oberfläche als Englisch auszugeben.
 
 ```js
 GW.render('projektuebersicht', { LANGUAGE: 'en', PROJECT_TITLE: 'Mein deutsches Buch', CHAPTERS: [] });

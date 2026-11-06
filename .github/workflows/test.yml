@@ -17,3 +17,4 @@ jobs:
       - run: git diff --exit-code -- dist/gw.js i18n/template-keys.json
       - run: python3 -m unittest discover -s tests -p "test_*.py"
       - run: node tests/runtime.test.cjs
+      - run: node tests/forms-runtime.test.cjs
