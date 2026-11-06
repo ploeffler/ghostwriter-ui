@@ -57,7 +57,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Daten der Bibliothek {{LIBRARY_NAME}}: Programmstand, Bücher, Repository und letzte Läufe.</h2>
+<h2 class="sr-only">{{t:ui.library_data_for_program_version_books_repository_and_recent_runs}}</h2>
 <style>
 .gw-d .sec{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px}
 .gw-d .row{display:flex;align-items:baseline;gap:8px;font-size:14px;line-height:1.5}
@@ -88,38 +88,38 @@
       <div style="flex:1;min-width:200px">
         <div style="display:flex;align-items:center;gap:var(--gap-sm)">
           <i class="ti ti-database" style="font-size:20px;color:var(--text-secondary)" aria-hidden="true"></i>
-          <span style="font-size:20px;font-weight:500">Daten</span>
+          <span style="font-size:20px;font-weight:500">{{t:ui.data}}</span>
         </div>
         <div style="font-size:13px;color:var(--text-muted);margin-top:2px">{{LIBRARY_NAME}}</div>
       </div>
-      <button type="button" class="gw-btn" data-p="Zum Bücherregal" data-a="view.library"><i class="ti ti-books" aria-hidden="true"></i>Bücherregal</button>
+      <button type="button" class="gw-btn" data-p="{{t:ui.back_to_library}}" data-a="view.library"><i class="ti ti-books" aria-hidden="true"></i>{{t:ui.library_2}}</button>
     </div>
 
     <div data-gw-if="GITHUB_KNOWN" hidden></div>
-    <div class="warn" id="gw-noghub">Ohne Abfrage bei GitHub fehlen einige Werte (Repository, Prüfungen, Probedrucke, Läufe); sie stehen dann als „unbekannt“ da.</div>
+    <div class="warn" id="gw-noghub">{{t:ui.without_a_github_query_some_values_repository_checks_proofs_and_runs_are_unavailable_and_shown_as_unknown}}</div>
 
     <div>
-      <div class="sec">Programm</div>
+      <div class="sec">{{t:ui.program}}</div>
       <div class="row"><i class="ti ti-package" aria-hidden="true"></i><span>{{PROGRAM_VERSION_TEXT}}</span></div>
-      <div class="row"><i class="ti ti-refresh" aria-hidden="true"></i><span>Update: {{PROGRAM_UPDATE_TEXT}} · {{PROGRAM_LAST_UPDATE_TEXT}}</span></div>
+      <div class="row"><i class="ti ti-refresh" aria-hidden="true"></i><span>{{t:ui.update}}</span></div>
       <div class="row"><i class="ti ti-layout" aria-hidden="true"></i><span>{{UI_TEXT}}</span></div>
       <div data-gw-if="PROGRAM_SKIPPED_TEXT" class="warn" style="margin-top:6px">{{PROGRAM_SKIPPED_TEXT}}</div>
-      <div data-gw-if="PROGRAM_BEHIND" style="margin-top:8px"><button type="button" class="gw-btn" data-p="GhostWriter-Update einspielen" data-a="update.apply"><i class="ti ti-download" aria-hidden="true"></i>Update einspielen</button></div>
+      <div data-gw-if="PROGRAM_BEHIND" style="margin-top:8px"><button type="button" class="gw-btn" data-p="{{t:ui.install_ghostwriter_update}}" data-a="update.apply"><i class="ti ti-download" aria-hidden="true"></i>{{t:ui.install_update}}</button></div>
     </div>
 
     <div>
-      <div class="sec">Bücher</div>
+      <div class="sec">{{t:ui.books}}</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         {{#BOOKS}}
         <div class="card">
           <div><span class="t">{{B_TITLE}}</span> <code>{{B_BRANCH}}</code></div>
           <dl class="kv">
-            <dt>Letzter Stand</dt><dd>{{B_COMMIT_TEXT}}</dd>
-            <dt>Änderungen</dt><dd class="pend" data-v="{{B_PENDING}}">{{B_PENDING_TEXT}} · {{B_AUTOMERGE_TEXT}}</dd>
-            <dt>Auflage</dt><dd>{{B_EDITION_TEXT}}</dd>
-            <dt>Probedruck</dt><dd>{{B_PROOF_TEXT}}</dd>
-            <dt>Daten</dt><dd class="mig" data-v="{{B_MIGRATION}}">{{B_DATA_TEXT}}</dd>
-            <dt>Prüfung</dt><dd><span class="dot" data-s="{{B_CHECK}}"></span>{{B_CHECK_TEXT}}</dd>
+            <dt>{{t:ui.latest_version}}</dt><dd>{{B_COMMIT_TEXT}}</dd>
+            <dt>{{t:ui.changes}}</dt><dd class="pend" data-v="{{B_PENDING}}">{{B_PENDING_TEXT}} · {{B_AUTOMERGE_TEXT}}</dd>
+            <dt>{{t:ui.edition}}</dt><dd>{{B_EDITION_TEXT}}</dd>
+            <dt>{{t:ui.proof}}</dt><dd>{{B_PROOF_TEXT}}</dd>
+            <dt>{{t:ui.data}}</dt><dd class="mig" data-v="{{B_MIGRATION}}">{{B_DATA_TEXT}}</dd>
+            <dt>{{t:ui.check}}</dt><dd><span class="dot" data-s="{{B_CHECK}}"></span>{{B_CHECK_TEXT}}</dd>
           </dl>
         </div>
         {{/BOOKS}}
@@ -127,30 +127,30 @@
     </div>
 
     <div>
-      <div class="sec">Repository</div>
+      <div class="sec">{{t:ui.repository}}</div>
       <div class="row"><i class="ti ti-brand-github" aria-hidden="true"></i><span>{{REPO_TEXT}}</span></div>
-      <div class="row"><i class="ti ti-git-branch" aria-hidden="true"></i><span>Erledigte Branches: <a href="{{CLEANUP_URL}}" target="_blank" rel="noopener">Branches aufräumen</a> · <a href="{{TASKS_URL}}" target="_blank" rel="noopener">Löschaufgaben</a></span></div>
+      <div class="row"><i class="ti ti-git-branch" aria-hidden="true"></i><span>{{t:ui.completed_branches}} <a href="{{CLEANUP_URL}}" target="_blank" rel="noopener">{{t:ui.clean_up_branches}}</a> · <a href="{{TASKS_URL}}" target="_blank" rel="noopener">{{t:ui.deletion_tasks}}</a></span></div>
       <table data-gw-if="SECRETS" style="margin-top:6px">
         {{#SECRETS}}
         <tr><td><code>{{S_NAME}}</code></td><td><span class="dot" data-s="{{S_STATE}}"></span>{{S_TEXT}}</td></tr>
         {{/SECRETS}}
       </table>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Secrets nur mit Namen; Werte werden nie gelesen oder angezeigt.</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">{{t:ui.only_secret_names_are_shown_values_are_never_read_or_displayed}}</div>
     </div>
 
     <div data-gw-if="LIMITS">
-      <div class="sec">Nutzungsgrenzen</div>
+      <div class="sec">{{t:ui.usage_limits}}</div>
       <table>
         {{#LIMITS}}
         <tr data-s="{{L_STATE}}"><td>{{L_LABEL}}</td><td><span class="dot"></span>{{L_TEXT}}</td></tr>
         {{/LIMITS}}
       </table>
       <div class="warn" id="gw-lim-text" style="margin-top:6px">{{LIMITS_TEXT}}</div>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Unter 10 % pausiert die tägliche Update-Automatik, unter 20 % gibt es eine Vorwarnung. Beträge in den Projekteinstellungen.</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">{{t:ui.daily_automatic_updates_pause_below_10_a_warning_appears_below_20_set_amounts_in_project_settings}}</div>
     </div>
 
     <div data-gw-if="RUNS">
-      <div class="sec">Letzte Läufe</div>
+      <div class="sec">{{t:ui.recent_runs}}</div>
       <table>
         {{#RUNS}}
         <tr data-s="{{R_STATE}}"><td><a href="{{R_URL}}" target="_blank" rel="noopener">{{R_NAME}}</a></td><td><span class="dot"></span>{{R_TEXT}}</td></tr>

@@ -38,7 +38,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Schauplätze aus dem Text: {{SUGGEST_COUNT_TEXT}} für {{SCOPE_TEXT}}. Auswählen und übernehmen.</h2>
+<h2 class="sr-only">{{t:ui.places_from_the_text_for_select_and_apply}}</h2>
 <style>
 .gw-ov .card{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;display:flex;gap:var(--gap-sm);align-items:flex-start}
 .gw-ov .card.off{opacity:0.55}
@@ -60,37 +60,37 @@
   <div class="gw-ov" id="gw-ov" data-kind="{{KIND}}" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div>
       <div style="font-size:12px;color:var(--text-muted)">{{SCOPE_TEXT}} · {{SUGGEST_COUNT_TEXT}}<span data-gw-if="RUN_TEXT"> · {{RUN_TEXT}}</span></div>
-      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-map-pin" style="color:var(--text-secondary)" aria-hidden="true"></i>Schauplätze aus dem Text</div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-map-pin" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.places_from_the_text}}</div>
     </div>
     <div id="gw-list" style="display:flex;flex-direction:column;gap:6px">
       {{#SUGGESTIONS}}
       <div class="card" data-idx="{{S_IDX}}" data-state="{{S_STATE}}" data-existing="{{S_EXISTING}}">
-        <input type="checkbox" class="on" checked aria-label="übernehmen" style="margin-top:8px">
+        <input type="checkbox" class="on" checked aria-label="{{t:ui.apply_2}}" style="margin-top:8px">
         <div class="main">
           <div style="display:flex;gap:var(--gap-sm);align-items:center;flex-wrap:wrap">
-            <input type="text" class="nm" value="{{S_NAME}}" aria-label="Name">
-            <input type="text" class="kd" value="{{S_KIND}}" placeholder="Art" aria-label="Art">
+            <input type="text" class="nm" value="{{S_NAME}}" aria-label="{{t:ui.name}}">
+            <input type="text" class="kd" value="{{S_KIND}}" placeholder="{{t:ui.type}}" aria-label="{{t:ui.type}}">
             <span class="st" data-s="{{S_STATE}}">{{S_STATE_TEXT}}</span>
           </div>
-          <input type="text" class="sh" value="{{S_SHORT}}" placeholder="ein Satz: wie beschreibt der Text den Ort?" aria-label="Beschreibung">
-          <div class="meta">auch genannt: {{S_ALIASES}}</div>
-          <div class="meta">kommt vor in: {{S_SECTIONS}}</div>
+          <input type="text" class="sh" value="{{S_SHORT}}" placeholder="{{t:ui.one_sentence_how_does_the_text_describe_the_place}}" aria-label="{{t:ui.description}}">
+          <div class="meta">{{t:ui.also_known_as}}</div>
+          <div class="meta">{{t:ui.appears_in_2}}</div>
           <div class="meta ev">{{S_EVIDENCE}}</div>
-          <label class="opt">Zusammenlegen mit <select class="merge" aria-label="Zusammenlegen mit"></select></label>
+          <label class="opt">{{t:ui.merge_with}} <select class="merge" aria-label="{{t:ui.merge_with}}"></select></label>
         </div>
       </div>
       {{/SUGGESTIONS}}
     </div>
-    <select id="gw-merge-tpl" hidden><option value="">– keinem –</option>
+    <select id="gw-merge-tpl" hidden><option value="">{{t:ui.none_3}}</option>
       {{#MERGE}}
       <option value="{{M_ID}}">{{M_NAME}}</option>
       {{/MERGE}}
     </select>
-    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">Im Text wurden keine Schauplätze mit Fundstelle gefunden.</div>
-    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Nur aus dem Text, jede Angabe mit Fundstelle. Bekannte Orte werden nur in leeren Feldern ergänzt und den Abschnitten zugeordnet. Der Text des Buchs bleibt unverändert.</div>
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">{{t:ui.no_places_with_text_references_found}}</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.from_the_text_only_with_a_reference_for_each_item_existing_places_only_have_empty_fields_filled_and_are_linked}}</div>
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-cancel">Verwerfen</button>
-      <button type="button" class="gw-btn pri" id="gw-apply">Übernehmen</button>
+      <button type="button" class="gw-btn" id="gw-cancel">{{t:ui.discard}}</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">{{t:ui.apply}}</button>
     </div>
   </div>
 </div>
@@ -111,10 +111,10 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   function choices(){return cards.filter(function(c){return c.querySelector('.on').checked;}).map(function(c){
     var o={index:+c.dataset.idx,name:c.querySelector('.nm').value.trim(),kind:c.querySelector('.kd').value.trim(),short:c.querySelector('.sh').value.trim()};
     var m=c.querySelector('.merge');if(m&&m.value)o.merge_into=m.value;return o;});}
-  function refresh(){var ch=choices();$('gw-apply').disabled=!ch.length||ch.some(function(x){return !x.name;});$('gw-apply').textContent=ch.length?ch.length+' übernehmen':'Übernehmen';}
+  function refresh(){var ch=choices();$('gw-apply').disabled=!ch.length||ch.some(function(x){return !x.name;});$('gw-apply').textContent=ch.length?ch.length+tr("ui.apply_3"):tr("ui.apply");}
   function lock(){box.querySelectorAll('input,select,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
-  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend(ch.length+' Schauplätze übernehmen','analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Vorschläge verworfen','form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
+  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend(ch.length+tr("ui.places_apply"),'analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.suggestions_discarded"),'form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
   refresh();
 })();
 </script>

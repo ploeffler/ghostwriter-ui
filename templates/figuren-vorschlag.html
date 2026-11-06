@@ -48,7 +48,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Figuren aus dem Text vorschlagen: {{SUGGEST_COUNT_TEXT}} für {{SCOPE_TEXT}}. Auswählen und übernehmen.</h2>
+<h2 class="sr-only">{{t:ui.suggest_characters_from_the_text_for_select_and_apply}}</h2>
 <style>
 .gw-fv .card{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;display:flex;gap:var(--gap-sm);align-items:flex-start}
 .gw-fv .card.off{opacity:0.55}
@@ -69,42 +69,42 @@
   <div class="gw-fv" id="gw-fv" data-scope="{{SCOPE}}" data-series="{{SERIES_ID}}" data-level="{{SERIES_LEVEL}}" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div>
       <div style="font-size:12px;color:var(--text-muted)">{{SCOPE_TEXT}} · {{SUGGEST_COUNT_TEXT}}<span data-gw-if="RUN_TEXT"> · {{RUN_TEXT}}</span></div>
-      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-user-search" style="color:var(--text-secondary)" aria-hidden="true"></i>Figuren aus dem Text</div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-user-search" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.characters_from_the_text}}</div>
     </div>
-    <div data-gw-if="CONFLICTS_TEXT" style="font-size:13px;padding:8px 10px;border:0.5px solid var(--text-danger);border-radius:var(--radius);color:var(--text-danger)">Widersprüche im Text (nicht entschieden): {{CONFLICTS_TEXT}}</div>
+    <div data-gw-if="CONFLICTS_TEXT" style="font-size:13px;padding:8px 10px;border:0.5px solid var(--text-danger);border-radius:var(--radius);color:var(--text-danger)">{{t:ui.conflicts_in_the_text_unresolved}}</div>
     <div id="gw-list" style="display:flex;flex-direction:column;gap:6px">
       {{#SUGGESTIONS}}
       <div class="card" data-idx="{{S_IDX}}" data-role="{{S_ROLE}}" data-state="{{S_STATE}}">
-        <input type="checkbox" class="on" checked aria-label="übernehmen" style="margin-top:8px">
+        <input type="checkbox" class="on" checked aria-label="{{t:ui.apply_2}}" style="margin-top:8px">
         <div class="main">
           <div style="display:flex;gap:var(--gap-sm);align-items:center;flex-wrap:wrap">
-            <input type="text" class="nm" value="{{S_NAME}}" aria-label="Name">
-            <select class="role" aria-label="Rolle"><option value="main">Hauptfigur</option><option value="supporting">Nebenfigur</option><option value="minor">Randfigur</option></select>
+            <input type="text" class="nm" value="{{S_NAME}}" aria-label="{{t:ui.name}}">
+            <select class="role" aria-label="{{t:ui.role}}"><option value="main">{{t:ui.main_character}}</option><option value="supporting">{{t:ui.supporting_character}}</option><option value="minor">{{t:ui.minor_character}}</option></select>
             <span class="st" data-s="{{S_STATE}}">{{S_STATE_TEXT}}</span>
           </div>
-          <input type="text" class="sh" value="{{S_SHORT}}" placeholder="ein Satz: wer ist die Figur?" aria-label="Kurz">
-          <div class="meta">auch genannt: {{S_ALIASES}}</div>
+          <input type="text" class="sh" value="{{S_SHORT}}" placeholder="{{t:ui.one_sentence_who_is_this_character}}" aria-label="{{t:ui.brief_description}}">
+          <div class="meta">{{t:ui.also_known_as}}</div>
           <div class="meta">{{S_DETAILS}}</div>
-          <div class="meta">kommt vor in: {{S_SECTIONS}}</div>
+          <div class="meta">{{t:ui.appears_in_2}}</div>
           <div class="meta" style="font-style:italic">{{S_EVIDENCE}}</div>
           <div class="opt">
-            <label>Zusammenlegen mit <select class="merge" aria-label="Zusammenlegen mit"></select></label>
-            <label class="ser-opt"><input type="checkbox" class="ser"> als Figur der Serie anlegen</label>
+            <label>{{t:ui.merge_with}} <select class="merge" aria-label="{{t:ui.merge_with}}"></select></label>
+            <label class="ser-opt"><input type="checkbox" class="ser"> {{t:ui.create_as_a_series_character}}</label>
           </div>
         </div>
       </div>
       {{/SUGGESTIONS}}
     </div>
-    <select id="gw-merge-tpl" hidden><option value="">– keiner –</option>
+    <select id="gw-merge-tpl" hidden><option value="">{{t:ui.none_2}}</option>
       {{#MERGE}}
       <option value="{{M_ID}}">{{M_NAME}}</option>
       {{/MERGE}}
     </select>
-    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">Im Text wurden keine Figuren gefunden.</div>
-    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Nur aus dem Text; was dort nicht steht, bleibt leer. Bekannte Figuren werden nur in leeren Feldern ergänzt und den Abschnitten zugeordnet. Der Text des Buchs bleibt unverändert.</div>
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">{{t:ui.no_characters_found_in_the_text}}</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.from_the_text_only_missing_information_stays_blank_existing_characters_only_have_empty_fields_filled_and_are_l}}</div>
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-cancel">Verwerfen</button>
-      <button type="button" class="gw-btn pri" id="gw-apply">Übernehmen</button>
+      <button type="button" class="gw-btn" id="gw-cancel">{{t:ui.discard}}</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">{{t:ui.apply}}</button>
     </div>
   </div>
 </div>
@@ -133,11 +133,11 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
       return o;
     });
   }
-  function refresh(){var ch=choices();$('gw-apply').disabled=!ch.length||ch.some(function(x){return !x.name;});$('gw-apply').textContent=ch.length?ch.length+' übernehmen':'Übernehmen';}
+  function refresh(){var ch=choices();$('gw-apply').disabled=!ch.length||ch.some(function(x){return !x.name;});$('gw-apply').textContent=ch.length?ch.length+tr("ui.apply_3"):tr("ui.apply");}
   box.addEventListener('input',refresh);
   function lock(){box.querySelectorAll('input,select,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
-  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();var p={scope:ds.scope,choices:ch};if(ds.run)p.run=ds.run;gwSend(ch.length+' Figuren aus dem Text übernehmen','character.suggest.apply',p);});
-  $('gw-cancel').addEventListener('click',function(){lock();var c={form:'character.suggest.apply'};if(ds.run)c.run=ds.run;gwSend('Vorschläge verworfen','form.cancel',c);});
+  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();var p={scope:ds.scope,choices:ch};if(ds.run)p.run=ds.run;gwSend(ch.length+tr("ui.characters_from_the_text_apply"),'character.suggest.apply',p);});
+  $('gw-cancel').addEventListener('click',function(){lock();var c={form:'character.suggest.apply'};if(ds.run)c.run=ds.run;gwSend(tr("ui.suggestions_discarded"),'form.cancel',c);});
   refresh();
 })();
 </script>

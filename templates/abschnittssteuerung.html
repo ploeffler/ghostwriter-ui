@@ -34,7 +34,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Abschnittssteuerung für Abschnitt {{SECTION_NUMBER}} {{SECTION_TITLE}}: Recherche und Ghostwriting zeitgesteuert oder sofort ausführen, Abschnitt sperren oder entsperren.</h2>
+<h2 class="sr-only">{{t:ui.controls_for_section_run_research_and_ghostwriting_now_or_on_schedule_lock_or_unlock_the_section}}</h2>
 <style>
 .gw-wrap{display:grid;grid-template-columns:1fr 1fr 56px;gap:var(--gap-md);padding:1rem 0}
 .gw-card{border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-md);display:flex;flex-direction:column;gap:var(--gap-sm);min-width:0}
@@ -57,37 +57,37 @@
   <div class="gw-card" data-task="Recherche">
     <div class="gw-head">
       <div class="gw-ico"><i class="ti ti-search" aria-hidden="true"></i></div>
-      <div><div style="font-size:16px;font-weight:500">Recherche</div><div style="font-size:13px;color:var(--text-secondary)">Quellen finden und auswerten</div></div>
+      <div><div style="font-size:16px;font-weight:500">Recherche</div><div style="font-size:13px;color:var(--text-secondary)">{{t:ui.find_and_evaluate_sources}}</div></div>
     </div>
-    <button type="button" class="gw-opt" data-mode="zeitgesteuert" data-available="false"><i class="ti ti-clock" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i><span><span style="font-size:14px;font-weight:500">Zeitgesteuert</span><br><span style="font-size:12px;color:var(--text-secondary)">Job in der Cloud-Warteschlange</span></span></button>
-    <button type="button" class="gw-opt" data-mode="sofort"><i class="ti ti-bolt" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i><span><span style="font-size:14px;font-weight:500">Sofort</span><br><span style="font-size:12px;color:var(--text-secondary)">Direkt hier im Chat</span></span></button>
+    <button type="button" class="gw-opt" data-mode="zeitgesteuert" data-available="false"><i class="ti ti-clock" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i><span><span style="font-size:14px;font-weight:500">{{t:ui.scheduled}}</span><br><span style="font-size:12px;color:var(--text-secondary)">{{t:ui.job_in_the_cloud_queue}}</span></span></button>
+    <button type="button" class="gw-opt" data-mode="sofort"><i class="ti ti-bolt" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i><span><span style="font-size:14px;font-weight:500">{{t:ui.now}}</span><br><span style="font-size:12px;color:var(--text-secondary)">{{t:ui.here_in_the_chat_2}}</span></span></button>
   </div>
   <div class="gw-card" data-task="Ghostwriting">
     <div class="gw-head">
       <div class="gw-ico"><i class="ti ti-feather" aria-hidden="true"></i></div>
-      <div><div style="font-size:16px;font-weight:500">Ghostwriting</div><div style="font-size:13px;color:var(--text-secondary)">Automated Content Generation (ACG)</div></div>
+      <div><div style="font-size:16px;font-weight:500">{{t:ui.ghostwriting}}</div><div style="font-size:13px;color:var(--text-secondary)">{{t:ui.automated_content_generation_acg}}</div></div>
     </div>
-    <button type="button" class="gw-opt" data-mode="zeitgesteuert" data-available="false"><i class="ti ti-clock" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i><span><span style="font-size:14px;font-weight:500">Zeitgesteuert</span><br><span style="font-size:12px;color:var(--text-secondary)">Job in der Cloud-Warteschlange</span></span></button>
-    <button type="button" class="gw-opt" data-mode="sofort"><i class="ti ti-bolt" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i><span><span style="font-size:14px;font-weight:500">Sofort</span><br><span style="font-size:12px;color:var(--text-secondary)">Direkt hier im Chat</span></span></button>
+    <button type="button" class="gw-opt" data-mode="zeitgesteuert" data-available="false"><i class="ti ti-clock" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i><span><span style="font-size:14px;font-weight:500">{{t:ui.scheduled}}</span><br><span style="font-size:12px;color:var(--text-secondary)">{{t:ui.job_in_the_cloud_queue}}</span></span></button>
+    <button type="button" class="gw-opt" data-mode="sofort"><i class="ti ti-bolt" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i><span><span style="font-size:14px;font-weight:500">{{t:ui.now}}</span><br><span style="font-size:12px;color:var(--text-secondary)">{{t:ui.here_in_the_chat_2}}</span></span></button>
   </div>
   <div class="gw-lockcard">
-    <button type="button" class="gw-lock" aria-pressed="false" aria-label="Abschnitt sperren" title="Abschnitt sperren"><i class="ti ti-lock-open" aria-hidden="true"></i></button>
+    <button type="button" class="gw-lock" aria-pressed="false" aria-label="{{t:ui.lock_section}}" title="{{t:ui.lock_section}}"><i class="ti ti-lock-open" aria-hidden="true"></i></button>
   </div>
 </div>
 <script>
 function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 (function(){
   var wrap=document.getElementById('gw-abschnittssteuerung');
-  var ref='Abschnitt '+wrap.dataset.sectionNumber+' „'+wrap.dataset.sectionTitle+'“ (ID '+wrap.dataset.sectionId+')';
+  var ref=tr("ui.section")+wrap.dataset.sectionNumber+' „'+wrap.dataset.sectionTitle+tr("ui.id")+wrap.dataset.sectionId+')';
   var texts={
-    'Recherche|zeitgesteuert':'Recherche für '+ref+' zeitgesteuert als Job in die Cloud-Warteschlange übergeben',
-    'Recherche|sofort':ref+' jetzt sofort hier im Chat recherchieren',
-    'Ghostwriting|zeitgesteuert':'Ghostwriting für '+ref+' zeitgesteuert als Job in die Cloud-Warteschlange übergeben',
-    'Ghostwriting|sofort':ref+' jetzt sofort hier im Chat schreiben (Ghostwriting)'
+    'Recherche|zeitgesteuert':tr("ui.research_for")+ref+tr("ui.schedule_as_a_job_in_the_cloud_queue"),
+    'Recherche|sofort':ref+tr("ui.research_now_here_in_the_chat"),
+    'Ghostwriting|zeitgesteuert':tr("ui.ghostwriting_for")+ref+tr("ui.schedule_as_a_job_in_the_cloud_queue"),
+    'Ghostwriting|sofort':ref+tr("ui.write_now_here_in_the_chat_ghostwriting")
   };
   wrap.querySelectorAll('.gw-opt[data-available="false"]').forEach(function(x){
-    x.disabled=true;x.title='Nicht verfügbar in v0.5';
-    var s=document.createElement('span');s.className='gw-later';s.textContent='nach v0.5';x.appendChild(s);
+    x.disabled=true;x.title=tr("ui.unavailable_in_v0_5");
+    var s=document.createElement('span');s.className='gw-later';s.textContent=tr("ui.after_v0_5");x.appendChild(s);
   });
   var lock=wrap.querySelector('.gw-lock'),ico=lock.querySelector('i'),locked=false;
   function refresh(){
@@ -113,7 +113,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     wrap.classList.toggle('locked',locked);
     lock.classList.toggle('on',locked);
     lock.setAttribute('aria-pressed',String(locked));
-    var lbl=locked?'Abschnitt entsperren':'Abschnitt sperren';
+    var lbl=locked?tr("ui.unlock_section"):tr("ui.lock_section");
     lock.setAttribute('aria-label',lbl);lock.title=lbl;
     ico.className=locked?'ti ti-lock':'ti ti-lock-open';
     refresh();

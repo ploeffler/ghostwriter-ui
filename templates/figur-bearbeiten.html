@@ -51,7 +51,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
   --font-mono), Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Figur „{{CHARACTER_NAME}}“ bearbeiten.</h2>
+<h2 class="sr-only">{{t:ui.edit_character}}</h2>
 <style>
 .gw-sq{width:40px;height:40px;flex:none;border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0}
 .gw-sq:hover{border-color:var(--border-strong);color:var(--text-primary)}
@@ -72,34 +72,34 @@
       <div style="flex:1">
         <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{PROJECT_TITLE_SHORT}}</span>
         <div style="font-size:20px;font-weight:500;margin-top:4px">{{CHARACTER_NAME}}</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:2px">kommt vor in: {{CHARACTER_USED}}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px">{{t:ui.appears_in}}</div>
       </div>
-      <button type="button" class="gw-sq" data-a="view.characters" data-p="Alle Figuren" title="Alle Figuren" aria-label="Alle Figuren"><i class="ti ti-masks-theater" aria-hidden="true"></i></button>
-      <button type="button" class="gw-sq" data-a="view.project" data-p="Zur Projektübersicht" title="Zur Projektübersicht" aria-label="Zur Projektübersicht"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
+      <button type="button" class="gw-sq" data-a="view.characters" data-p="{{t:ui.all_characters}}" title="{{t:ui.all_characters}}" aria-label="{{t:ui.all_characters}}"><i class="ti ti-masks-theater" aria-hidden="true"></i></button>
+      <button type="button" class="gw-sq" data-a="view.project" data-p="{{t:ui.project_overview}}" title="{{t:ui.project_overview}}" aria-label="{{t:ui.project_overview}}"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
     </div>
     <div id="gw-ser" data-gw-if="CHARACTER_SOURCE" style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;padding:8px 10px;border:0.5px solid var(--border-accent);border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent);font-size:13px">
-      <i class="ti ti-stack-2" aria-hidden="true"></i><span style="flex:1;min-width:180px"><span id="gw-ser-text">{{CHARACTER_SOURCE_TEXT}}</span> · Serie „{{SERIES_TITLE}}“</span>
-      <button type="button" class="gw-btn gw-sact" data-act="character.detach" data-t="Kopie nur für dieses Buch anlegen" style="padding:5px 10px;font-size:13px;border:0.5px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary)">Kopie nur für dieses Buch</button>
-      <button type="button" class="gw-btn gw-sact" data-act="character.align" data-t="An die Serie angleichen" style="padding:5px 10px;font-size:13px;border:0.5px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary)">An Serie angleichen</button>
-      <button type="button" class="gw-btn gw-sact" data-act="character.adopt" data-t="In die Serie übernehmen" style="padding:5px 10px;font-size:13px;border:0.5px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary)">In die Serie übernehmen</button>
+      <i class="ti ti-stack-2" aria-hidden="true"></i><span style="flex:1;min-width:180px"><span id="gw-ser-text">{{CHARACTER_SOURCE_TEXT}}</span> {{t:ui.series}}</span>
+      <button type="button" class="gw-btn gw-sact" data-act="character.detach" data-t="{{t:ui.series_action_2}}" style="padding:5px 10px;font-size:13px;border:0.5px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary)">{{t:ui.copy_for_this_book_only}}</button>
+      <button type="button" class="gw-btn gw-sact" data-act="character.align" data-t="{{t:ui.series_action_3}}" style="padding:5px 10px;font-size:13px;border:0.5px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary)">{{t:ui.match_series_version}}</button>
+      <button type="button" class="gw-btn gw-sact" data-act="character.adopt" data-t="{{t:ui.apply_to_series}}" style="padding:5px 10px;font-size:13px;border:0.5px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary)">{{t:ui.apply_to_series}}</button>
     </div>
     <div class="gw-grid">
-      <div><label class="gw-lbl" for="f-name">Name</label><input class="gw-in" id="f-name" value="{{CHARACTER_NAME}}"></div>
-      <div><label class="gw-lbl" for="f-role">Rolle</label><select class="gw-in" id="f-role"><option value="main">Hauptfigur</option><option value="supporting">Nebenfigur</option><option value="minor">Randfigur</option></select></div>
-      <div><label class="gw-lbl" for="f-age">Alter</label><input class="gw-in" id="f-age" value="{{CHARACTER_AGE}}"></div>
+      <div><label class="gw-lbl" for="f-name">{{t:ui.name}}</label><input class="gw-in" id="f-name" value="{{CHARACTER_NAME}}"></div>
+      <div><label class="gw-lbl" for="f-role">{{t:ui.role}}</label><select class="gw-in" id="f-role"><option value="main">{{t:ui.main_character}}</option><option value="supporting">{{t:ui.supporting_character}}</option><option value="minor">{{t:ui.minor_character}}</option></select></div>
+      <div><label class="gw-lbl" for="f-age">{{t:ui.age}}</label><input class="gw-in" id="f-age" value="{{CHARACTER_AGE}}"></div>
     </div>
-    <div><label class="gw-lbl" for="f-short">Kurz <span class="gw-hint">ein Satz: wer ist die Figur?</span></label><input class="gw-in" id="f-short" value="{{CHARACTER_SHORT}}"></div>
+    <div><label class="gw-lbl" for="f-short">{{t:ui.brief_description}} <span class="gw-hint">{{t:ui.one_sentence_who_is_this_character}}</span></label><input class="gw-in" id="f-short" value="{{CHARACTER_SHORT}}"></div>
     <div class="gw-grid">
-      <div><label class="gw-lbl" for="f-appearance">Aussehen</label><textarea class="gw-in" id="f-appearance" rows="2">{{CHARACTER_APPEARANCE}}</textarea></div>
-      <div><label class="gw-lbl" for="f-voice">Sprechweise</label><textarea class="gw-in" id="f-voice" rows="2">{{CHARACTER_VOICE}}</textarea></div>
+      <div><label class="gw-lbl" for="f-appearance">{{t:ui.appearance}}</label><textarea class="gw-in" id="f-appearance" rows="2">{{CHARACTER_APPEARANCE}}</textarea></div>
+      <div><label class="gw-lbl" for="f-voice">{{t:ui.speech}}</label><textarea class="gw-in" id="f-voice" rows="2">{{CHARACTER_VOICE}}</textarea></div>
     </div>
-    <div><label class="gw-lbl" for="f-traits">Eigenschaften <span class="gw-hint">kommagetrennt</span></label><input class="gw-in" id="f-traits" value="{{CHARACTER_TRAITS}}"></div>
-    <div><label class="gw-lbl" for="f-visual">Bildbeschreibung <span class="gw-hint">für Illustrationen; gleich bleibende Merkmale</span></label><textarea class="gw-in" id="f-visual" rows="2">{{CHARACTER_VISUAL}}</textarea></div>
+    <div><label class="gw-lbl" for="f-traits">{{t:ui.traits}} <span class="gw-hint">{{t:ui.comma_separated}}</span></label><input class="gw-in" id="f-traits" value="{{CHARACTER_TRAITS}}"></div>
+    <div><label class="gw-lbl" for="f-visual">{{t:ui.image_description}} <span class="gw-hint">{{t:ui.for_illustrations_consistent_features}}</span></label><textarea class="gw-in" id="f-visual" rows="2">{{CHARACTER_VISUAL}}</textarea></div>
     <div>
-      <div class="gw-lbl">Beziehungen <span class="gw-hint">Art, z. B. „Besitzer“ – „Opi ist Besitzer von Strolchi“</span></div>
+      <div class="gw-lbl">{{t:ui.relationships}} <span class="gw-hint">{{t:ui.type_e_g_owner_grandpa_owns_strolchi}}</span></div>
       <div id="gw-rels" style="display:flex;flex-direction:column;gap:6px">
         {{#RELATIONS}}
-        <div class="gw-rel" data-to="{{R_TO}}"><input class="gw-in gw-k" value="{{R_KIND}}" aria-label="Art der Beziehung"><select class="gw-in gw-t" aria-label="Figur"></select><button type="button" class="gw-x" title="Entfernen" aria-label="Entfernen"><i class="ti ti-x" aria-hidden="true"></i></button></div>
+        <div class="gw-rel" data-to="{{R_TO}}"><input class="gw-in gw-k" value="{{R_KIND}}" aria-label="{{t:ui.relationship_type}}"><select class="gw-in gw-t" aria-label="{{t:ui.character}}"></select><button type="button" class="gw-x" title="{{t:ui.remove}}" aria-label="{{t:ui.remove}}"><i class="ti ti-x" aria-hidden="true"></i></button></div>
         {{/RELATIONS}}
       </div>
       <select id="gw-others" hidden>
@@ -107,13 +107,13 @@
         <option value="{{O_ID}}">{{O_NAME}}</option>
         {{/OTHERS}}
       </select>
-      <button type="button" class="gw-mini" id="gw-addrel" style="margin-top:6px"><i class="ti ti-plus" aria-hidden="true"></i> Beziehung</button>
+      <button type="button" class="gw-mini" id="gw-addrel" style="margin-top:6px"><i class="ti ti-plus" aria-hidden="true"></i> {{t:ui.relationship}}</button>
     </div>
-    <div><label class="gw-lbl" for="f-desc">Beschreibung <span class="gw-hint">Markdown; Arbeitsgrundlage, nicht im Buch</span></label><textarea class="gw-in" id="f-desc" rows="5" style="font-family:var(--font-mono);font-size:13px">{{CHARACTER_DESCRIPTION}}</textarea></div>
-    <div><label class="gw-lbl" for="f-notes">Notizen</label><textarea class="gw-in" id="f-notes" rows="3">{{CHARACTER_NOTES}}</textarea></div>
+    <div><label class="gw-lbl" for="f-desc">{{t:ui.description}} <span class="gw-hint">{{t:ui.markdown_working_reference_excluded_from_the_book}}</span></label><textarea class="gw-in" id="f-desc" rows="5" style="font-family:var(--font-mono);font-size:13px">{{CHARACTER_DESCRIPTION}}</textarea></div>
+    <div><label class="gw-lbl" for="f-notes">{{t:ui.notes_2}}</label><textarea class="gw-in" id="f-notes" rows="3">{{CHARACTER_NOTES}}</textarea></div>
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Verwerfen</button>
-      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">Speichern</button>
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">{{t:ui.discard}}</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{t:ui.save}}</button>
     </div>
   </div>
 </div>
@@ -132,7 +132,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   if(!$('gw-others').options.length)$('gw-addrel').disabled=true;
   $('gw-addrel').addEventListener('click',function(){
     var r=document.createElement('div');r.className='gw-rel';r.dataset.to='';
-    r.innerHTML='<input class="gw-in gw-k" placeholder="z. B. Besitzer" aria-label="Art der Beziehung"><select class="gw-in gw-t" aria-label="Figur"></select><button type="button" class="gw-x" title="Entfernen" aria-label="Entfernen"><i class="ti ti-x" aria-hidden="true"></i></button>';
+    r.innerHTML=tr("ui.input_class_gw_in_gw_k_placeholder_e_g_owner_aria_label_relationship_type_select_class_gw_in_gw_t_ar");
     $('gw-rels').appendChild(r);bind(r);r.querySelector('.gw-k').focus();
   });
   $('f-name').addEventListener('input',function(){$('gw-save').disabled=!$('f-name').value.trim();});
@@ -142,8 +142,8 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     var data={character_id:d.id,name:$('f-name').value.trim(),role:$('f-role').value,short:$('f-short').value.trim(),age:$('f-age').value.trim(),
       appearance:$('f-appearance').value.trim(),traits:$('f-traits').value.split(',').map(function(x){return x.trim();}).filter(Boolean),
       voice:$('f-voice').value.trim(),visual:$('f-visual').value.trim(),relations:rel,description:$('f-desc').value.trim(),notes:$('f-notes').value.trim()};
-    if(d.source==='series'){data.series_id=d.series;lock();gwSend('Figur „'+data.name+'“ der Serie speichern (gilt für alle Bände)','character.series.update',data);return;}
-    lock();gwSend('Figur „'+data.name+'“ speichern','character.update',data);
+    if(d.source==='series'){data.series_id=d.series;lock();gwSend(tr("ui.character_2")+data.name+tr("ui.save_series_character_applies_to_every_volume"),'character.series.update',data);return;}
+    lock();gwSend(tr("ui.character_2")+data.name+tr("ui.action_fragment_0"),'character.update',data);
   });
   // Serie (#116): passende Knöpfe je Herkunft
   var allow={series:['character.detach'],copy:['character.align','character.adopt'],copy_diff:['character.align','character.adopt'],own:['character.adopt']}[d.source]||[];
@@ -151,7 +151,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     if(allow.indexOf(b.dataset.act)<0){b.remove();return;}
     b.addEventListener('click',function(){lock();gwSend(b.dataset.t+': „'+$('f-name').value.trim()+'“',b.dataset.act,{character_id:d.id});});
   });
-  if(d.source==='series')$('gw-save').textContent='Für alle Bände speichern';
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Änderungen an der Figur verworfen','form.cancel',{form:'character.update',character_id:d.id});});
+  if(d.source==='series')$('gw-save').textContent=tr("ui.save_for_every_volume");
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.changes_to_character_discarded"),'form.cancel',{form:'character.update',character_id:d.id});});
 })();
 </script>

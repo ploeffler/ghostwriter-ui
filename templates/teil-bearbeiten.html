@@ -69,7 +69,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
   --font-mono), Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">{{MATTER_TITLE}} ({{MATTER_AREA_TEXT}}) bearbeiten: Titel, Ziel, Text, Freigaben.</h2>
+<h2 class="sr-only">{{t:ui.edit_title_goal_text_and_approvals}}</h2>
 <style>
 .gw-sq{width:40px;height:40px;flex:none;border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0}
 .gw-sq:hover:not(:disabled){border-color:var(--border-strong);color:var(--text-primary)}
@@ -105,9 +105,9 @@
           <div style="font-size:20px;font-weight:500;line-height:1.3">{{MATTER_TITLE}}</div>
         </div>
         <div style="display:flex;gap:var(--gap-sm);margin-left:auto">
-          <button type="button" class="gw-sq" id="gw-figsug" data-scope="{{MATTER_ID}}" title="Figuren aus dem Text vorschlagen" aria-label="Figuren aus dem Text vorschlagen"><i class="ti ti-user-search" aria-hidden="true"></i></button>
-          <button type="button" class="gw-sq" data-p="Vor- und Nachspann anzeigen" data-a="view.matter" title="Vor- und Nachspann" aria-label="Vor- und Nachspann"><i class="ti ti-bookmarks" aria-hidden="true"></i></button>
-          <button type="button" class="gw-sq" data-p="Zur Projektübersicht" data-a="view.project" title="Zur Projektübersicht" aria-label="Zur Projektübersicht"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" id="gw-figsug" data-scope="{{MATTER_ID}}" title="{{t:ui.suggest_characters_from_the_text}}" aria-label="{{t:ui.suggest_characters_from_the_text}}"><i class="ti ti-user-search" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="{{t:ui.show_front_and_back_matter}}" data-a="view.matter" title="{{t:ui.front_and_back_matter}}" aria-label="{{t:ui.front_and_back_matter}}"><i class="ti ti-bookmarks" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="{{t:ui.project_overview}}" data-a="view.project" title="{{t:ui.project_overview}}" aria-label="{{t:ui.project_overview}}"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
         </div>
       </div>
       <div style="font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;margin-top:8px">
@@ -120,28 +120,28 @@
 
     <div class="gw-two" style="display:grid;grid-template-columns:1fr 2fr;gap:var(--gap-md);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <div>
-        <label class="gw-lbl" for="gw-title">Titel</label>
+        <label class="gw-lbl" for="gw-title">{{t:ui.title}}</label>
         <input class="gw-in" id="gw-title" value="{{MATTER_TITLE}}">
       </div>
       <div>
-        <label class="gw-lbl" for="gw-goal">Ziel <span class="gw-hint">was dieser Teil leisten soll</span></label>
+        <label class="gw-lbl" for="gw-goal">{{t:ui.goal}} <span class="gw-hint">{{t:ui.what_this_part_should_achieve}}</span></label>
         <textarea class="gw-in" id="gw-goal" rows="2">{{MATTER_GOAL}}</textarea>
       </div>
     </div>
 
     <div data-gw-if="SIGNED" class="gw-two" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-md)">
       <div>
-        <label class="gw-lbl" for="gw-byline">Verfasser <span class="gw-hint">nur wenn nicht du selbst</span></label>
-        <input class="gw-in" id="gw-byline" value="{{BYLINE}}" placeholder="z. B. Dr. Maria Muster">
+        <label class="gw-lbl" for="gw-byline">{{t:ui.written_by}} <span class="gw-hint">{{t:ui.only_if_someone_other_than_you}}</span></label>
+        <input class="gw-in" id="gw-byline" value="{{BYLINE}}" placeholder="{{t:ui.e_g_dr_maria_example}}">
       </div>
       <div>
-        <label class="gw-lbl" for="gw-place">Ort und Datum <span class="gw-hint">optional, am Ende</span></label>
-        <input class="gw-in" id="gw-place" value="{{PLACE_DATE}}" placeholder="z. B. Graz, im Oktober 2026">
+        <label class="gw-lbl" for="gw-place">{{t:ui.place_and_date}} <span class="gw-hint">{{t:ui.optional_at_the_end}}</span></label>
+        <input class="gw-in" id="gw-place" value="{{PLACE_DATE}}" placeholder="{{t:ui.e_g_graz_october_2026}}">
       </div>
     </div>
 
     <div data-gw-if="MARKERS" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <div class="gw-lbl">Offene Marker <span class="gw-hint">verhindern die Auflage, sobald der Teil freigegeben ist</span></div>
+      <div class="gw-lbl">{{t:ui.open_markers}} <span class="gw-hint">{{t:ui.prevent_an_edition_once_this_part_is_approved}}</span></div>
       <div style="display:flex;flex-direction:column;gap:var(--gap-xs)">
         {{#MARKERS}}
         <div class="gw-mk"><i class="ti ti-alert-triangle" style="font-size:16px;margin-top:2px" aria-hidden="true"></i><span><b>{{MARKER_LABEL}}</b> · {{MARKER_TEXT}}</span></div>
@@ -150,56 +150,56 @@
     </div>
 
     <div id="gw-text" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <label class="gw-lbl" for="gw-ms">Text <span class="gw-hint">Markdown; kommt so ins Buch</span></label>
+      <label class="gw-lbl" for="gw-ms">{{t:ui.text}} <span class="gw-hint">{{t:ui.markdown_included_in_the_book_as_entered}}</span></label>
       <textarea class="gw-in" id="gw-ms" rows="12" style="font-family:var(--font-mono);font-size:13px">{{MATTER_MANUSCRIPT}}</textarea>
     </div>
 
     <div data-gw-if="GLOSSARY" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md);display:flex;flex-direction:column;gap:var(--gap-sm)">
       <div>
-        <label class="gw-lbl" for="gw-intro">Einleitung <span class="gw-hint">optional, vor den Begriffen</span></label>
+        <label class="gw-lbl" for="gw-intro">{{t:ui.introduction}} <span class="gw-hint">{{t:ui.optional_before_the_terms}}</span></label>
         <textarea class="gw-in" id="gw-intro" rows="2">{{GLOSSARY_INTRO}}</textarea>
       </div>
-      <div class="gw-lbl" style="margin:4px 0 0">Begriffe <span class="gw-hint">im Buch alphabetisch; jeder Begriff nur einmal</span></div>
+      <div class="gw-lbl" style="margin:4px 0 0">{{t:ui.terms}} <span class="gw-hint">{{t:ui.alphabetical_in_the_book_each_term_appears_once}}</span></div>
       <div id="gw-entries" style="display:flex;flex-direction:column;gap:6px">
         {{#GLOSSARY_ENTRIES}}
-        <div class="gw-g" data-old="{{G_TERM}}"><input class="gw-in gw-t" value="{{G_TERM}}" aria-label="Begriff"><textarea class="gw-in gw-e" rows="1" aria-label="Erklärung">{{G_TEXT}}</textarea><button type="button" class="gw-x" title="Begriff entfernen" aria-label="Begriff entfernen"><i class="ti ti-trash" aria-hidden="true"></i></button></div>
+        <div class="gw-g" data-old="{{G_TERM}}"><input class="gw-in gw-t" value="{{G_TERM}}" aria-label="{{t:ui.term}}"><textarea class="gw-in gw-e" rows="1" aria-label="{{t:ui.definition}}">{{G_TEXT}}</textarea><button type="button" class="gw-x" title="{{t:ui.remove_term}}" aria-label="{{t:ui.remove_term}}"><i class="ti ti-trash" aria-hidden="true"></i></button></div>
         {{/GLOSSARY_ENTRIES}}
       </div>
       <div data-gw-if="SERIES_TERMS" id="gw-sterms" data-series="{{SERIES_ID}}" style="border:0.5px solid var(--border-accent);border-radius:var(--radius);padding:8px 10px;display:flex;flex-direction:column;gap:6px">
-        <div style="font-size:12px;color:var(--text-accent)">Begriffe der Serie „{{SERIES_TITLE}}“</div>
+        <div style="font-size:12px;color:var(--text-accent)">{{t:ui.terms_from_series}}</div>
         {{#SERIES_TERMS}}
         <div class="gw-st" data-term="{{T_TERM}}" data-state="{{T_STATE}}" style="display:flex;gap:8px;align-items:center;font-size:13px;flex-wrap:wrap">
           <span style="flex:1;min-width:160px"><b style="font-weight:500">{{T_TERM}}</b> <span style="font-size:11px;color:var(--text-muted)">· {{T_STATE_TEXT}}</span><span style="display:block;font-size:12px;color:var(--text-secondary)">{{T_TEXT}}</span></span>
-          <button type="button" class="gw-mini gw-sa" data-act="matter.glossary.from_series" data-t="aus der Serie übernehmen">Ins Buch</button>
-          <button type="button" class="gw-mini gw-sa" data-act="matter.glossary.to_series" data-t="in die Serie übernehmen">In die Serie</button>
+          <button type="button" class="gw-mini gw-sa" data-act="matter.glossary.from_series" data-t="{{t:ui.series_action_0}}">{{t:ui.to_book}}</button>
+          <button type="button" class="gw-mini gw-sa" data-act="matter.glossary.to_series" data-t="{{t:ui.series_action_1}}">{{t:ui.to_series_2}}</button>
         </div>
         {{/SERIES_TERMS}}
       </div>
       <div style="display:flex;gap:var(--gap-sm);flex-wrap:wrap">
-        <button type="button" class="gw-mini" id="gw-add" style="margin-left:0"><i class="ti ti-plus" aria-hidden="true"></i> Begriff hinzufügen</button>
-        <button type="button" class="gw-mini" id="gw-suggest" style="margin-left:0"><i class="ti ti-sparkles" aria-hidden="true"></i> Begriffe aus dem Text vorschlagen</button>
-        <span id="gw-dup" style="font-size:12px;color:var(--text-danger);align-self:center" hidden>Begriff doppelt – bitte zusammenführen.</span>
+        <button type="button" class="gw-mini" id="gw-add" style="margin-left:0"><i class="ti ti-plus" aria-hidden="true"></i> {{t:ui.add_term}}</button>
+        <button type="button" class="gw-mini" id="gw-suggest" style="margin-left:0"><i class="ti ti-sparkles" aria-hidden="true"></i> {{t:ui.suggest_terms_from_the_text}}</button>
+        <span id="gw-dup" style="font-size:12px;color:var(--text-danger);align-self:center" hidden>{{t:ui.duplicate_term_please_merge}}</span>
       </div>
     </div>
 
     <div class="gw-two" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-md);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <div>
-        <div class="gw-lbl">Freigaben <span class="gw-hint">nur mit Bestätigung</span></div>
+        <div class="gw-lbl">{{t:ui.approvals}} <span class="gw-hint">{{t:ui.confirmation_required}}</span></div>
         <div class="gw-apr" data-kind="writing"><i class="ti" aria-hidden="true"></i><span></span><button type="button" class="gw-mini"></button></div>
         <div class="gw-apr" data-kind="matter" style="margin-top:6px"><i class="ti" aria-hidden="true"></i><span></span><button type="button" class="gw-mini"></button></div>
       </div>
       <div data-gw-if="RESEARCH">
-        <div class="gw-lbl">Sofort hier im Chat</div>
+        <div class="gw-lbl">{{t:ui.here_in_the_chat_now}}</div>
         <div style="display:flex;gap:var(--gap-sm);flex-wrap:wrap">
           <button type="button" class="gw-mini gw-run" data-task="research" style="margin-left:0"><i class="ti ti-search" aria-hidden="true"></i> Recherche</button>
-          <button type="button" class="gw-mini gw-run" data-task="writing" data-gw-if="GHOSTWRITING" style="margin-left:0"><i class="ti ti-feather" aria-hidden="true"></i> Ghostwriting</button>
+          <button type="button" class="gw-mini gw-run" data-task="writing" data-gw-if="GHOSTWRITING" style="margin-left:0"><i class="ti ti-feather" aria-hidden="true"></i> {{t:ui.ghostwriting}}</button>
         </div>
       </div>
     </div>
 
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Verwerfen</button>
-      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">Speichern</button>
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">{{t:ui.discard}}</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{t:ui.save}}</button>
     </div>
   </div>
 </div>
@@ -210,23 +210,23 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var glossary=d.glossary==='1';
   if(glossary)$('gw-text').remove();
   box.querySelectorAll('.gw-sq[data-p]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,{});});});
-  var fs=document.getElementById('gw-figsug');if(fs)fs.addEventListener('click',function(){gwSend('Figuren aus dem Text vorschlagen ('+d.title+')','character.suggest',{scope:fs.dataset.scope});});
+  var fs=document.getElementById('gw-figsug');if(fs)fs.addEventListener('click',function(){gwSend(tr("ui.suggest_characters_from_the_text_2")+d.title+')','character.suggest',{scope:fs.dataset.scope});});
 
-  var apr={writing:{on:d.aw==='true',yes:'Schreiben freigegeben',no:'Schreiben nicht freigegeben',grant:'Schreibfreigabe für ',revoke:'Schreibfreigabe zurücknehmen für '},
-    matter:{on:d.as==='true',yes:d.title+' freigegeben',no:d.title+' nicht freigegeben',grant:'Freigabe für ',revoke:'Freigabe zurücknehmen für '}};
+  var apr={writing:{on:d.aw==='true',yes:tr("ui.writing_permitted"),no:tr("ui.writing_not_permitted"),grant:tr("ui.writing_permission_for"),revoke:tr("ui.withdraw_writing_permission_for")},
+    matter:{on:d.as==='true',yes:d.title+tr("ui.approved"),no:d.title+tr("ui.not_approved"),grant:tr("ui.approval_for"),revoke:tr("ui.withdraw_approval_for")}};
   box.querySelectorAll('.gw-apr').forEach(function(row){
     var a=apr[row.dataset.kind],b=row.querySelector('button');
     row.classList.toggle('on',a.on);
     row.querySelector('i').className='ti '+(a.on?'ti-circle-check':'ti-circle-dashed');
     row.querySelector('span').textContent=a.on?a.yes:a.no;
-    b.textContent=a.on?'Zurücknehmen':'Freigeben';
+    b.textContent=a.on?tr("ui.withdraw"):tr("ui.approve");
     b.addEventListener('click',function(){
       var data={kind:row.dataset.kind,section_id:d.id};if(a.on)data.revoke=true;
-      gwSend((a.on?a.revoke:a.grant)+d.title+' bestätigen','approval.open',data);
+      gwSend((a.on?a.revoke:a.grant)+d.title+tr("ui.confirm"),'approval.open',data);
     });
   });
   box.querySelectorAll('.gw-run').forEach(function(b){b.addEventListener('click',function(){
-    gwSend((b.dataset.task==='research'?'Recherche für ':'Ghostwriting für ')+d.title+' jetzt sofort hier im Chat','run.start',{section_id:d.id,task:b.dataset.task,mode:'immediate'});
+    gwSend((b.dataset.task==='research'?tr("ui.research_for"):tr("ui.ghostwriting_for"))+d.title+tr("ui.now_here_in_the_chat"),'run.start',{section_id:d.id,task:b.dataset.task,mode:'immediate'});
   });});
 
   // Glossar: Zeilen, Entfernen, Doppelungen
@@ -255,7 +255,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     rows().forEach(bindRow);
     $('gw-add').addEventListener('click',function(){
       var r=document.createElement('div');r.className='gw-g';r.dataset.old='';
-      r.innerHTML='<input class="gw-in gw-t" placeholder="Begriff" aria-label="Begriff"><textarea class="gw-in gw-e" rows="1" placeholder="Erklärung" aria-label="Erklärung"></textarea><button type="button" class="gw-x" title="Zeile entfernen" aria-label="Zeile entfernen"><i class="ti ti-x" aria-hidden="true"></i></button>';
+      r.innerHTML=tr("ui.input_class_gw_in_gw_t_placeholder_term_aria_label_term_textarea_class_gw_in_gw_e_rows_1_placeholder");
       list.appendChild(r);bindRow(r);r.querySelector('.gw-t').focus();
     });
     // Begriffe der Serie (#116): Ins Buch = übernehmen bzw. angleichen; In die Serie = Erklärung des Buchs übernehmen
@@ -264,11 +264,11 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
       r.querySelectorAll('.gw-sa').forEach(function(b){
         var ok=b.dataset.act==='matter.glossary.from_series'?(s==='missing'||s==='differs'):(s==='differs'||s==='own');
         if(!ok){b.remove();return;}
-        if(b.dataset.act==='matter.glossary.from_series'&&s==='differs')b.textContent='An Serie angleichen';
-        b.addEventListener('click',function(){gwSend('Begriff „'+r.dataset.term+'“ '+b.dataset.t,b.dataset.act,{matter_id:d.id,term:r.dataset.term});});
+        if(b.dataset.act==='matter.glossary.from_series'&&s==='differs')b.textContent=tr("ui.match_series_version");
+        b.addEventListener('click',function(){gwSend(tr("ui.term_2")+r.dataset.term+'“ '+b.dataset.t,b.dataset.act,{matter_id:d.id,term:r.dataset.term});});
       });
     });
-    $('gw-suggest').addEventListener('click',function(){gwSend('Begriffe für das Glossar aus dem freigegebenen Text vorschlagen','matter.glossary.suggest',{matter_id:d.id});});
+    $('gw-suggest').addEventListener('click',function(){gwSend(tr("ui.suggest_glossary_terms_from_the_approved_text"),'matter.glossary.suggest',{matter_id:d.id});});
   }
 
   function lock(){box.querySelectorAll('input,textarea,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
@@ -284,14 +284,14 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
         if(!old||old!==term||expl!==r.querySelector('.gw-e').defaultValue.trim().replace(/\s+/g,' '))set.push({term:term,explanation:expl});
       });
       data.intro=$('gw-intro').value.trim();data.set=set;data.remove=remove;
-      lock();gwSend(d.title+' speichern ('+set.length+' neu/geändert, '+remove.length+' entfernt)','matter.glossary.update',data);
+      lock();gwSend(d.title+tr("ui.action_fragment_4")+set.length+tr("ui.new_changed")+remove.length+tr("ui.removed"),'matter.glossary.update',data);
       return;
     }
     data.manuscript=$('gw-ms').value;
     if(d.signed==='1'){data.byline=$('gw-byline').value.trim();data.place_date=$('gw-place').value.trim();}
-    lock();gwSend(d.title+' speichern','matter.update',data);
+    lock();gwSend(d.title+tr("ui.save_2"),'matter.update',data);
   });
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Änderungen an '+d.title+' verworfen','form.cancel',{form:glossary?'matter.glossary.update':'matter.update',matter_id:d.id});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.discard_changes_to")+d.title+tr("ui.discarded"),'form.cancel',{form:glossary?'matter.glossary.update':'matter.update',matter_id:d.id});});
   check();
 })();
 </script>

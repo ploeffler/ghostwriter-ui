@@ -44,7 +44,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Serie {{SERIES_TITLE}}: {{VOLUME_COUNT_TEXT}}. Band öffnen, hinzufügen, verschieben oder entfernen.</h2>
+<h2 class="sr-only">{{t:ui.series_open_add_move_or_remove_a_volume}}</h2>
 <style>
 .gw-s .gw-sq{width:40px;height:40px;flex:none;border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0}
 .gw-s .gw-sq:hover{border-color:var(--border-strong);color:var(--text-primary)}
@@ -68,13 +68,13 @@
   <div class="gw-s" id="gw-serie" data-id="{{SERIES_ID}}" data-title="{{SERIES_TITLE}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div style="display:flex;align-items:flex-start;gap:var(--gap-md)">
       <div style="flex:1;min-width:0">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:2px">Serie · {{SERIES_KIND_TEXT}} · {{VOLUME_COUNT_TEXT}}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:2px">{{t:ui.series_3}}</div>
         <div style="font-size:20px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-stack-2" style="color:var(--text-secondary)" aria-hidden="true"></i>{{SERIES_TITLE}}</div>
         <div data-gw-if="SERIES_SUBTITLE" style="font-size:14px;color:var(--text-secondary);margin-top:2px">{{SERIES_SUBTITLE}}</div>
       </div>
-      <button type="button" class="gw-sq" id="gw-figsug" title="Figuren aus den Texten aller Bände vorschlagen" aria-label="Figuren aus dem Text vorschlagen"><i class="ti ti-user-search" aria-hidden="true"></i></button>
-      <button type="button" class="gw-sq" id="gw-edit" title="Serie bearbeiten" aria-label="Serie bearbeiten"><i class="ti ti-edit" aria-hidden="true"></i></button>
-      <button type="button" class="gw-sq" id="gw-back" title="Zum Bücherregal" aria-label="Zum Bücherregal"><i class="ti ti-books" aria-hidden="true"></i></button>
+      <button type="button" class="gw-sq" id="gw-figsug" title="{{t:ui.suggest_characters_from_all_volumes}}" aria-label="{{t:ui.suggest_characters_from_the_text}}"><i class="ti ti-user-search" aria-hidden="true"></i></button>
+      <button type="button" class="gw-sq" id="gw-edit" title="{{t:ui.edit_series}}" aria-label="{{t:ui.edit_series}}"><i class="ti ti-edit" aria-hidden="true"></i></button>
+      <button type="button" class="gw-sq" id="gw-back" title="{{t:ui.back_to_library}}" aria-label="{{t:ui.back_to_library}}"><i class="ti ti-books" aria-hidden="true"></i></button>
     </div>
     <p data-gw-if="SERIES_DESCRIPTION" style="margin:0;font-size:14px;line-height:1.6;color:var(--text-secondary);border-left:2px solid var(--border-accent);padding-left:var(--pad-md)">{{SERIES_DESCRIPTION}}</p>
 
@@ -83,57 +83,57 @@
       <div class="vol" data-branch="{{V_BRANCH}}" data-title="{{V_TITLE_SHORT}}" data-state="{{V_STATE}}">
         <span class="num">{{V_NUMBER}}</span>
         <button type="button" class="main"><span class="t">{{V_TITLE}}</span><span class="m" style="display:block">{{V_STATE_TEXT}} · {{V_EDITION_TEXT}} · {{V_PROGRESS_TEXT}}</span><span class="bar"><span style="width:{{V_PROGRESS}}%"></span></span></button>
-        <button type="button" class="ic up" title="Nach vorn" aria-label="Nach vorn"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
-        <button type="button" class="ic down" title="Nach hinten" aria-label="Nach hinten"><i class="ti ti-arrow-down" aria-hidden="true"></i></button>
-        <button type="button" class="ic rm" title="Aus der Serie entfernen" aria-label="Aus der Serie entfernen"><i class="ti ti-x" aria-hidden="true"></i></button>
+        <button type="button" class="ic up" title="{{t:ui.move_earlier}}" aria-label="{{t:ui.move_earlier}}"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
+        <button type="button" class="ic down" title="{{t:ui.move_later}}" aria-label="{{t:ui.move_later}}"><i class="ti ti-arrow-down" aria-hidden="true"></i></button>
+        <button type="button" class="ic rm" title="{{t:ui.remove_from_series}}" aria-label="{{t:ui.remove_from_series}}"><i class="ti ti-x" aria-hidden="true"></i></button>
       </div>
       {{/VOLUMES}}
     </div>
-    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">Noch kein Band. Füge ein vorhandenes Buch hinzu oder lege ein neues in dieser Serie an.</div>
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">{{t:ui.no_volumes_yet_add_an_existing_book_or_create_a_new_one_in_this_series}}</div>
     <div id="gw-order" style="display:none;justify-content:flex-end;gap:var(--gap-sm)">
-      <button type="button" class="gw-btn" id="gw-order-reset">Zurücksetzen</button>
-      <button type="button" class="gw-btn pri" id="gw-order-save"><i class="ti ti-check" aria-hidden="true"></i>Reihenfolge speichern</button>
+      <button type="button" class="gw-btn" id="gw-order-reset">{{t:ui.reset}}</button>
+      <button type="button" class="gw-btn pri" id="gw-order-save"><i class="ti ti-check" aria-hidden="true"></i>{{t:ui.save_order}}</button>
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--gap-md);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <div>
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">Figuren der Serie</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">{{t:ui.series_characters}}</div>
         <div data-gw-if="SERIES_CHARACTERS" style="display:flex;flex-direction:column;gap:4px;font-size:13px">
           {{#SERIES_CHARACTERS}}
           <div><b style="font-weight:500">{{SC_NAME}}</b> <span style="color:var(--text-muted);font-size:12px">· {{SC_ROLE}}</span><span style="display:block;color:var(--text-secondary);font-size:12px">{{SC_SHORT}}</span></div>
           {{/SERIES_CHARACTERS}}
         </div>
-        <div class="gw-none-c" style="font-size:12px;color:var(--text-muted)">noch keine</div>
+        <div class="gw-none-c" style="font-size:12px;color:var(--text-muted)">{{t:ui.none_yet}}</div>
       </div>
       <div>
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">Begriffe der Serie</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">{{t:ui.series_terms}}</div>
         <div data-gw-if="SERIES_TERMS" style="display:flex;flex-direction:column;gap:4px;font-size:13px">
           {{#SERIES_TERMS}}
           <div><b style="font-weight:500">{{ST_TERM}}</b><span style="display:block;color:var(--text-secondary);font-size:12px">{{ST_TEXT}}</span></div>
           {{/SERIES_TERMS}}
         </div>
-        <div class="gw-none-c" style="font-size:12px;color:var(--text-muted)">noch keine</div>
+        <div class="gw-none-c" style="font-size:12px;color:var(--text-muted)">{{t:ui.none_yet}}</div>
       </div>
     </div>
-    <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-top:-6px">Gelten in allen Bänden. In einem Band lassen sie sich als eigene Kopie führen, Figuren und Begriffe eines Bandes in die Serie übernehmen.</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-top:-6px">{{t:ui.apply_to_all_volumes_a_volume_can_keep_its_own_copy_characters_and_terms_from_a_volume_can_be_added_to_the_ser}}</div>
 
     <div style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <i class="ti ti-books" style="color:var(--text-secondary)" aria-hidden="true"></i>
-      <span style="flex:1;min-width:180px;font-size:14px"><span data-gw-if="OMNIBUS_STATE"><b style="font-weight:500">{{OMNIBUS_TITLE}}</b><span style="display:block;font-size:12px;color:var(--text-muted)">{{OMNIBUS_TEXT}}</span></span><span id="gw-om-none" style="color:var(--text-muted)">Noch kein Sammelband</span></span>
-      <button type="button" class="gw-btn" id="gw-om"><i class="ti ti-books" aria-hidden="true"></i><span id="gw-om-l">Sammelband</span></button>
+      <span style="flex:1;min-width:180px;font-size:14px"><span data-gw-if="OMNIBUS_STATE"><b style="font-weight:500">{{OMNIBUS_TITLE}}</b><span style="display:block;font-size:12px;color:var(--text-muted)">{{OMNIBUS_TEXT}}</span></span><span id="gw-om-none" style="color:var(--text-muted)">{{t:ui.no_omnibus_yet}}</span></span>
+      <button type="button" class="gw-btn" id="gw-om"><i class="ti ti-books" aria-hidden="true"></i><span id="gw-om-l">{{t:ui.omnibus}}</span></button>
     </div>
 
     <div data-gw-if="CANDIDATES" style="display:flex;gap:var(--gap-sm);align-items:center;flex-wrap:wrap;border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <select id="gw-cand" aria-label="Buch ohne Serie">
+      <select id="gw-cand" aria-label="{{t:ui.book_without_a_series}}">
         {{#CANDIDATES}}
         <option value="{{C_BRANCH}}">{{C_TITLE}}</option>
         {{/CANDIDATES}}
       </select>
-      <button type="button" class="gw-btn" id="gw-add"><i class="ti ti-plus" aria-hidden="true"></i>Als nächsten Band hinzufügen</button>
+      <button type="button" class="gw-btn" id="gw-add"><i class="ti ti-plus" aria-hidden="true"></i>{{t:ui.add_as_the_next_volume}}</button>
     </div>
     <div style="display:flex;justify-content:space-between;gap:var(--gap-sm);flex-wrap:wrap;border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <span style="font-size:12px;color:var(--text-muted);line-height:1.5;flex:1;min-width:200px">Ein Buch gehört zu höchstens einer Serie. Die Bandnummer ergibt sich aus der Reihenfolge.</span>
-      <button type="button" class="gw-btn pri" id="gw-newbook"><i class="ti ti-book-2" aria-hidden="true"></i>Neues Buch in dieser Serie</button>
+      <span style="font-size:12px;color:var(--text-muted);line-height:1.5;flex:1;min-width:200px">{{t:ui.a_book_can_belong_to_at_most_one_series_volume_numbers_follow_the_order}}</span>
+      <button type="button" class="gw-btn pri" id="gw-newbook"><i class="ti ti-book-2" aria-hidden="true"></i>{{t:ui.new_book_in_this_series}}</button>
     </div>
   </div>
 </div>
@@ -153,25 +153,25 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     $('gw-order').style.display=rs.map(function(r){return r.dataset.branch;}).join('|')!==start?'flex':'none';
   }
   rows().forEach(function(r){
-    r.querySelector('.main').addEventListener('click',function(){lock();gwSend('Buch „'+r.dataset.title+'“ öffnen','library.book.open',{branch:r.dataset.branch});});
+    r.querySelector('.main').addEventListener('click',function(){lock();gwSend(tr("ui.book")+r.dataset.title+tr("ui.open_2"),'library.book.open',{branch:r.dataset.branch});});
     r.querySelector('.up').addEventListener('click',function(){var p=r.previousElementSibling;if(p){list.insertBefore(r,p);refresh();}});
     r.querySelector('.down').addEventListener('click',function(){var n=r.nextElementSibling;if(n){list.insertBefore(n,r);refresh();}});
     var rm=r.querySelector('.rm');
     rm.addEventListener('click',function(){
-      if(!rm.classList.contains('warn')){rm.classList.add('warn');rm.title='Nochmal klicken: aus der Serie entfernen (das Buch bleibt erhalten)';rm.setAttribute('aria-label',rm.title);return;}
-      lock();gwSend('„'+r.dataset.title+'“ aus der Serie „'+title+'“ entfernen','series.volume.remove',{series_id:sid,branch:r.dataset.branch});
+      if(!rm.classList.contains('warn')){rm.classList.add('warn');rm.title=tr("ui.click_again_remove_from_series_the_book_is_kept");rm.setAttribute('aria-label',rm.title);return;}
+      lock();gwSend('„'+r.dataset.title+tr("ui.from_series")+title+'“ entfernen','series.volume.remove',{series_id:sid,branch:r.dataset.branch});
     });
   });
   $('gw-order-reset').addEventListener('click',function(){start.split('|').forEach(function(b){list.appendChild(list.querySelector('.vol[data-branch="'+b+'"]'));});refresh();});
-  $('gw-order-save').addEventListener('click',function(){var o=rows().map(function(r){return r.dataset.branch;});lock();gwSend('Bandreihenfolge der Serie „'+title+'“ speichern','series.reorder',{series_id:sid,order:o});});
-  var add=$('gw-add');if(add)add.addEventListener('click',function(){var c=$('gw-cand'),t=c.options[c.selectedIndex].text;lock();gwSend('„'+t+'“ als nächsten Band zur Serie „'+title+'“ hinzufügen','series.volume.add',{series_id:sid,branch:c.value});});
-  $('gw-newbook').addEventListener('click',function(){lock();gwSend('Neues Buch in der Serie „'+title+'“','library.book.create.open',{series_id:sid});});
-  $('gw-figsug').addEventListener('click',function(){lock();gwSend('Figuren aus den Texten der Serie „'+title+'“ vorschlagen','character.suggest',{scope:sid});});
-  $('gw-edit').addEventListener('click',function(){lock();gwSend('Serie „'+title+'“ bearbeiten','series.edit.open',{series_id:sid});});
-  $('gw-back').addEventListener('click',function(){gwSend('Zum Bücherregal','view.library',{});});
+  $('gw-order-save').addEventListener('click',function(){var o=rows().map(function(r){return r.dataset.branch;});lock();gwSend(tr("ui.save_volume_order_for_series")+title+tr("ui.action_fragment_0"),'series.reorder',{series_id:sid,order:o});});
+  var add=$('gw-add');if(add)add.addEventListener('click',function(){var c=$('gw-cand'),t=c.options[c.selectedIndex].text;lock();gwSend('„'+t+tr("ui.as_the_next_volume_of_series")+title+tr("ui.add"),'series.volume.add',{series_id:sid,branch:c.value});});
+  $('gw-newbook').addEventListener('click',function(){lock();gwSend(tr("ui.new_book_in_series")+title+'“','library.book.create.open',{series_id:sid});});
+  $('gw-figsug').addEventListener('click',function(){lock();gwSend(tr("ui.suggest_characters_from_the_texts_of_series")+title+'“ vorschlagen','character.suggest',{scope:sid});});
+  $('gw-edit').addEventListener('click',function(){lock();gwSend(tr("ui.series_4")+title+'“ bearbeiten','series.edit.open',{series_id:sid});});
+  $('gw-back').addEventListener('click',function(){gwSend(tr("ui.back_to_library"),'view.library',{});});
   var omHas=!!box.querySelector('[data-gw-if="OMNIBUS_STATE"]');
-  if(omHas)$('gw-om-none').remove();else $('gw-om-l').textContent='Sammelband anlegen';
-  $('gw-om').addEventListener('click',function(){lock();gwSend('Sammelband der Serie „'+title+'“','series.omnibus.edit.open',{series_id:sid});});
+  if(omHas)$('gw-om-none').remove();else $('gw-om-l').textContent=tr("ui.create_omnibus");
+  $('gw-om').addEventListener('click',function(){lock();gwSend(tr("ui.omnibus_for_series")+title+'“','series.omnibus.edit.open',{series_id:sid});});
   refresh();
 })();
 </script>

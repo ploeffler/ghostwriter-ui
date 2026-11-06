@@ -39,7 +39,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Formular Ausgabeoptionen: Seite, Schrift, Titelei, Formate, Impressum, Druck und Umschlag.</h2>
+<h2 class="sr-only">{{t:ui.output_options_form_page_fonts_preliminary_pages_formats_imprint_printing_and_cover}}</h2>
 <style>
 .gw-f label{display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
 .gw-f .hint{font-size:12px;color:var(--text-muted);font-weight:400}
@@ -63,118 +63,118 @@
   <form class="gw-f" id="gw-out" novalidate data-json="{{OUTPUT_JSON}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div style="display:flex;align-items:center;gap:var(--gap-sm)">
       <i class="ti ti-printer" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
-      <span style="font-size:16px;font-weight:500">Ausgabeoptionen</span>
-      <span class="hint" style="margin-left:auto;font-size:12px;color:var(--text-muted)">gilt ab dem nächsten Probedruck</span>
+      <span style="font-size:16px;font-weight:500">{{t:ui.output_options}}</span>
+      <span class="hint" style="margin-left:auto;font-size:12px;color:var(--text-muted)">{{t:ui.from_the_next_proof_onwards}}</span>
     </div>
     <div class="gw-tabs" role="tablist">
-      <button type="button" class="gw-tab on" data-pane="seite">Seite</button>
-      <button type="button" class="gw-tab" data-pane="schrift">Schrift</button>
-      <button type="button" class="gw-tab" data-pane="titelei">Titelei und Formate</button>
-      <button type="button" class="gw-tab" data-pane="druck">Druck</button>
-      <button type="button" class="gw-tab" data-pane="umschlag">Umschlag</button>
+      <button type="button" class="gw-tab on" data-pane="seite">{{t:ui.page}}</button>
+      <button type="button" class="gw-tab" data-pane="schrift">{{t:ui.fonts}}</button>
+      <button type="button" class="gw-tab" data-pane="titelei">{{t:ui.preliminary_pages_and_formats}}</button>
+      <button type="button" class="gw-tab" data-pane="druck">{{t:ui.printing}}</button>
+      <button type="button" class="gw-tab" data-pane="umschlag">{{t:ui.cover}}</button>
     </div>
 
     <div class="gw-pane on" data-pane="seite">
       <div class="gw-grid">
-        <div><label for="ts-page_size">Seitenformat</label><select id="ts-page_size" data-g="typesetting" data-k="page_size">
-          <option value="a5">A5 (14,8 × 21 cm)</option><option value="12x19">12 × 19 cm</option><option value="13.5x21.5">13,5 × 21,5 cm</option><option value="a4">A4</option></select></div>
-        <div><label for="ts-margins">Ränder</label><select id="ts-margins" data-g="typesetting" data-k="margins">
-          <option value="standard">Standard</option><option value="classic">klassisch (breit)</option><option value="modern">modern (schmal)</option></select></div>
-        <div><label for="ts-chapter_start">Kapitelbeginn</label><select id="ts-chapter_start" data-g="typesetting" data-k="chapter_start">
-          <option value="any">nächste Seite</option><option value="right">immer rechte Seite</option></select></div>
-        <div><label for="ts-running_heads">Kolumnentitel</label><select id="ts-running_heads" data-g="typesetting" data-k="running_heads">
-          <option value="sections">Kapitel und Abschnitt</option><option value="chapter">Kapiteltitel</option><option value="book">Buch- und Kapiteltitel</option><option value="none">keine</option></select></div>
-        <div><label for="ts-page_numbers">Seitenzahlen</label><select id="ts-page_numbers" data-g="typesetting" data-k="page_numbers">
-          <option value="header">oben außen</option><option value="footer_center">unten Mitte</option><option value="footer_outer">unten außen</option></select></div>
+        <div><label for="ts-page_size">{{t:ui.page_size}}</label><select id="ts-page_size" data-g="typesetting" data-k="page_size">
+          <option value="a5">{{t:ui.a5_14_8_21_cm}}</option><option value="12x19">{{t:ui.12_19_cm}}</option><option value="13.5x21.5">{{t:ui.13_5_21_5_cm}}</option><option value="a4">{{t:ui.a4}}</option></select></div>
+        <div><label for="ts-margins">{{t:ui.margins}}</label><select id="ts-margins" data-g="typesetting" data-k="margins">
+          <option value="standard">{{t:ui.default}}</option><option value="classic">{{t:ui.classic_wide}}</option><option value="modern">{{t:ui.modern_narrow}}</option></select></div>
+        <div><label for="ts-chapter_start">{{t:ui.chapter_start}}</label><select id="ts-chapter_start" data-g="typesetting" data-k="chapter_start">
+          <option value="any">{{t:ui.next_page}}</option><option value="right">{{t:ui.always_on_a_right_hand_page}}</option></select></div>
+        <div><label for="ts-running_heads">{{t:ui.running_headers}}</label><select id="ts-running_heads" data-g="typesetting" data-k="running_heads">
+          <option value="sections">{{t:ui.chapter_and_section}}</option><option value="chapter">{{t:ui.chapter_title_2}}</option><option value="book">{{t:ui.book_and_chapter_titles}}</option><option value="none">{{t:ui.none}}</option></select></div>
+        <div><label for="ts-page_numbers">{{t:ui.page_numbers}}</label><select id="ts-page_numbers" data-g="typesetting" data-k="page_numbers">
+          <option value="header">{{t:ui.top_outside}}</option><option value="footer_center">{{t:ui.bottom_centre}}</option><option value="footer_outer">{{t:ui.bottom_outside}}</option></select></div>
       </div>
     </div>
 
     <div class="gw-pane" data-pane="schrift">
       <div class="gw-grid">
-        <div><label for="ts-font">Grundschrift</label><select id="ts-font" data-g="typesetting" data-k="font">
-          <option value="serif">Serifenschrift (Pagella)</option><option value="sans">serifenlos (Heros)</option><option value="pagella">Pagella</option><option value="heros">Heros (serifenlos)</option><option value="termes">Termes</option><option value="bonum">Bonum</option><option value="schola">Schola</option><option value="adventor">Adventor (serifenlos)</option></select></div>
-        <div><label for="ts-font_size">Schriftgröße</label><select id="ts-font_size" data-g="typesetting" data-k="font_size" data-num="1">
-          <option value="10">10 pt</option><option value="10.5">10,5 pt</option><option value="11">11 pt</option><option value="11.5">11,5 pt</option><option value="12">12 pt</option></select></div>
-        <div><label for="ts-heading_font">Überschriften</label><select id="ts-heading_font" data-g="typesetting" data-k="heading_font">
-          <option value="same">wie Grundschrift</option><option value="serif">Serifenschrift</option><option value="sans">serifenlos</option></select></div>
-        <div><label for="ts-line_spacing">Zeilenabstand</label><select id="ts-line_spacing" data-g="typesetting" data-k="line_spacing" data-num="1">
-          <option value="1">1,0-fach</option><option value="1.1">1,1-fach</option><option value="1.2">1,2-fach</option><option value="1.3">1,3-fach</option><option value="1.5">1,5-fach</option></select></div>
-        <div><label for="ts-glossary_marks">Glossar-Verweise</label><select id="ts-glossary_marks" data-g="typesetting" data-k="glossary_marks">
-          <option value="arrow">mit Pfeil (→ Begriff)</option><option value="italic">kursiv</option><option value="none">ohne Kennzeichnung</option></select></div>
-        <div><label for="ts-paragraph">Absätze</label><select id="ts-paragraph" data-g="typesetting" data-k="paragraph">
-          <option value="indent">mit Einzug</option><option value="spacing">mit Abstand</option></select></div>
+        <div><label for="ts-font">{{t:ui.body_font}}</label><select id="ts-font" data-g="typesetting" data-k="font">
+          <option value="serif">{{t:ui.serif_pagella}}</option><option value="sans">{{t:ui.sans_serif_heros}}</option><option value="pagella">{{t:ui.pagella}}</option><option value="heros">{{t:ui.heros_sans_serif}}</option><option value="termes">{{t:ui.termes}}</option><option value="bonum">{{t:ui.bonum}}</option><option value="schola">{{t:ui.schola}}</option><option value="adventor">{{t:ui.adventor_sans_serif}}</option></select></div>
+        <div><label for="ts-font_size">{{t:ui.font_size}}</label><select id="ts-font_size" data-g="typesetting" data-k="font_size" data-num="1">
+          <option value="10">{{t:ui.10_pt}}</option><option value="10.5">{{t:ui.10_5_pt}}</option><option value="11">{{t:ui.11_pt}}</option><option value="11.5">{{t:ui.11_5_pt}}</option><option value="12">{{t:ui.12_pt}}</option></select></div>
+        <div><label for="ts-heading_font">{{t:ui.headings}}</label><select id="ts-heading_font" data-g="typesetting" data-k="heading_font">
+          <option value="same">{{t:ui.same_as_body_font}}</option><option value="serif">{{t:ui.serif}}</option><option value="sans">{{t:ui.sans_serif}}</option></select></div>
+        <div><label for="ts-line_spacing">{{t:ui.line_spacing}}</label><select id="ts-line_spacing" data-g="typesetting" data-k="line_spacing" data-num="1">
+          <option value="1">{{t:ui.1_0}}</option><option value="1.1">{{t:ui.1_1}}</option><option value="1.2">{{t:ui.1_2}}</option><option value="1.3">{{t:ui.1_3}}</option><option value="1.5">{{t:ui.1_5}}</option></select></div>
+        <div><label for="ts-glossary_marks">{{t:ui.glossary_references}}</label><select id="ts-glossary_marks" data-g="typesetting" data-k="glossary_marks">
+          <option value="arrow">{{t:ui.with_arrow_term}}</option><option value="italic">{{t:ui.italic}}</option><option value="none">{{t:ui.without_marking}}</option></select></div>
+        <div><label for="ts-paragraph">{{t:ui.paragraphs}}</label><select id="ts-paragraph" data-g="typesetting" data-k="paragraph">
+          <option value="indent">{{t:ui.indented}}</option><option value="spacing">{{t:ui.spaced}}</option></select></div>
       </div>
       <div class="gw-grid">
-        <label class="chk"><input type="checkbox" data-g="typesetting" data-k="initials"> Initiale am Kapitelanfang</label>
-        <label class="chk"><input type="checkbox" data-g="typesetting" data-k="hyphenation"> Silbentrennung</label>
+        <label class="chk"><input type="checkbox" data-g="typesetting" data-k="initials"> {{t:ui.drop_cap_at_chapter_start}}</label>
+        <label class="chk"><input type="checkbox" data-g="typesetting" data-k="hyphenation"> {{t:ui.hyphenation}}</label>
       </div>
     </div>
 
     <div class="gw-pane" data-pane="titelei">
       <div class="gw-grid">
-        <label class="chk"><input type="checkbox" data-g="typesetting" data-k="title_page"> Titelseite</label>
-        <label class="chk"><input type="checkbox" data-g="typesetting" data-k="imprint"> Impressum</label>
-        <label class="chk"><input type="checkbox" data-g="typesetting" data-k="toc" id="ts-toc"> Inhaltsverzeichnis</label>
-        <div><label for="ts-toc_depth">Tiefe</label><select id="ts-toc_depth" data-g="typesetting" data-k="toc_depth" data-num="1">
-          <option value="1">nur Kapitel</option><option value="2">Kapitel und Abschnitte</option></select></div>
+        <label class="chk"><input type="checkbox" data-g="typesetting" data-k="title_page"> {{t:ui.title_page}}</label>
+        <label class="chk"><input type="checkbox" data-g="typesetting" data-k="imprint"> {{t:ui.imprint}}</label>
+        <label class="chk"><input type="checkbox" data-g="typesetting" data-k="toc" id="ts-toc"> {{t:ui.table_of_contents}}</label>
+        <div><label for="ts-toc_depth">{{t:ui.depth}}</label><select id="ts-toc_depth" data-g="typesetting" data-k="toc_depth" data-num="1">
+          <option value="1">{{t:ui.chapters_only}}</option><option value="2">{{t:ui.chapters_and_sections}}</option></select></div>
       </div>
       <div>
-        <div class="gw-sec" style="margin-bottom:6px">Formate einer Auflage</div>
+        <div class="gw-sec" style="margin-bottom:6px">{{t:ui.edition_formats}}</div>
         <div class="gw-grid" id="gw-formats">
-          <label class="chk"><input type="checkbox" value="pdf"> PDF (Bildschirm)</label>
-          <label class="chk"><input type="checkbox" value="pdf_print"> Druck-PDF</label>
-          <label class="chk"><input type="checkbox" value="cover"> Umschlag-PDF</label>
-          <label class="chk"><input type="checkbox" value="epub"> EPUB</label>
-          <label class="chk"><input type="checkbox" value="docx"> DOCX</label>
+          <label class="chk"><input type="checkbox" value="pdf"> {{t:ui.pdf_screen}}</label>
+          <label class="chk"><input type="checkbox" value="pdf_print"> {{t:ui.print_pdf}}</label>
+          <label class="chk"><input type="checkbox" value="cover"> {{t:ui.cover_pdf}}</label>
+          <label class="chk"><input type="checkbox" value="epub"> {{t:ui.epub}}</label>
+          <label class="chk"><input type="checkbox" value="docx"> {{t:ui.docx}}</label>
         </div>
       </div>
       <div>
-        <div class="gw-sec" style="margin-bottom:6px">Angaben im Impressum</div>
+        <div class="gw-sec" style="margin-bottom:6px">{{t:ui.imprint_details}}</div>
         <div class="gw-grid">
-          <div><label for="pub-publisher">Verlag <span class="hint">oder „Selbstverlag“</span></label><input id="pub-publisher" data-g="publication" data-k="publisher"></div>
-          <div><label for="pub-isbn_print">ISBN Druckausgabe</label><input id="pub-isbn_print" data-g="publication" data-k="isbn_print" data-isbn="1" placeholder="978-…"></div>
-          <div><label for="pub-isbn_ebook">ISBN E-Book</label><input id="pub-isbn_ebook" data-g="publication" data-k="isbn_ebook" data-isbn="1" placeholder="978-…"></div>
-          <div><label for="pub-rights">Rechtehinweis</label><input id="pub-rights" data-g="publication" data-k="rights" placeholder="Alle Rechte vorbehalten."></div>
+          <div><label for="pub-publisher">{{t:ui.publisher}} <span class="hint">{{t:ui.or_self_published}}</span></label><input id="pub-publisher" data-g="publication" data-k="publisher"></div>
+          <div><label for="pub-isbn_print">{{t:ui.print_isbn}}</label><input id="pub-isbn_print" data-g="publication" data-k="isbn_print" data-isbn="1" placeholder="978-…"></div>
+          <div><label for="pub-isbn_ebook">{{t:ui.e_book_isbn}}</label><input id="pub-isbn_ebook" data-g="publication" data-k="isbn_ebook" data-isbn="1" placeholder="978-…"></div>
+          <div><label for="pub-rights">{{t:ui.rights_notice}}</label><input id="pub-rights" data-g="publication" data-k="rights" placeholder="{{t:ui.all_rights_reserved}}"></div>
         </div>
       </div>
     </div>
 
     <div class="gw-pane" data-pane="druck">
       <div class="gw-grid">
-        <div><label for="pr-profile">Druckprofil</label><select id="pr-profile" data-g="print" data-k="profile">
-          <option value="">keins (kein Umschlag)</option><option value="kdp">Amazon KDP</option><option value="bod">Books on Demand</option><option value="custom">eigene Werte</option></select></div>
-        <div id="gw-paper"><label for="pr-paper">Papier <span class="hint">KDP</span></label><select id="pr-paper" data-g="print" data-k="paper">
-          <option value="">weiß (Vorgabe)</option><option value="white">weiß</option><option value="cream">creme</option><option value="premium_color">Premiumfarbe</option></select></div>
-        <div><label for="pr-spine_mm">Rückenbreite <span class="hint">mm; leer = berechnet</span></label><input id="pr-spine_mm" data-g="print" data-k="spine_mm" data-num="1" inputmode="decimal"></div>
-        <div><label for="pr-bleed_mm">Beschnitt <span class="hint">mm; leer = Profil</span></label><input id="pr-bleed_mm" data-g="print" data-k="bleed_mm" data-num="1" inputmode="decimal"></div>
+        <div><label for="pr-profile">{{t:ui.print_profile}}</label><select id="pr-profile" data-g="print" data-k="profile">
+          <option value="">{{t:ui.none_no_cover}}</option><option value="kdp">{{t:ui.amazon_kdp}}</option><option value="bod">{{t:ui.books_on_demand}}</option><option value="custom">{{t:ui.custom_values}}</option></select></div>
+        <div id="gw-paper"><label for="pr-paper">{{t:ui.paper}} <span class="hint">{{t:ui.kdp}}</span></label><select id="pr-paper" data-g="print" data-k="paper">
+          <option value="">{{t:ui.white_default}}</option><option value="white">{{t:ui.white}}</option><option value="cream">{{t:ui.cream}}</option><option value="premium_color">{{t:ui.premium_colour}}</option></select></div>
+        <div><label for="pr-spine_mm">{{t:ui.spine_width}} <span class="hint">{{t:ui.mm_blank_calculated}}</span></label><input id="pr-spine_mm" data-g="print" data-k="spine_mm" data-num="1" inputmode="decimal"></div>
+        <div><label for="pr-bleed_mm">{{t:ui.bleed}} <span class="hint">{{t:ui.mm_blank_profile}}</span></label><input id="pr-bleed_mm" data-g="print" data-k="bleed_mm" data-num="1" inputmode="decimal"></div>
       </div>
-      <label class="chk"><input type="checkbox" data-g="print" data-k="crop_marks"> Schnittmarken an Druck-PDF und Umschlag</label>
-      <div id="gw-spine-hint" style="font-size:12px;color:var(--text-warning)" hidden>Für Books on Demand und eigene Werte die Rückenbreite aus dem Rechner des Anbieters eintragen.</div>
-      <div style="font-size:12px;color:var(--text-muted);line-height:1.5">KDP: Beschnitt 3,2 mm, Rücken aus Seitenzahl und Papier, Rückentext ab 79 Seiten. BoD: Beschnitt 5 mm, Rückenbreite nur aus dem BoD-Rechner. Werte vor dem Hochladen mit dem Anbieter abgleichen.</div>
+      <label class="chk"><input type="checkbox" data-g="print" data-k="crop_marks"> {{t:ui.crop_marks_on_print_pdf_and_cover}}</label>
+      <div id="gw-spine-hint" style="font-size:12px;color:var(--text-warning)" hidden>{{t:ui.for_books_on_demand_and_custom_values_enter_the_spine_width_from_the_provider_s_calculator}}</div>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.kdp_3_2_mm_bleed_spine_calculated_from_page_count_and_paper_spine_text_from_79_pages_bod_5_mm_bleed_spine_widt}}</div>
     </div>
 
     <div class="gw-pane" data-pane="umschlag">
       <div class="gw-grid">
-        <div><label for="cv-template">Vorlage</label><select id="cv-template" data-g="cover" data-k="template">
-          <option value="">klassisch (Vorgabe)</option><option value="classic">klassisch</option><option value="modern">modern</option><option value="plain">schlicht</option></select></div>
-        <div><label>Hintergrund · Schrift</label><div style="display:flex;gap:8px"><input type="color" data-g="cover" data-k="background" data-def="#1F2A44" title="Hintergrund"><input type="color" data-g="cover" data-k="text_color" data-def="#FFFFFF" title="Schriftfarbe"></div></div>
-        <div><label for="cv-price">Preis</label><input id="cv-price" data-g="cover" data-k="price" placeholder="18,00 € (D)"></div>
-        <div><label for="cv-spine_direction">Rückentext</label><select id="cv-spine_direction" data-g="cover" data-k="spine_direction">
-          <option value="">von oben nach unten (Vorgabe)</option><option value="down">von oben nach unten</option><option value="up">von unten nach oben</option></select></div>
+        <div><label for="cv-template">{{t:ui.template}}</label><select id="cv-template" data-g="cover" data-k="template">
+          <option value="">{{t:ui.classic_default}}</option><option value="classic">{{t:ui.classic}}</option><option value="modern">{{t:ui.modern}}</option><option value="plain">{{t:ui.minimal}}</option></select></div>
+        <div><label>{{t:ui.background_text}}</label><div style="display:flex;gap:8px"><input type="color" data-g="cover" data-k="background" data-def="#1F2A44" title="{{t:ui.background}}"><input type="color" data-g="cover" data-k="text_color" data-def="#FFFFFF" title="{{t:ui.text_colour}}"></div></div>
+        <div><label for="cv-price">{{t:ui.price}}</label><input id="cv-price" data-g="cover" data-k="price" placeholder="{{t:ui.18_00_de}}"></div>
+        <div><label for="cv-spine_direction">{{t:ui.spine_text}}</label><select id="cv-spine_direction" data-g="cover" data-k="spine_direction">
+          <option value="">{{t:ui.top_to_bottom_default}}</option><option value="down">{{t:ui.top_to_bottom}}</option><option value="up">{{t:ui.bottom_to_top}}</option></select></div>
       </div>
       <div class="gw-grid">
-        <div><label for="cv-image">Bild vorne <span class="hint">Datei unter cover/</span></label><input id="cv-image" data-g="cover" data-k="image" placeholder="cover/vorderseite.jpg"></div>
-        <div><label for="cv-author_image">Autorenbild</label><input id="cv-author_image" data-g="cover" data-k="author_image" placeholder="cover/autor.jpg"></div>
+        <div><label for="cv-image">{{t:ui.front_image}} <span class="hint">{{t:ui.file_under_cover}}</span></label><input id="cv-image" data-g="cover" data-k="image" placeholder="{{t:ui.cover_vorderseite_jpg}}"></div>
+        <div><label for="cv-author_image">{{t:ui.author_photo}}</label><input id="cv-author_image" data-g="cover" data-k="author_image" placeholder="{{t:ui.cover_autor_jpg}}"></div>
       </div>
-      <div><label for="gw-blurb">Klappentext <span class="hint">Rückseite, etwa 80–150 Wörter</span></label><textarea id="gw-blurb" rows="5"></textarea></div>
-      <div><label for="gw-bio">Über dich <span class="hint">zwei, drei Sätze</span></label><textarea id="gw-bio" rows="2"></textarea></div>
-      <div style="font-size:12px;color:var(--text-muted)">Bilder lädst du im Chat hoch; der Assistent legt sie unter cover/ ab. Ein Strichcode entsteht aus der ISBN der Druckausgabe.</div>
+      <div><label for="gw-blurb">{{t:ui.blurb}} <span class="hint">{{t:ui.back_cover_about_80_150_words}}</span></label><textarea id="gw-blurb" rows="5"></textarea></div>
+      <div><label for="gw-bio">{{t:ui.about_you}} <span class="hint">{{t:ui.two_or_three_sentences}}</span></label><textarea id="gw-bio" rows="2"></textarea></div>
+      <div style="font-size:12px;color:var(--text-muted)">{{t:ui.upload_images_in_the_chat_the_assistant_saves_them_under_cover_a_barcode_is_generated_from_the_print_isbn}}</div>
     </div>
 
     <div style="display:flex;justify-content:flex-end;align-items:center;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <span id="gw-err" style="font-size:13px;color:var(--text-danger);margin-right:auto"></span>
-      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
-      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)" disabled>Speichern</button>
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">{{t:ui.cancel}}</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)" disabled>{{t:ui.save}}</button>
     </div>
   </form>
 </div>
@@ -232,22 +232,22 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var done=false;
   function refresh(){
     var err=[];
-    f.querySelectorAll('[data-isbn]').forEach(function(i){var bad=i.value.trim()&&!isbnOk(i.value);i.classList.toggle('bad',!!bad);if(bad)err.push('ISBN-Prüfziffer stimmt nicht');});
+    f.querySelectorAll('[data-isbn]').forEach(function(i){var bad=i.value.trim()&&!isbnOk(i.value);i.classList.toggle('bad',!!bad);if(bad)err.push(tr("ui.invalid_isbn_check_digit"));});
     var prof=$('pr-profile').value;
     $('gw-paper').style.display=prof==='kdp'?'':'none';
     var needSpine=(prof==='bod'||prof==='custom')&&!$('pr-spine_mm').value.trim();
-    $('gw-spine-hint').hidden=!needSpine;if(needSpine)err.push('Rückenbreite fehlt');
+    $('gw-spine-hint').hidden=!needSpine;if(needSpine)err.push(tr("ui.spine_width_missing"));
     var fmts=[];$('gw-formats').querySelectorAll('input').forEach(function(c){if(c.checked)fmts.push(c.value);});
-    if(!fmts.length)err.push('mindestens ein Format');
-    if(fmts.indexOf('cover')>=0&&!prof)err.push('Umschlag braucht ein Druckprofil');
+    if(!fmts.length)err.push(tr("ui.at_least_one_format"));
+    if(fmts.indexOf('cover')>=0&&!prof)err.push(tr("ui.cover_requires_a_print_profile"));
     $('ts-toc_depth').disabled=done||!$('ts-toc').checked;
     $('gw-err').textContent=err.length?err.filter(function(x,i){return err.indexOf(x)===i;}).join(' · '):'';
     $('gw-save').disabled=done||!!err.length||!changes();
   }
   f.addEventListener('change',refresh);f.addEventListener('input',refresh);
   function lock(){done=true;f.querySelectorAll('input,select,textarea,button').forEach(function(x){if(!x.classList.contains('gw-tab'))x.disabled=true;});f.style.opacity='0.6';}
-  $('gw-save').addEventListener('click',function(){var c=changes();if(!c)return;lock();gwSend('Ausgabeoptionen speichern','project.output.update',c);});
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Ausgabeoptionen abgebrochen','form.cancel',{form:'project.output.update'});});
+  $('gw-save').addEventListener('click',function(){var c=changes();if(!c)return;lock();gwSend(tr("ui.save_output_options"),'project.output.update',c);});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.output_options_cancelled"),'form.cancel',{form:'project.output.update'});});
   refresh();
 })();
 </script>

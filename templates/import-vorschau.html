@@ -41,7 +41,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Manuskript importieren: Gliederung prüfen und Buch anlegen. {{STATS_TEXT}}</h2>
+<h2 class="sr-only">{{t:ui.import_manuscript_review_the_outline_and_create_a_book}}</h2>
 <style>
 .gw-iv .row{display:flex;align-items:center;gap:var(--gap-sm);padding:6px 10px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);font-size:14px;flex-wrap:wrap}
 .gw-iv .row.chapter{background:var(--surface-1);border-color:var(--border-strong);margin-top:6px}
@@ -64,7 +64,7 @@
 <div style="padding:1rem 0">
   <div class="gw-iv" id="gw-iv" data-kinds="{{KINDS_TEXT}}" data-lossless="{{LOSSLESS}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-sm)">
     <div>
-      <div style="font-size:12px;color:var(--text-muted)">Manuskript importieren · {{IMPORT_FORMAT}} · Original: {{KEEP_TEXT}}</div>
+      <div style="font-size:12px;color:var(--text-muted)">{{t:ui.import_manuscript_original}}</div>
       <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-file-import" style="color:var(--text-secondary)" aria-hidden="true"></i>{{IMPORT_TITLE}}</div>
       <div style="font-size:13px;color:var(--text-secondary)">{{IMPORT_AUTHOR}}</div>
       <div style="font-size:13px;margin-top:4px"><span id="gw-loss"></span> {{STATS_TEXT}}</div>
@@ -76,34 +76,34 @@
     </div>
     <div data-gw-if="NO_STRUCTURE" style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:10px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius)">
       <i class="ti ti-compass" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
-      <span style="flex:1;min-width:180px;font-size:14px">Keine Gliederung erkannt. Die KI kann Kapitel und Abschnitte vorschlagen; vorher werden Umfang und Kosten gezeigt.</span>
-      <button type="button" class="gw-btn" id="gw-ol-start">Gliederung mit KI vorschlagen</button>
+      <span style="flex:1;min-width:180px;font-size:14px">{{t:ui.no_outline_detected_ai_can_suggest_chapters_and_sections_scope_and_costs_are_shown_first}}</span>
+      <button type="button" class="gw-btn" id="gw-ol-start">{{t:ui.suggest_an_ai_outline}}</button>
     </div>
     <div data-gw-if="OUTLINE_TEXT" style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:10px 12px;border:0.5px solid var(--border-accent);border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent)">
       <i class="ti ti-compass" style="font-size:18px" aria-hidden="true"></i>
       <span style="flex:1;min-width:180px;font-size:14px">{{OUTLINE_TEXT}}</span>
-      <button type="button" class="gw-btn" id="gw-ol-open" style="color:var(--text-primary)">Ansehen</button>
+      <button type="button" class="gw-btn" id="gw-ol-open" style="color:var(--text-primary)">{{t:ui.view}}</button>
     </div>
     <div id="gw-tree" style="display:flex;flex-direction:column;gap:4px">
-      <div class="sec" id="gw-front-h">Vorspann</div>
+      <div class="sec" id="gw-front-h">{{t:ui.front_matter}}</div>
       {{#PARTS}}
-      <div class="row part" data-idx="{{P_IDX}}" data-area="{{P_AREA}}"><span class="lbl">{{P_LABEL}}</span><span style="flex:1">{{P_TITLE}}</span><span class="w">{{P_WORDS}} Wörter</span><button type="button" class="ic tochap">ist ein Kapitel</button></div>
+      <div class="row part" data-idx="{{P_IDX}}" data-area="{{P_AREA}}"><span class="lbl">{{P_LABEL}}</span><span style="flex:1">{{P_TITLE}}</span><span class="w">{{t:ui.words_2}}</span><button type="button" class="ic tochap">{{t:ui.is_a_chapter}}</button></div>
       {{/PARTS}}
-      <div class="sec" id="gw-ch-h">Kapitel</div>
+      <div class="sec" id="gw-ch-h">{{t:ui.chapters}}</div>
       {{#ROWS}}
       <div class="row {{R_TYPE}}" data-type="{{R_TYPE}}" data-c="{{R_CHAPTER}}" data-s="{{R_SECTION}}" data-title="{{R_TITLE}}" data-scenes="{{R_SCENES}}" data-long="{{R_LONG}}">
-        <span class="lbl">{{R_LABEL}}</span><input class="t" value="{{R_TITLE}}" aria-label="Titel">
-        <span class="w"><span class="cnt">{{R_COUNT}} · </span>{{R_WORDS}} Wörter</span>
+        <span class="lbl">{{R_LABEL}}</span><input class="t" value="{{R_TITLE}}" aria-label="{{t:ui.title}}">
+        <span class="w"><span class="cnt">{{R_COUNT}} · </span>{{t:ui.words_3}}</span>
       </div>
       {{/ROWS}}
-      <div class="sec" id="gw-back-h">Nachspann</div>
+      <div class="sec" id="gw-back-h">{{t:ui.back_matter}}</div>
     </div>
     <div id="gw-pending" style="font-size:12px;color:var(--text-accent)"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <label style="font-size:13px;flex:1;min-width:220px"><input type="checkbox" id="gw-wa"> Schreibfreigabe für alle importierten Abschnitte erteilen</label>
-      <button type="button" class="gw-btn" id="gw-cancel">Abbrechen</button>
-      <button type="button" class="gw-btn" id="gw-edit" disabled>Änderungen anwenden</button>
-      <button type="button" class="gw-btn pri" id="gw-apply">Buch anlegen</button>
+      <label style="font-size:13px;flex:1;min-width:220px"><input type="checkbox" id="gw-wa"> {{t:ui.grant_writing_permission_for_all_imported_sections}}</label>
+      <button type="button" class="gw-btn" id="gw-cancel">{{t:ui.cancel}}</button>
+      <button type="button" class="gw-btn" id="gw-edit" disabled>{{t:ui.apply_changes_2}}</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">{{t:ui.create_book}}</button>
     </div>
   </div>
 </div>
@@ -112,7 +112,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
 (function(){
   var box=document.getElementById('gw-iv'),tree=document.getElementById('gw-tree'),$=function(id){return document.getElementById(id);};
   var ops=[],done=false;
-  $('gw-loss').textContent=box.dataset.lossless?'✓':'⚠️ Wortzahl weicht ab –';
+  $('gw-loss').textContent=box.dataset.lossless?'✓':tr("ui.word_count_differs");
   // Vorspann/Nachspann einsortieren
   var front=[],back=[];tree.querySelectorAll('.row.part').forEach(function(r){(r.dataset.area==='front'?front:back).push(r);});
   front.forEach(function(r){tree.insertBefore(r,$('gw-ch-h'));});back.forEach(function(r){tree.appendChild(r);});
@@ -128,17 +128,17 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   tree.querySelectorAll('.row[data-type]').forEach(function(r){
     var c=+r.dataset.c,s=+r.dataset.s,inp=r.querySelector('input.t');
     if(r.dataset.type==='chapter'){
-      if(c<last)mk(r,'+ nächstes Kapitel',function(b){add({op:'merge_chapters',chapter:c},b);});
-      var sel=document.createElement('select');sel.innerHTML='<option value="">ist Teil …</option>'+kinds.map(function(x){return '<option value="'+x.k+'">'+x.n+'</option>';}).join('');
+      if(c<last)mk(r,tr("ui.next_chapter"),function(b){add({op:'merge_chapters',chapter:c},b);});
+      var sel=document.createElement('select');sel.innerHTML=tr("ui.option_value_part_of_option")+kinds.map(function(x){return '<option value="'+x.k+'">'+x.n+'</option>';}).join('');
       sel.addEventListener('change',function(){ops=ops.filter(function(o){return o._s!==sel;});if(sel.value)ops.push({op:'to_matter',chapter:c,kind:sel.value,_s:sel});refresh();});
       r.appendChild(sel);
     }else{
       r.querySelector('.cnt').remove();
       if(r.dataset.long)r.querySelector('.w').classList.add('warn');
-      if(r.dataset.scenes)mk(r,'an '+r.dataset.scenes+' Szenen teilen',function(b){add({op:'split_scenes',chapter:c,section:s},b);});
+      if(r.dataset.scenes)mk(r,'an '+r.dataset.scenes+tr("ui.scenes"),function(b){add({op:'split_scenes',chapter:c,section:s},b);});
       var next=r.nextElementSibling;
-      if(next&&next.dataset.type==='section')mk(r,'+ nächster',function(b){add({op:'merge_sections',chapter:c,section:s},b);});
-      if(s>1)mk(r,'neues Kapitel ab hier',function(b){add({op:'split_chapter',chapter:c,section:s},b);});
+      if(next&&next.dataset.type==='section')mk(r,tr("ui.next_2"),function(b){add({op:'merge_sections',chapter:c,section:s},b);});
+      if(s>1)mk(r,tr("ui.new_chapter_from_here"),function(b){add({op:'split_chapter',chapter:c,section:s},b);});
     }
     inp.addEventListener('input',refresh);
   });
@@ -155,15 +155,15 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   }
   function refresh(){
     var n=all().length;
-    $('gw-pending').textContent=n?n+' Änderung'+(n>1?'en':'')+' – erst anwenden, dann ist die neue Gliederung zu sehen.':'';
+    $('gw-pending').textContent=n?n+tr("ui.change")+(n>1?'en':'')+tr("ui.apply_first_to_see_the_new_outline"):'';
     $('gw-edit').disabled=done||!n;$('gw-apply').disabled=done||!!n;
   }
   function lock(){done=true;box.querySelectorAll('input,select,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
-  $('gw-edit').addEventListener('click',function(){var o=all();lock();gwSend(o.length+' Änderungen an der Gliederung anwenden','import.edit',{ops:o});});
-  $('gw-apply').addEventListener('click',function(){var wa=$('gw-wa').checked;lock();gwSend('Buch aus dem Manuskript anlegen'+(wa?' (mit Schreibfreigabe)':''),'import.apply',{writing_approval:wa});});
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Import abgebrochen','form.cancel',{form:'import.apply'});});
-  if($('gw-ol-start'))$('gw-ol-start').addEventListener('click',function(){lock();gwSend('Gliederung mit KI vorschlagen','import.outline.start',{});});
-  if($('gw-ol-open'))$('gw-ol-open').addEventListener('click',function(){gwSend('KI-Vorschlag für die Gliederung ansehen','import.outline.open',{});});
+  $('gw-edit').addEventListener('click',function(){var o=all();lock();gwSend(o.length+tr("ui.outline_changes_apply"),'import.edit',{ops:o});});
+  $('gw-apply').addEventListener('click',function(){var wa=$('gw-wa').checked;lock();gwSend(tr("ui.create_book_from_manuscript")+(wa?tr("ui.with_writing_permission"):''),'import.apply',{writing_approval:wa});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.import_cancelled"),'form.cancel',{form:'import.apply'});});
+  if($('gw-ol-start'))$('gw-ol-start').addEventListener('click',function(){lock();gwSend(tr("ui.suggest_an_ai_outline"),'import.outline.start',{});});
+  if($('gw-ol-open'))$('gw-ol-open').addEventListener('click',function(){gwSend(tr("ui.view_ai_outline_suggestion"),'import.outline.open',{});});
   refresh();
 })();
 </script>

@@ -40,7 +40,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Zeitleiste aus dem Text: {{SUGGEST_COUNT_TEXT}} für {{SCOPE_TEXT}}. Auswählen und übernehmen.</h2>
+<h2 class="sr-only">{{t:ui.timeline_from_the_text_for_select_and_apply}}</h2>
 <style>
 .gw-zv .iss{border:0.5px solid var(--text-danger);border-radius:var(--radius);padding:8px 10px;display:flex;gap:var(--gap-sm);align-items:flex-start;color:var(--text-danger)}
 .gw-zv .iss[data-k="jump"],.gw-zv .iss[data-k="unclear"]{border-color:var(--border-warning);color:var(--text-warning)}
@@ -63,35 +63,35 @@
   <div class="gw-zv" id="gw-zv" data-kind="{{KIND}}" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div>
       <div style="font-size:12px;color:var(--text-muted)">{{SCOPE_TEXT}} · {{SUGGEST_COUNT_TEXT}}<span data-gw-if="RUN_TEXT"> · {{RUN_TEXT}}</span></div>
-      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-timeline" style="color:var(--text-secondary)" aria-hidden="true"></i>Zeitleiste</div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-timeline" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.timeline}}</div>
     </div>
     <div data-gw-if="ISSUES" style="display:flex;flex-direction:column;gap:6px">
-      <div style="font-size:13px;font-weight:500">Auffälligkeiten (Hinweise, nichts ist entschieden)</div>
+      <div style="font-size:13px;font-weight:500">{{t:ui.issues_notes_only_nothing_decided}}</div>
       {{#ISSUES}}
       <div class="iss" data-i="{{I_IDX}}" data-k="{{I_KIND}}">
-        <input type="checkbox" class="on" checked aria-label="Hinweis übernehmen" style="margin-top:4px">
-        <div class="main"><span><b>{{I_KIND_TEXT}}</b> · Ereignisse {{I_EVENTS}}</span><input type="text" class="tx" value="{{I_TEXT}}" aria-label="Hinweis"></div>
+        <input type="checkbox" class="on" checked aria-label="{{t:ui.apply_note}}" style="margin-top:4px">
+        <div class="main"><span><b>{{I_KIND_TEXT}}</b> {{t:ui.events}}</span><input type="text" class="tx" value="{{I_TEXT}}" aria-label="{{t:ui.note_2}}"></div>
       </div>
       {{/ISSUES}}
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;font-weight:500">Ereignisse</span><span style="font-size:13px"><button type="button" class="gw-l" id="gw-all" style="background:none;border:0;padding:0;font:inherit;color:var(--text-accent);cursor:pointer">alle</button> · <button type="button" class="gw-l" id="gw-nothing" style="background:none;border:0;padding:0;font:inherit;color:var(--text-accent);cursor:pointer">keine</button></span></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;font-weight:500">{{t:ui.events_2}}</span><span style="font-size:13px"><button type="button" class="gw-l" id="gw-all" style="background:none;border:0;padding:0;font:inherit;color:var(--text-accent);cursor:pointer">{{t:ui.all}}</button> · <button type="button" class="gw-l" id="gw-nothing" style="background:none;border:0;padding:0;font:inherit;color:var(--text-accent);cursor:pointer">{{t:ui.none}}</button></span></div>
     <div id="gw-list">
       {{#EVENTS}}
       <div class="ev" data-idx="{{E_IDX}}" data-flag="{{E_FLAG}}">
-        <input type="checkbox" class="on" checked aria-label="Ereignis übernehmen" style="margin-top:7px">
+        <input type="checkbox" class="on" checked aria-label="{{t:ui.apply_event}}" style="margin-top:7px">
         <span class="n">{{E_N}}</span>
         <span class="wh">{{E_WHERE}}</span>
-        <input type="text" class="wn" value="{{E_WHEN}}" placeholder="ohne Zeitangabe" aria-label="Wann">
-        <input type="text" class="wt" value="{{E_WHAT}}" aria-label="Was">
+        <input type="text" class="wn" value="{{E_WHEN}}" placeholder="{{t:ui.no_time_specified}}" aria-label="{{t:ui.when}}">
+        <input type="text" class="wt" value="{{E_WHAT}}" aria-label="{{t:ui.what}}">
         <span class="q">{{E_EVIDENCE}}</span>
       </div>
       {{/EVENTS}}
     </div>
-    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">Keine Ereignisse mit Fundstelle im Text.</div>
-    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Nur aus dem Text, jede Zeile mit Fundstelle; Zeitangaben so, wie der Text sie nennt. Übernommen wird in die Zeitleiste des Buchs. Der Text des Buchs bleibt unverändert.</div>
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">{{t:ui.no_events_with_text_references}}</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.from_the_text_only_with_a_reference_for_each_row_times_are_kept_as_stated_in_the_text_applied_to_the_book_s_ti}}</div>
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-cancel">Verwerfen</button>
-      <button type="button" class="gw-btn pri" id="gw-apply">Übernehmen</button>
+      <button type="button" class="gw-btn" id="gw-cancel">{{t:ui.discard}}</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">{{t:ui.apply}}</button>
     </div>
   </div>
 </div>
@@ -111,10 +111,10 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     iss.forEach(function(r){if(r.querySelector('.on').checked&&r.querySelector('.tx').value.trim())out.push({issue:+r.dataset.i,text:r.querySelector('.tx').value.trim()});});
     return out;
   }
-  function refresh(){var ch=choices(),e=ch.filter(function(x){return 'index' in x;}).length,h=ch.length-e;$('gw-apply').disabled=!ch.length;$('gw-apply').textContent=ch.length?(e+' Ereignisse'+(h?', '+h+' Hinweise':'')+' übernehmen'):'Übernehmen';}
+  function refresh(){var ch=choices(),e=ch.filter(function(x){return 'index' in x;}).length,h=ch.length-e;$('gw-apply').disabled=!ch.length;$('gw-apply').textContent=ch.length?(e+tr("ui.events_3")+(h?', '+h+tr("ui.notes_3"):'')+tr("ui.apply_3")):tr("ui.apply");}
   function lock(){box.querySelectorAll('input,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
-  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend('Zeitleiste übernehmen ('+ch.length+')','analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Vorschläge verworfen','form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
+  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend(tr("ui.apply_timeline")+ch.length+')','analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.suggestions_discarded"),'form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
   refresh();
 })();
 </script>

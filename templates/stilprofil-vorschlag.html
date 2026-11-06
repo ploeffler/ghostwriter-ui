@@ -39,7 +39,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Stilprofil aus dem Text: {{SUGGEST_COUNT_TEXT}} für {{SCOPE_TEXT}}. Auswählen und übernehmen.</h2>
+<h2 class="sr-only">{{t:ui.style_profile_from_the_text_for_select_and_apply}}</h2>
 <style>
 .gw-sv .card{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;display:flex;gap:var(--gap-sm);align-items:flex-start}
 .gw-sv .card.off{opacity:0.55}
@@ -56,28 +56,28 @@
   <div class="gw-sv" id="gw-sv" data-kind="{{KIND}}" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div>
       <div style="font-size:12px;color:var(--text-muted)">{{SCOPE_TEXT}} · {{SUGGEST_COUNT_TEXT}}<span data-gw-if="RUN_TEXT"> · {{RUN_TEXT}}</span></div>
-      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-feather" style="color:var(--text-secondary)" aria-hidden="true"></i>Stilprofil</div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-feather" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.style_profile}}</div>
     </div>
-    <div data-gw-if="STATS_TEXT" style="font-size:13px;color:var(--text-secondary);display:flex;gap:6px;align-items:center"><i class="ti ti-calculator" aria-hidden="true"></i><span>Gezählt ohne KI: {{STATS_TEXT}}</span></div>
+    <div data-gw-if="STATS_TEXT" style="font-size:13px;color:var(--text-secondary);display:flex;gap:6px;align-items:center"><i class="ti ti-calculator" aria-hidden="true"></i><span>{{t:ui.counted_without_ai_2}}</span></div>
     <div id="gw-list" style="display:flex;flex-direction:column;gap:6px">
       {{#SUGGESTIONS}}
       <div class="card" data-idx="{{S_IDX}}" data-on="{{S_ON}}" data-now="{{S_NOW}}">
-        <input type="checkbox" class="on" aria-label="übernehmen" style="margin-top:22px">
+        <input type="checkbox" class="on" aria-label="{{t:ui.apply_2}}" style="margin-top:22px">
         <div class="main">
           <span class="lb">{{S_LABEL}}</span>
           <input type="text" class="val" value="{{S_VALUE}}" aria-label="{{S_LABEL}}">
           <div class="meta now"></div>
-          <div class="meta var">abweichend: {{S_VARIANTS}}</div>
+          <div class="meta var">{{t:ui.variants}}</div>
           <div class="meta ev">{{S_EVIDENCE}}</div>
         </div>
       </div>
       {{/SUGGESTIONS}}
     </div>
-    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">Keine Angaben mit Fundstelle im Text.</div>
-    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Nur aus dem Text, jede Angabe mit Fundstelle; die Zahlen sind ohne KI gezählt. Das Stilprofil gilt als Vorgabe fürs Ghostwriting. Der Text des Buchs bleibt unverändert.</div>
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">{{t:ui.no_information_with_text_references}}</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.from_the_text_only_with_a_reference_for_each_item_counts_are_calculated_without_ai_the_style_profile_guides_gh}}</div>
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-cancel">Verwerfen</button>
-      <button type="button" class="gw-btn pri" id="gw-apply">Übernehmen</button>
+      <button type="button" class="gw-btn" id="gw-cancel">{{t:ui.discard}}</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">{{t:ui.apply}}</button>
     </div>
   </div>
 </div>
@@ -88,17 +88,17 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var cards=Array.prototype.slice.call(box.querySelectorAll('.card'));
   if(cards.length)$('gw-none').remove();else $('gw-apply').disabled=true;
   cards.forEach(function(c){
-    c.querySelector('.now').textContent=c.dataset.now?'bisher: '+c.dataset.now:'bisher keine Angabe';
+    c.querySelector('.now').textContent=c.dataset.now?tr("ui.previously")+c.dataset.now:tr("ui.no_information_yet");
     c.querySelectorAll('.meta.var,.meta.ev').forEach(function(m){if(!m.textContent.trim()||/:\s*$/.test(m.textContent.trim()))m.remove();});
     var on=c.querySelector('.on');on.checked=!!c.dataset.on;c.classList.toggle('off',!on.checked);
     on.addEventListener('change',function(){c.classList.toggle('off',!on.checked);refresh();});
     c.querySelector('.val').addEventListener('input',function(){if(!on.checked){on.checked=true;c.classList.remove('off');}refresh();});
   });
   function choices(){return cards.filter(function(c){return c.querySelector('.on').checked&&c.querySelector('.val').value.trim();}).map(function(c){return {index:+c.dataset.idx,value:c.querySelector('.val').value.trim()};});}
-  function refresh(){var n=choices().length;$('gw-apply').disabled=!n;$('gw-apply').textContent=n?n+' übernehmen':'Übernehmen';}
+  function refresh(){var n=choices().length;$('gw-apply').disabled=!n;$('gw-apply').textContent=n?n+tr("ui.apply_3"):tr("ui.apply");}
   function lock(){box.querySelectorAll('input,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
-  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend('Stilprofil übernehmen ('+ch.length+' Angaben)','analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Vorschläge verworfen','form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
+  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend(tr("ui.apply_style_profile")+ch.length+tr("ui.items"),'analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.suggestions_discarded"),'form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
   refresh();
 })();
 </script>

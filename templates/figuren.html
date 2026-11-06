@@ -36,7 +36,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Figuren des Buchs: öffnen oder neue Figur anlegen.</h2>
+<h2 class="sr-only">{{t:ui.book_characters_open_a_character_or_create_a_new_one}}</h2>
 <style>
 .gw-sq{width:40px;height:40px;flex:none;border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0}
 .gw-sq:hover{border-color:var(--border-strong);color:var(--text-primary)}
@@ -55,38 +55,38 @@
     <div style="display:flex;align-items:flex-start;gap:var(--gap-md)">
       <div style="flex:1">
         <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{PROJECT_TITLE_SHORT}}</span>
-        <div style="font-size:20px;font-weight:500;display:flex;align-items:center;gap:8px;margin-top:4px"><i class="ti ti-masks-theater" style="color:var(--text-secondary)" aria-hidden="true"></i>Figuren</div>
+        <div style="font-size:20px;font-weight:500;display:flex;align-items:center;gap:8px;margin-top:4px"><i class="ti ti-masks-theater" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.characters_3}}</div>
       </div>
-      <button type="button" class="gw-sq" id="gw-sug" title="Figuren aus dem Text vorschlagen" aria-label="Figuren aus dem Text vorschlagen"><i class="ti ti-user-search" aria-hidden="true"></i></button>
-      <button type="button" class="gw-sq" id="gw-back" title="Zur Projektübersicht" aria-label="Zur Projektübersicht"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
+      <button type="button" class="gw-sq" id="gw-sug" title="{{t:ui.suggest_characters_from_the_text}}" aria-label="{{t:ui.suggest_characters_from_the_text}}"><i class="ti ti-user-search" aria-hidden="true"></i></button>
+      <button type="button" class="gw-sq" id="gw-back" title="{{t:ui.project_overview}}" aria-label="{{t:ui.project_overview}}"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
     </div>
-    <div data-gw-if="SERIES_TITLE" style="font-size:12px;color:var(--text-muted);line-height:1.5">Band der Serie „{{SERIES_TITLE}}“: Figuren der Serie gelten in allen Bänden; eine Kopie gilt nur in diesem Buch.</div>
+    <div data-gw-if="SERIES_TITLE" style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.volume_of_series_characters_apply_to_every_volume_a_copy_applies_to_this_book_only}}</div>
     <div data-gw-if="CHARACTERS" style="display:flex;flex-direction:column;gap:var(--gap-xs)">
       {{#CHARACTERS}}
-      <button type="button" class="gw-ch" data-id="{{C_ID}}" data-name="{{C_NAME}}"><span style="flex:1;min-width:0"><span style="font-size:14px;font-weight:500">{{C_NAME}}</span> <span style="font-size:12px;color:var(--text-muted)">· {{C_ROLE}}</span><span style="display:block;font-size:12px;color:var(--text-secondary)">{{C_SHORT}}</span><span class="gw-src" data-s="{{C_SOURCE}}">{{C_SOURCE_TEXT}}</span></span><span style="font-size:12px;color:var(--text-muted)" title="kommt vor in">{{C_USED}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
+      <button type="button" class="gw-ch" data-id="{{C_ID}}" data-name="{{C_NAME}}"><span style="flex:1;min-width:0"><span style="font-size:14px;font-weight:500">{{C_NAME}}</span> <span style="font-size:12px;color:var(--text-muted)">· {{C_ROLE}}</span><span style="display:block;font-size:12px;color:var(--text-secondary)">{{C_SHORT}}</span><span class="gw-src" data-s="{{C_SOURCE}}">{{C_SOURCE_TEXT}}</span></span><span style="font-size:12px;color:var(--text-muted)" title="{{t:ui.appears_in_3}}">{{C_USED}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
       {{/CHARACTERS}}
     </div>
     <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md);display:grid;grid-template-columns:2fr 1fr auto;gap:var(--gap-sm);align-items:end">
-      <div><label for="gw-name" style="display:block;font-size:13px;font-weight:500;margin-bottom:4px">Neue Figur</label><input class="gw-in" id="gw-name" placeholder="Name"></div>
-      <div><select class="gw-in" id="gw-role" aria-label="Rolle"><option value="main">Hauptfigur</option><option value="supporting">Nebenfigur</option><option value="minor">Randfigur</option></select></div>
-      <button type="button" class="gw-btn" id="gw-add" disabled>Anlegen</button>
+      <div><label for="gw-name" style="display:block;font-size:13px;font-weight:500;margin-bottom:4px">{{t:ui.new_character}}</label><input class="gw-in" id="gw-name" placeholder="{{t:ui.name}}"></div>
+      <div><select class="gw-in" id="gw-role" aria-label="{{t:ui.role}}"><option value="main">{{t:ui.main_character}}</option><option value="supporting">{{t:ui.supporting_character}}</option><option value="minor">{{t:ui.minor_character}}</option></select></div>
+      <button type="button" class="gw-btn" id="gw-add" disabled>{{t:ui.create}}</button>
     </div>
-    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Figuren sind Arbeitsgrundlage: Brainstorming, Ghostwriting und Faktencheck bekommen die Beschreibungen der Figuren, die im Abschnitt vorkommen. Ins Buch kommen sie nicht.</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.characters_are_working_references_brainstorming_ghostwriting_and_fact_checks_receive_descriptions_of_character}}</div>
   </div>
 </div>
 <script>
 function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 (function(){
   var box=document.getElementById('gw-figuren'),$=function(id){return document.getElementById(id);};
-  document.getElementById('gw-sug').addEventListener('click',function(){gwSend('Figuren aus dem Text vorschlagen (ganzes Buch)','character.suggest',{scope:'book'});});
-  box.querySelectorAll('.gw-ch[data-id]').forEach(function(r){r.addEventListener('click',function(){gwSend('Figur „'+r.dataset.name+'“ öffnen','view.character',{character_id:r.dataset.id});});});
-  $('gw-back').addEventListener('click',function(){gwSend('Zur Projektübersicht','view.project',{});});
+  document.getElementById('gw-sug').addEventListener('click',function(){gwSend(tr("ui.suggest_characters_from_the_text_whole_book"),'character.suggest',{scope:'book'});});
+  box.querySelectorAll('.gw-ch[data-id]').forEach(function(r){r.addEventListener('click',function(){gwSend(tr("ui.character_2")+r.dataset.name+tr("ui.open_2"),'view.character',{character_id:r.dataset.id});});});
+  $('gw-back').addEventListener('click',function(){gwSend(tr("ui.project_overview"),'view.project',{});});
   var names=[];box.querySelectorAll('.gw-ch[data-name]').forEach(function(r){names.push(r.dataset.name.toLowerCase());});
-  $('gw-name').addEventListener('input',function(){var v=$('gw-name').value.trim();$('gw-add').disabled=!v||names.indexOf(v.toLowerCase())>=0;$('gw-add').title=names.indexOf(v.toLowerCase())>=0?'Diese Figur gibt es schon':'';});
+  $('gw-name').addEventListener('input',function(){var v=$('gw-name').value.trim();$('gw-add').disabled=!v||names.indexOf(v.toLowerCase())>=0;$('gw-add').title=names.indexOf(v.toLowerCase())>=0?tr("ui.this_character_already_exists"):'';});
   $('gw-add').addEventListener('click',function(){
     var n=$('gw-name').value.trim();
     box.querySelectorAll('input,select,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';
-    gwSend('Figur „'+n+'“ anlegen','character.create',{name:n,role:$('gw-role').value});
+    gwSend(tr("ui.character_2")+n+tr("ui.action_fragment_1"),'character.create',{name:n,role:$('gw-role').value});
   });
 })();
 </script>

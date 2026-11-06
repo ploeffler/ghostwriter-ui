@@ -28,7 +28,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Formular zum Bearbeiten von Kapitel {{CHAPTER_NUMBER}}: Titel, Untertitel, Kurzbeschreibung und Ziel.</h2>
+<h2 class="sr-only">{{t:ui.chapter_edit_a11y}}</h2>
 <style>
 .gw-f label{display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
 .gw-f .hint{font-size:12px;color:var(--text-muted);font-weight:400}
@@ -42,28 +42,28 @@
   <form class="gw-f" id="gw-kapitel-bearbeiten" data-chapter="{{CHAPTER_ID}}" data-num="{{CHAPTER_NUMBER}}" novalidate style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div style="display:flex;align-items:center;gap:var(--gap-sm)">
       <i class="ti ti-pencil" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
-      <span style="font-size:16px;font-weight:500">Kapitel {{CHAPTER_NUMBER}} bearbeiten</span>
+      <span style="font-size:16px;font-weight:500">{{t:ui.edit_chapter}}</span>
     </div>
     <div>
-      <label for="gw-title">Titel</label>
-      <input id="gw-title" value="{{CHAPTER_TITLE}}" placeholder="Titel des Kapitels">
-      <div class="gw-err" id="gw-title-err" hidden>Bitte einen Titel eingeben.</div>
+      <label for="gw-title">{{t:ui.title}}</label>
+      <input id="gw-title" value="{{CHAPTER_TITLE}}" placeholder="{{t:ui.chapter_title}}">
+      <div class="gw-err" id="gw-title-err" hidden>{{t:ui.please_enter_a_title}}</div>
     </div>
     <div>
-      <label for="gw-subtitle">Untertitel <span class="hint">optional</span></label>
+      <label for="gw-subtitle">{{t:ui.subtitle}} <span class="hint">{{t:ui.optional}}</span></label>
       <input id="gw-subtitle" value="{{CHAPTER_SUBTITLE}}">
     </div>
     <div>
-      <label for="gw-summary">Kurzbeschreibung <span class="hint">kurze Zusammenfassung des Kapitels</span></label>
+      <label for="gw-summary">{{t:ui.summary}} <span class="hint">{{t:ui.a_short_chapter_summary}}</span></label>
       <textarea id="gw-summary" rows="2">{{CHAPTER_SUMMARY}}</textarea>
     </div>
     <div>
-      <label for="gw-goal">Ziel des Kapitels <span class="hint">was soll der Leser danach verstanden haben?</span></label>
+      <label for="gw-goal">{{t:ui.chapter_goal}} <span class="hint">{{t:ui.what_should_the_reader_understand_afterwards}}</span></label>
       <textarea id="gw-goal" rows="2">{{CHAPTER_GOAL}}</textarea>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
-      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">Speichern</button>
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">{{t:ui.cancel}}</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{t:ui.save}}</button>
     </div>
   </form>
 </div>
@@ -81,8 +81,8 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     var g=function(k){return $(k).value.trim();};
     var d={chapter_id:id,title:g('gw-title'),subtitle:g('gw-subtitle'),summary:g('gw-summary'),goal:g('gw-goal')};
     lock();
-    gwSend('Kapitel '+num+' speichern: '+d.title,'chapter.update',d);
+    gwSend(tr("ui.save_chapter",{number:num,title:d.title}),'chapter.update',d);
   });
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Kapitel '+num+' bearbeiten abgebrochen','form.cancel',{form:'chapter.update',chapter_id:id});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.editing_chapter_cancelled",{number:num}),'form.cancel',{form:'chapter.update',chapter_id:id});});
 })();
 </script>

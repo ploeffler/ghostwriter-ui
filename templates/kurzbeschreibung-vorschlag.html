@@ -42,7 +42,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Kurzbeschreibung und Ziel aus dem Text: {{SUGGEST_COUNT_TEXT}} für {{SCOPE_TEXT}}. Auswählen und übernehmen.</h2>
+<h2 class="sr-only">{{t:ui.summary_and_goal_from_the_text_for_select_and_apply}}</h2>
 <style>
 .gw-kv .card{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;display:flex;flex-direction:column;gap:6px}
 .gw-kv .card[data-level="chapter"]{border-color:var(--border-strong);background:var(--surface-1)}
@@ -66,30 +66,30 @@
   <div class="gw-kv" id="gw-kv" data-kind="{{KIND}}" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div>
       <div style="font-size:12px;color:var(--text-muted)">{{SCOPE_TEXT}} · {{SUGGEST_COUNT_TEXT}}<span data-gw-if="RUN_TEXT"> · {{RUN_TEXT}}</span></div>
-      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-file-description" style="color:var(--text-secondary)" aria-hidden="true"></i>Kurzbeschreibung und Ziel</div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-file-description" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.summary_and_goal}}</div>
     </div>
-    <div style="display:flex;gap:var(--gap-md);font-size:13px"><button type="button" class="lnk" id="gw-empty">alle leeren füllen</button><button type="button" class="lnk" id="gw-all">alle</button><button type="button" class="lnk" id="gw-nothing">keine</button></div>
+    <div style="display:flex;gap:var(--gap-md);font-size:13px"><button type="button" class="lnk" id="gw-empty">{{t:ui.fill_all_empty_fields}}</button><button type="button" class="lnk" id="gw-all">{{t:ui.all}}</button><button type="button" class="lnk" id="gw-nothing">{{t:ui.none}}</button></div>
     <div id="gw-list" style="display:flex;flex-direction:column;gap:6px">
       {{#SUGGESTIONS}}
       <div class="card" data-idx="{{S_IDX}}" data-level="{{S_LEVEL}}">
         <div class="hd"><b>{{S_LABEL}}</b><span>{{S_TITLE}}</span></div>
         <div class="fld" data-f="goal" data-on="{{S_GOAL_ON}}" data-v="{{S_GOAL}}" data-now="{{S_GOAL_NOW}}">
-          <input type="checkbox" class="on" aria-label="Ziel übernehmen" style="margin-top:8px">
-          <div class="col"><span class="lb">Ziel</span><textarea rows="2" aria-label="Ziel">{{S_GOAL}}</textarea><span class="now"></span></div>
+          <input type="checkbox" class="on" aria-label="{{t:ui.apply_goal}}" style="margin-top:8px">
+          <div class="col"><span class="lb">{{t:ui.goal}}</span><textarea rows="2" aria-label="{{t:ui.goal}}">{{S_GOAL}}</textarea><span class="now"></span></div>
         </div>
         <div class="fld" data-f="short" data-on="{{S_SHORT_ON}}" data-v="{{S_SHORT}}" data-now="{{S_SHORT_NOW}}">
-          <input type="checkbox" class="on" aria-label="Kurzbeschreibung übernehmen" style="margin-top:8px">
-          <div class="col"><span class="lb">Kurzbeschreibung</span><textarea rows="3" aria-label="Kurzbeschreibung">{{S_SHORT}}</textarea><span class="now"></span></div>
+          <input type="checkbox" class="on" aria-label="{{t:ui.apply_summary}}" style="margin-top:8px">
+          <div class="col"><span class="lb">{{t:ui.summary}}</span><textarea rows="3" aria-label="{{t:ui.summary}}">{{S_SHORT}}</textarea><span class="now"></span></div>
         </div>
         <div class="meta">{{S_EVIDENCE}}</div>
       </div>
       {{/SUGGESTIONS}}
     </div>
-    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">Keine Vorschläge mit Fundstelle im Text.</div>
-    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Nur aus dem Text, jede Angabe mit Fundstelle. Vorangehakt sind nur Felder, die bisher leer sind; ein angehaktes Feld ersetzt den bisherigen Text. Der Text des Buchs bleibt unverändert.</div>
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">{{t:ui.no_suggestions_with_text_references}}</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.from_the_text_only_with_a_reference_for_each_item_only_currently_empty_fields_are_preselected_selecting_a_fiel}}</div>
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-cancel">Verwerfen</button>
-      <button type="button" class="gw-btn pri" id="gw-apply">Übernehmen</button>
+      <button type="button" class="gw-btn" id="gw-cancel">{{t:ui.discard}}</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">{{t:ui.apply}}</button>
     </div>
   </div>
 </div>
@@ -103,7 +103,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   cards.forEach(function(c){
     c.querySelectorAll('.fld').forEach(function(f){
       if(!f.dataset.v){f.remove();return;}   // kein Vorschlag für dieses Feld
-      f.querySelector('.now').textContent=f.dataset.now?'bisher: '+f.dataset.now:'bisher leer';
+      f.querySelector('.now').textContent=f.dataset.now?tr("ui.previously")+f.dataset.now:tr("ui.currently_empty");
       var on=f.querySelector('.on');on.checked=!!f.dataset.on;f.classList.toggle('off',!on.checked);
       on.addEventListener('change',function(){f.classList.toggle('off',!on.checked);refresh();});
       f.querySelector('textarea').addEventListener('input',function(){if(!on.checked){on.checked=true;f.classList.remove('off');}refresh();});
@@ -124,10 +124,10 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     });
     return out;
   }
-  function refresh(){var ch=choices(),n=0;ch.forEach(function(o){n+=(o.goal?1:0)+(o.short?1:0);});$('gw-apply').disabled=!n;$('gw-apply').textContent=n?n+' Felder übernehmen':'Übernehmen';}
+  function refresh(){var ch=choices(),n=0;ch.forEach(function(o){n+=(o.goal?1:0)+(o.short?1:0);});$('gw-apply').disabled=!n;$('gw-apply').textContent=n?n+tr("ui.fields_apply"):tr("ui.apply");}
   function lock(){box.querySelectorAll('input,textarea,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
-  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend('Kurzbeschreibungen und Ziele übernehmen ('+ch.length+')','analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Vorschläge verworfen','form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
+  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend(tr("ui.apply_summaries_and_goals")+ch.length+')','analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.suggestions_discarded"),'form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
   refresh();
 })();
 </script>

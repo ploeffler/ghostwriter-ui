@@ -42,7 +42,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Bilder zu „{{TARGET_TITLE}}“: freigeben, in den Text setzen, neuen Auftrag erstellen.</h2>
+<h2 class="sr-only">{{t:ui.images_for_approve_insert_into_the_text_or_create_a_new_brief}}</h2>
 <style>
 .gw-sq{width:40px;height:40px;flex:none;border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0}
 .gw-im{display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2)}
@@ -59,14 +59,14 @@
     <div style="display:flex;align-items:flex-start;gap:var(--gap-md)">
       <div style="flex:1;min-width:0">
         <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{PROJECT_TITLE_SHORT}}</span>
-        <div style="font-size:20px;font-weight:500;display:flex;align-items:center;gap:8px;margin-top:4px"><i class="ti ti-photo" style="color:var(--text-secondary)" aria-hidden="true"></i>Bilder</div>
+        <div style="font-size:20px;font-weight:500;display:flex;align-items:center;gap:8px;margin-top:4px"><i class="ti ti-photo" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.images}}</div>
         <div style="font-size:13px;color:var(--text-secondary)">{{TARGET_TITLE}}</div>
       </div>
-      <button type="button" class="gw-sq" id="gw-back" title="Zum Abschnitt" aria-label="Zum Abschnitt"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
+      <button type="button" class="gw-sq" id="gw-back" title="{{t:ui.to_section}}" aria-label="{{t:ui.to_section}}"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
     </div>
     <div style="font-size:13px;color:var(--text-secondary);display:flex;flex-direction:column;gap:2px">
-      <span><b>Bildstil:</b> <span id="gw-style">{{IMAGE_STYLE}}</span></span>
-      <span><b>Figuren:</b> <span id="gw-figs">{{TARGET_CHARACTERS}}</span></span>
+      <span><b>{{t:ui.image_style}}</b> <span id="gw-style">{{IMAGE_STYLE}}</span></span>
+      <span><b>{{t:ui.characters_2}}</b> <span id="gw-figs">{{TARGET_CHARACTERS}}</span></span>
     </div>
     <div data-gw-if="IMAGES" style="display:flex;flex-direction:column;gap:var(--gap-xs)">
       {{#IMAGES}}
@@ -74,16 +74,16 @@
         <i class="ti ti-photo" style="font-size:18px;color:var(--text-muted)" aria-hidden="true"></i>
         <span style="flex:1;min-width:160px"><span style="font-size:14px;font-weight:500">{{I_CAPTION}}</span><span style="display:block;font-size:12px;color:var(--text-muted)">{{I_SOURCE}} · {{I_SIZE}} · <code>{{I_ID}}</code></span></span>
         <span class="gw-tag gw-st"></span>
-        <button type="button" class="gw-mini gw-place">In den Text setzen</button>
+        <button type="button" class="gw-mini gw-place">{{t:ui.insert_into_text}}</button>
         <button type="button" class="gw-mini gw-apr"></button>
       </div>
       {{/IMAGES}}
     </div>
     <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md);display:flex;flex-direction:column;gap:var(--gap-sm)">
-      <label for="gw-scene" style="font-size:13px;font-weight:500">Neuer Bild-Auftrag <span style="font-size:12px;color:var(--text-muted);font-weight:400">Was soll zu sehen sein? Leer = Vorschlag aus dem Text</span></label>
-      <textarea class="gw-in" id="gw-scene" rows="3" placeholder="z. B. Opi und Strolchi sitzen abends auf der Bank vor dem Haus"></textarea>
-      <div style="display:flex;justify-content:flex-end"><button type="button" class="gw-btn" id="gw-prompt">Auftrag erstellen</button></div>
-      <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Der Assistent zeigt den Auftrag (Prompt) zum Prüfen. Danach erzeugt der Chat das Bild selbst, wenn er das kann, oder du kopierst den Auftrag zu deinem Bilddienst. Das fertige Bild hängst du im Chat an; es kommt als Entwurf in den Abschnitt und erst nach der Freigabe ins Buch.</div>
+      <label for="gw-scene" style="font-size:13px;font-weight:500">{{t:ui.new_image_brief}} <span style="font-size:12px;color:var(--text-muted);font-weight:400">{{t:ui.what_should_be_shown_leave_blank_for_a_suggestion_from_the_text}}</span></label>
+      <textarea class="gw-in" id="gw-scene" rows="3" placeholder="{{t:ui.e_g_grandpa_and_strolchi_sitting_on_the_bench_outside_the_house_in_the_evening}}"></textarea>
+      <div style="display:flex;justify-content:flex-end"><button type="button" class="gw-btn" id="gw-prompt">{{t:ui.create_brief}}</button></div>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.the_assistant_shows_the_prompt_for_review_the_chat_then_generates_the_image_if_supported_or_you_copy_the_promp}}</div>
     </div>
   </div>
 </div>
@@ -91,22 +91,22 @@
 function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 (function(){
   var box=document.getElementById('gw-bilder'),d=box.dataset,$=function(id){return document.getElementById(id);};
-  if(!$('gw-style').textContent.trim())$('gw-style').textContent='noch keiner (in den Ausgabeoptionen bzw. images.style)';
-  if(!$('gw-figs').textContent.trim())$('gw-figs').textContent='keine';
+  if(!$('gw-style').textContent.trim())$('gw-style').textContent=tr("ui.none_yet_set_in_output_options_or_images_style");
+  if(!$('gw-figs').textContent.trim())$('gw-figs').textContent=tr("ui.none");
   function lock(){box.querySelectorAll('button,textarea').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
   box.querySelectorAll('.gw-im').forEach(function(r){
     var on=r.dataset.status==='approved',st=r.querySelector('.gw-st'),b=r.querySelector('.gw-apr'),p=r.querySelector('.gw-place');
-    st.textContent=on?'freigegeben':'Entwurf';st.classList.toggle('ok',on);
-    b.textContent=on?'Zurücknehmen':'Freigeben';
+    st.textContent=on?'freigegeben':tr("ui.draft");st.classList.toggle('ok',on);
+    b.textContent=on?tr("ui.withdraw"):tr("ui.approve");
     b.addEventListener('click',function(){var data={kind:'image',section_id:r.dataset.id};if(on)data.revoke=true;
-      gwSend((on?'Bildfreigabe zurücknehmen für „':'Freigabe für Bild „')+r.dataset.caption+'“ bestätigen','approval.open',data);});
-    if(r.dataset.in==='1'){p.textContent='steht im Text';p.disabled=true;}
-    p.addEventListener('click',function(){lock();gwSend('Bild „'+r.dataset.caption+'“ in „'+d.title+'“ setzen – wo genau, sage ich dir','image.place',{image_id:r.dataset.id,section_id:d.target});});
+      gwSend((on?tr("ui.withdraw_image_approval_for"):tr("ui.approval_for_image"))+r.dataset.caption+tr("ui.confirm_2"),'approval.open',data);});
+    if(r.dataset.in==='1'){p.textContent=tr("ui.included_in_the_text");p.disabled=true;}
+    p.addEventListener('click',function(){lock();gwSend(tr("ui.image")+r.dataset.caption+'“ in „'+d.title+tr("ui.insert_i_will_specify_where"),'image.place',{image_id:r.dataset.id,section_id:d.target});});
   });
-  $('gw-back').addEventListener('click',function(){gwSend('Zurück zum Abschnitt „'+d.title+'“','view.section',{section_id:d.target});});
+  $('gw-back').addEventListener('click',function(){gwSend(tr("ui.back_to_section")+d.title+'“','view.section',{section_id:d.target});});
   $('gw-prompt').addEventListener('click',function(){
     var s=$('gw-scene').value.trim();lock();
-    gwSend(s?'Bild-Auftrag für „'+d.title+'“: '+s:'Bild-Auftrag für „'+d.title+'“ – schlag eine Szene aus dem Text vor','image.prompt',{section_id:d.target,scene:s});
+    gwSend(s?tr("ui.image_brief_for")+d.title+'“: '+s:tr("ui.image_brief_for")+d.title+tr("ui.suggest_a_scene_from_the_text"),'image.prompt',{section_id:d.target,scene:s});
   });
 })();
 </script>

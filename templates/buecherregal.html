@@ -51,7 +51,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Bücherregal {{LIBRARY_NAME}}: {{BOOK_COUNT_TEXT}}. Ein Buch öffnen oder ein neues anlegen.</h2>
+<h2 class="sr-only">{{t:ui.library_open_a_book_or_create_a_new_one}}</h2>
 <style>
 .gw-shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:var(--gap-md)}
 .gw-book{text-align:left;font:inherit;color:var(--text-primary);border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:var(--pad-md);display:flex;flex-direction:column;gap:6px;cursor:pointer;border-left:4px solid var(--text-accent)}
@@ -82,16 +82,16 @@
       <div style="flex:1;min-width:200px">
         <div style="display:flex;align-items:center;gap:var(--gap-sm)">
           <i class="ti ti-books" style="font-size:20px;color:var(--text-secondary)" aria-hidden="true"></i>
-          <span style="font-size:20px;font-weight:500">Bücherregal</span>
+          <span style="font-size:20px;font-weight:500">{{t:ui.library_2}}</span>
         </div>
         <div style="font-size:13px;color:var(--text-muted);margin-top:2px">{{LIBRARY_NAME}} · {{BOOK_COUNT_TEXT}}</div>
       </div>
-      <button type="button" class="gw-btn" id="gw-data" title="Stand von Programm, Büchern und Repository" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-database" aria-hidden="true"></i>Daten</button>
-      <button type="button" class="gw-btn" id="gw-newseries" title="Mehrere Bücher als Reihe zusammenfassen" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-stack-2" aria-hidden="true"></i>Neue Serie</button>
-      <button type="button" class="gw-btn" id="gw-newbook" style="border:none;background:var(--text-primary);color:var(--surface-1);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-plus" aria-hidden="true"></i>Neues Buch</button>
+      <button type="button" class="gw-btn" id="gw-data" title="{{t:ui.program_book_and_repository_status}}" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-database" aria-hidden="true"></i>{{t:ui.data}}</button>
+      <button type="button" class="gw-btn" id="gw-newseries" title="{{t:ui.group_multiple_books_into_a_series}}" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-stack-2" aria-hidden="true"></i>{{t:ui.new_series}}</button>
+      <button type="button" class="gw-btn" id="gw-newbook" style="border:none;background:var(--text-primary);color:var(--surface-1);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-plus" aria-hidden="true"></i>{{t:ui.new_book}}</button>
     </div>
 
-    <div data-gw-if="EMPTY" style="font-size:14px;color:var(--text-secondary);line-height:1.6;padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">Hier steht noch kein Buch. Mit „Neues Buch“ legst du eins an; danach führt dich der Einstiegsdialog bis zur Gliederung.</div>
+    <div data-gw-if="EMPTY" style="font-size:14px;color:var(--text-secondary);line-height:1.6;padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">{{t:ui.there_are_no_books_yet_choose_new_book_to_start_the_setup_dialogue_will_guide_you_through_the_outline}}</div>
 
     <div class="gw-shelf">
       {{#BOOKS}}
@@ -100,17 +100,17 @@
         <span class="vol">{{BOOK_VOLUME_TEXT}}</span>
         <span class="t">{{BOOK_TITLE}}</span>
         <span class="a">{{BOOK_AUTHOR_TEXT}}</span>
-        <span class="st"><b>{{BOOK_STATE_TEXT}}</b> · {{BOOK_EDITION_TEXT}} · KI-API-Kosten {{BOOK_COST}}</span>
-        <span class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{BOOK_PROGRESS}}" aria-label="Freigegebene Abschnitte"><span style="width:{{BOOK_PROGRESS}}%"></span></span>
+        <span class="st"><b>{{BOOK_STATE_TEXT}}</b> {{t:ui.ai_api_costs}}</span>
+        <span class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{BOOK_PROGRESS}}" aria-label="{{t:ui.approved_sections}}"><span style="width:{{BOOK_PROGRESS}}%"></span></span>
         <span class="st">{{BOOK_PROGRESS_TEXT}}</span>
         <span class="pend">{{BOOK_PENDING_TEXT}}</span>
         <span class="st">{{BOOK_UPDATED_TEXT}} · <code style="font-size:11px">{{BOOK_BRANCH}}</code></span>
-        <span class="open"><span class="ol">Öffnen</span><i class="ti ti-arrow-right" aria-hidden="true"></i></span>
+        <span class="open"><span class="ol">{{t:ui.open}}</span><i class="ti ti-arrow-right" aria-hidden="true"></i></span>
       </button>
       {{/BOOKS}}
     </div>
 
-    <div data-gw-if="EMPTY_SERIES" style="display:flex;flex-wrap:wrap;gap:var(--gap-sm);font-size:13px;color:var(--text-muted)">Serien noch ohne Band:
+    <div data-gw-if="EMPTY_SERIES" style="display:flex;flex-wrap:wrap;gap:var(--gap-sm);font-size:13px;color:var(--text-muted)">{{t:ui.series_without_volumes}}
       {{#EMPTY_SERIES}}
       <button type="button" class="gw-es" data-id="{{S_ID}}" style="border:none;background:none;padding:0;font:inherit;color:var(--text-accent);cursor:pointer">{{S_TITLE}} ›</button>
       {{/EMPTY_SERIES}}
@@ -123,7 +123,7 @@
 function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 (function(){
   var r=document.getElementById('gw-regal'),shelf=r.querySelector('.gw-shelf'),group=null,any=false;
-  function openSeries(id,title){gwSend('Serie „'+title+'“ anzeigen','view.series',{series_id:id});}
+  function openSeries(id,title){gwSend(tr("ui.show_series_title",{title:title}),'view.series',{series_id:id});}
   // Überschriften je Serie bzw. „Einzelne Bücher“ (nur, wenn es Serien gibt)
   r.querySelectorAll('.gw-book').forEach(function(b){if(b.dataset.series)any=true;});
   if(any)r.querySelectorAll('.gw-book').forEach(function(b){
@@ -132,20 +132,20 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     group=g;
     var h=document.createElement('button');h.type='button';h.className='gw-sh'+(g?'':' plain');
     h.innerHTML=g?'<i class="ti ti-stack-2" aria-hidden="true"></i><span></span> ›':'<span></span>';
-    h.querySelector('span').textContent=g?b.dataset.seriesTitle:'Einzelne Bücher';
+    h.querySelector('span').textContent=g?b.dataset.seriesTitle:tr("ui.standalone_books");
     if(g)h.addEventListener('click',function(){openSeries(g,b.dataset.seriesTitle);});else h.tabIndex=-1;
     shelf.insertBefore(h,b);
   });
   r.querySelectorAll('.gw-es').forEach(function(x){x.addEventListener('click',function(){openSeries(x.dataset.id,x.textContent.replace(' ›',''));});});
-  document.getElementById('gw-newseries').addEventListener('click',function(){gwSend('Neue Serie anlegen','series.create.open',{});});
+  document.getElementById('gw-newseries').addEventListener('click',function(){gwSend(tr("ui.create_a_new_series"),'series.create.open',{});});
   r.querySelectorAll('.gw-book').forEach(function(b){
     var setup=b.dataset.state==='setup';
-    if(setup)b.querySelector('.ol').textContent='Einrichtung fortsetzen';
+    if(setup)b.querySelector('.ol').textContent=tr("ui.continue_setup");
     b.addEventListener('click',function(){
-      gwSend((setup?'Einrichtung von „':'Buch „')+b.dataset.title+'“ '+(setup?'fortsetzen':'öffnen'),'library.book.open',{branch:b.dataset.branch});
+      gwSend(tr(setup?"ui.continue_setup_of_title":"ui.open_book_title",{title:b.dataset.title}),'library.book.open',{branch:b.dataset.branch});
     });
   });
-  document.getElementById('gw-data').addEventListener('click',function(){gwSend('Daten der Bibliothek anzeigen','view.data',{});});
-  document.getElementById('gw-newbook').addEventListener('click',function(){gwSend('Neues Buch anlegen','library.book.create.open',{});});
+  document.getElementById('gw-data').addEventListener('click',function(){gwSend(tr("ui.show_library_data"),'view.data',{});});
+  document.getElementById('gw-newbook').addEventListener('click',function(){gwSend(tr("ui.create_a_new_book"),'library.book.create.open',{});});
 })();
 </script>

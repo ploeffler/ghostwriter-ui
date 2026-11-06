@@ -42,7 +42,7 @@
   - {{SECTION_ID}}        stabile Abschnitts-ID
   - {{SECTION_NUMBER}}    sichtbare Nummer, z. B. 1.4
   - {{SECTION_TITLE}}     Titel
-  - {{SECTION_STATUS}}    Status laut workflow.yml (sections.statuses); gw.js zeigt ihn deutsch
+  - {{SECTION_STATUS}}    Status laut workflow.yml (sections.statuses); gw.js zeigt ihn in der gewählten Bediensprache
   - {{SECTION_COST}}      Abschnittssumme, formatiert, oder "–"
   - {{MARKERS_ANEKDOTE}}  Anzahl offener Platzhalter-Anekdoten (0, 1, …)
   - {{MARKERS_QUELLE}}    Anzahl offener Quellen-Prüfungen
@@ -63,7 +63,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Kapitel {{CHAPTER_NUMBER}} „{{CHAPTER_TITLE}}“ mit allen Abschnitten, ihren offenen Markern, Kosten und Status.</h2>
+<h2 class="sr-only">{{t:ui.chapter_including_all_sections_open_markers_costs_and_status}}</h2>
 <style>
 .gw-sq{width:40px;height:40px;flex:none;border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0}
 .gw-sq:hover{border-color:var(--border-strong);color:var(--text-primary)}
@@ -78,7 +78,7 @@
 @media (max-width:520px){.gw-tags{display:none!important}}
 .gw-lbl{display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px}
 .gw-txt{font-size:14px;line-height:1.6;color:var(--text-primary);white-space:pre-line;margin:0}
-.gw-txt:empty::before{content:'noch offen';color:var(--text-muted);font-style:italic}
+.gw-txt:empty::before{content:'{{t:ui.not_yet_set}}';color:var(--text-muted);font-style:italic}
 @media (max-width:560px){.gw-two{grid-template-columns:1fr!important}}
 </style>
 <div style="padding:1rem 0">
@@ -88,19 +88,19 @@
         <div style="flex:1;min-width:220px">
           <div style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;margin-bottom:4px">
             <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{PROJECT_TITLE_SHORT}}</span>
-            <span style="font-size:12px;color:var(--text-muted)">Kapitel {{CHAPTER_NUMBER}}</span>
+            <span style="font-size:12px;color:var(--text-muted)">{{t:ui.chapter}}</span>
           </div>
           <div style="font-size:20px;font-weight:500;line-height:1.3">{{CHAPTER_TITLE}}</div>
           <div id="gw-subtitle" style="font-size:14px;color:var(--text-secondary);font-style:italic;margin-top:2px">{{CHAPTER_SUBTITLE}}</div>
         </div>
         <div style="display:flex;gap:var(--gap-sm);margin-left:auto">
-          <button type="button" class="gw-sq" data-p="Zurück zur Projektübersicht" data-a="view.project" title="Zur Projektübersicht" aria-label="Zur Projektübersicht"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
-          <button type="button" class="gw-sq" data-p="Kapitel {{CHAPTER_NUMBER}} bearbeiten" data-a="chapter.edit.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Kapitel bearbeiten" aria-label="Kapitel bearbeiten"><i class="ti ti-edit" aria-hidden="true"></i></button>
-          <button type="button" class="gw-sq" data-p="Neuen Abschnitt in Kapitel {{CHAPTER_NUMBER}} anlegen" data-a="section.create.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Neuer Abschnitt" aria-label="Neuer Abschnitt"><i class="ti ti-plus" aria-hidden="true"></i></button>
-          <button type="button" class="gw-sq" data-p="Abschnittsreihenfolge in Kapitel {{CHAPTER_NUMBER}} ändern" data-a="section.reorder.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Abschnittsreihenfolge ändern" aria-label="Abschnittsreihenfolge ändern"><i class="ti ti-arrows-sort" aria-hidden="true"></i></button>
-          <button type="button" class="gw-sq" data-p="Figuren aus dem Text von Kapitel {{CHAPTER_NUMBER}} vorschlagen" data-a="character.suggest" data-args='{"scope":"{{CHAPTER_NUMBER}}"}' title="Figuren aus dem Text von Kapitel {{CHAPTER_NUMBER}} vorschlagen" aria-label="Figuren aus dem Text von Kapitel {{CHAPTER_NUMBER}} vorschlagen"><i class="ti ti-user-search" aria-hidden="true"></i></button>
-          <button type="button" class="gw-sq" data-gw-if="CHAPTER_REVISION_READY" data-p="Kapitel {{CHAPTER_NUMBER}} überarbeiten" data-a="chapter.revision.start" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Kapitel überarbeiten" aria-label="Kapitel überarbeiten"><i class="ti ti-file-pencil" aria-hidden="true"></i></button>
-          <button type="button" class="gw-sq" data-gw-if="CHAPTER_APPROVABLE" data-p="Freigabe für Kapitel {{CHAPTER_NUMBER}} „{{CHAPTER_TITLE}}“ bestätigen" data-a="approval.open" data-args='{"kind":"chapter","chapter_id":"{{CHAPTER_ID}}"}' title="Kapitel freigeben" aria-label="Kapitel freigeben"><i class="ti ti-circle-check" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="{{t:ui.back_to_project_overview}}" data-a="view.project" title="{{t:ui.project_overview}}" aria-label="{{t:ui.project_overview}}"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="{{t:ui.edit_chapter}}" data-a="chapter.edit.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="{{t:ui.edit_chapter_2}}" aria-label="{{t:ui.edit_chapter_2}}"><i class="ti ti-edit" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="{{t:ui.add_a_new_section_to_chapter}}" data-a="section.create.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="{{t:ui.new_section}}" aria-label="{{t:ui.new_section}}"><i class="ti ti-plus" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="{{t:ui.change_section_order_in_chapter}}" data-a="section.reorder.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="{{t:ui.change_section_order}}" aria-label="{{t:ui.change_section_order}}"><i class="ti ti-arrows-sort" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="{{t:ui.suggest_characters_from_the_text_of_chapter}}" data-a="character.suggest" data-args='{"scope":"{{CHAPTER_NUMBER}}"}' title="{{t:ui.suggest_characters_from_the_text_of_chapter}}" aria-label="{{t:ui.suggest_characters_from_the_text_of_chapter}}"><i class="ti ti-user-search" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-gw-if="CHAPTER_REVISION_READY" data-p="{{t:ui.revise_chapter}}" data-a="chapter.revision.start" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="{{t:ui.revise_chapter_2}}" aria-label="{{t:ui.revise_chapter_2}}"><i class="ti ti-file-pencil" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-gw-if="CHAPTER_APPROVABLE" data-p="{{t:ui.confirm_approval_for_chapter}}" data-a="approval.open" data-args='{"kind":"chapter","chapter_id":"{{CHAPTER_ID}}"}' title="{{t:ui.approve_chapter}}" aria-label="{{t:ui.approve_chapter}}"><i class="ti ti-circle-check" aria-hidden="true"></i></button>
         </div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--gap-md);flex-wrap:wrap;margin-top:8px">
@@ -113,24 +113,24 @@
     </div>
     <div style="display:flex;align-items:flex-start;gap:var(--gap-md);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <div class="gw-two" style="flex:1;min-width:0;display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-md)">
-        <div><span class="gw-lbl">Ziel des Kapitels</span><p class="gw-txt">{{CHAPTER_GOAL}}</p></div>
-        <div><span class="gw-lbl">Kurzbeschreibung</span><p class="gw-txt">{{CHAPTER_SUMMARY}}</p></div>
+        <div><span class="gw-lbl">{{t:ui.chapter_goal}}</span><p class="gw-txt">{{CHAPTER_GOAL}}</p></div>
+        <div><span class="gw-lbl">{{t:ui.summary}}</span><p class="gw-txt">{{CHAPTER_SUMMARY}}</p></div>
       </div>
-      <button type="button" class="gw-sq" data-p="Kapitelrecherche für Kapitel {{CHAPTER_NUMBER}} öffnen" data-a="chapter.research.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="Ziel und Kurzbeschreibung ändern, Kapitelrecherche" aria-label="Ziel und Kurzbeschreibung ändern, Kapitelrecherche"><i class="ti ti-file-search" aria-hidden="true"></i></button>
+      <button type="button" class="gw-sq" data-p="{{t:ui.open_chapter_research_for_chapter}}" data-a="chapter.research.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="{{t:ui.edit_goal_and_summary_chapter_research}}" aria-label="{{t:ui.edit_goal_and_summary_chapter_research}}"><i class="ti ti-file-search" aria-hidden="true"></i></button>
     </div>
     <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:12px;color:var(--text-muted)">Abschnitte</span>
-        <span style="font-size:12px;color:var(--text-muted);display:flex;gap:6px;flex-wrap:wrap"><span class="gw-tag anek">Anekdote</span><span class="gw-tag">Quelle</span><span class="gw-tag med">Medizin</span><span class="gw-tag recht">Recht</span></span>
+        <span style="font-size:12px;color:var(--text-muted)">{{t:ui.sections}}</span>
+        <span style="font-size:12px;color:var(--text-muted);display:flex;gap:6px;flex-wrap:wrap"><span class="gw-tag anek">{{t:ui.anecdote}}</span><span class="gw-tag">{{t:ui.source}}</span><span class="gw-tag med">{{t:ui.medicine}}</span><span class="gw-tag recht">{{t:ui.law}}</span></span>
       </div>
       <div id="gw-sections" style="display:flex;flex-direction:column;gap:var(--gap-xs)">
         {{#SECTIONS}}
-        <button type="button" class="gw-row" data-id="{{SECTION_ID}}" data-number="{{SECTION_NUMBER}}" data-title="{{SECTION_TITLE}}" data-anekdote="{{MARKERS_ANEKDOTE}}" data-quelle="{{MARKERS_QUELLE}}" data-medizin="{{MARKERS_MEDIZIN}}" data-recht="{{MARKERS_RECHT}}"><span class="gw-num">{{SECTION_NUMBER}}</span><span style="flex:1;min-width:0;font-size:14px;font-weight:500">{{SECTION_TITLE}}</span><span class="gw-tags" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end"></span><span class="gw-meta" style="min-width:32px;text-align:right" title="Kosten">{{SECTION_COST}}</span><span class="gw-meta">{{SECTION_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
+        <button type="button" class="gw-row" data-id="{{SECTION_ID}}" data-number="{{SECTION_NUMBER}}" data-title="{{SECTION_TITLE}}" data-anekdote="{{MARKERS_ANEKDOTE}}" data-quelle="{{MARKERS_QUELLE}}" data-medizin="{{MARKERS_MEDIZIN}}" data-recht="{{MARKERS_RECHT}}"><span class="gw-num">{{SECTION_NUMBER}}</span><span style="flex:1;min-width:0;font-size:14px;font-weight:500">{{SECTION_TITLE}}</span><span class="gw-tags" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end"></span><span class="gw-meta" style="min-width:32px;text-align:right" title="{{t:ui.costs}}">{{SECTION_COST}}</span><span class="gw-meta">{{SECTION_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
         {{/SECTIONS}}
       </div>
     </div>
     <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md);display:flex;align-items:center;gap:var(--gap-sm);font-size:13px;color:var(--text-secondary)">
-      <i class="ti ti-info-circle" aria-hidden="true"></i>Kapitelzusammenführung erst möglich, wenn alle Abschnitte freigegeben sind ({{APPROVED_COUNT_TEXT}}).
+      <i class="ti ti-info-circle" aria-hidden="true"></i>{{t:ui.chapter_assembly_is_available_only_when_all_sections_are_approved}}
     </div>
   </div>
 </div>
@@ -146,7 +146,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   if(!rows.length){
     var p=document.createElement('div');
     p.className='gw-meta';p.style.padding='8px 0';
-    p.textContent='Noch keine Abschnitte';
+    p.textContent=tr("ui.no_sections_yet");
     list.appendChild(p);
   }
   rows.forEach(function(r){
@@ -156,14 +156,14 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
       var s=document.createElement('span');s.className='gw-tag'+(cls?' '+cls:'');
       s.textContent=label+(c>1?' ×'+c:'');box.appendChild(s);
     };
-    add('anek','Anekdote',n('anekdote'));
-    add('','Quelle',n('quelle'));
-    add('med','Medizin',n('medizin'));
-    add('recht','Recht',n('recht'));
+    add('anek',tr("ui.anecdote"),n('anekdote'));
+    add('',tr("ui.source"),n('quelle'));
+    add('med',tr("ui.medicine"),n('medizin'));
+    add('recht',tr("ui.law"),n('recht'));
     if(!box.children.length){
-      box.innerHTML='<span class="gw-meta" style="display:flex;align-items:center;gap:4px"><i class="ti ti-check" aria-hidden="true"></i>keine Marker</span>';
+      box.innerHTML='<span class="gw-meta" style="display:flex;align-items:center;gap:4px"><i class="ti ti-check" aria-hidden="true"></i>'+GW.escape(tr("ui.no_markers"))+'</span>';
     }
-    r.addEventListener('click',function(){gwSend('Abschnitt '+r.dataset.number+' „'+r.dataset.title+'“ bearbeiten','view.section',{section_id:r.dataset.id});});
+    r.addEventListener('click',function(){gwSend(tr("ui.edit_section_number_title",{number:r.dataset.number,title:r.dataset.title}),'view.section',{section_id:r.dataset.id});});
   });
 
   wrap.querySelectorAll('.gw-sq[data-p]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,b.dataset.args?JSON.parse(b.dataset.args):{});});});

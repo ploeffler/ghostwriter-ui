@@ -42,7 +42,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Gliederung mit KI: Vorschlag prüfen und übernehmen. {{STATS_TEXT}}</h2>
+<h2 class="sr-only">{{t:ui.ai_outline_review_and_apply_the_suggestion}}</h2>
 <style>
 .gw-gl .row{display:flex;flex-direction:column;gap:4px;padding:8px 10px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);font-size:14px}
 .gw-gl .row.chapter{background:var(--surface-1);border-color:var(--border-strong);margin-top:8px}
@@ -63,8 +63,8 @@
 <div style="padding:1rem 0">
   <div class="gw-gl" id="gw-gl" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div>
-      <div style="font-size:12px;color:var(--text-muted)">Manuskript importieren · {{RUN_TEXT}}</div>
-      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-compass" style="color:var(--text-secondary)" aria-hidden="true"></i>Gliederung mit KI</div>
+      <div style="font-size:12px;color:var(--text-muted)">{{t:ui.import_manuscript}}</div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-compass" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.ai_outline}}</div>
       <div style="font-size:13px;color:var(--text-secondary);margin-top:4px">{{STATS_TEXT}}</div>
     </div>
     <div data-gw-if="PARTIAL_TEXT" style="font-size:13px;padding:8px 10px;border:0.5px solid var(--border-strong);border-radius:var(--radius);color:var(--text-secondary)">⚠️ {{PARTIAL_TEXT}}</div>
@@ -73,19 +73,19 @@
       <div class="row {{O_TYPE}}" data-type="{{O_TYPE}}" data-ch="{{O_CHAPTER}}" data-sec="{{O_SECTION}}" data-start="{{O_START}}">
         <div class="line">
           <span class="lbl">{{O_LABEL}}</span>
-          <select class="kind" aria-label="Trennung"><option value="chapter">neues Kapitel</option><option value="section">neuer Abschnitt</option><option value="none">keine Trennung</option></select>
-          <input type="text" class="t" value="{{O_TITLE}}" aria-label="Titel">
-          <span class="w">{{O_WORDS}} Wörter</span>
+          <select class="kind" aria-label="{{t:ui.split}}"><option value="chapter">{{t:ui.new_chapter}}</option><option value="section">{{t:ui.new_section_2}}</option><option value="none">{{t:ui.no_split}}</option></select>
+          <input type="text" class="t" value="{{O_TITLE}}" aria-label="{{t:ui.title}}">
+          <span class="w">{{t:ui.words}}</span>
         </div>
-        <div class="meta q">beginnt mit: „{{O_QUOTE}}“</div>
+        <div class="meta q">{{t:ui.starts_with}}</div>
         <div class="meta">{{O_REASON}}</div>
       </div>
       {{/ROWS}}
     </div>
-    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">Nur ein Vorschlag aus dem Text. Getrennt wird nur an Absatzgrenzen, kein Wort geht verloren. Nach dem Übernehmen lässt sich die Gliederung in der Vorschau weiter ändern; das Buch entsteht erst mit „Buch anlegen“.</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.a_suggestion_from_the_text_only_splits_occur_at_paragraph_boundaries_no_words_are_lost_after_applying_you_can_}}</div>
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-cancel">Verwerfen</button>
-      <button type="button" class="gw-btn pri" id="gw-apply">Übernehmen</button>
+      <button type="button" class="gw-btn" id="gw-cancel">{{t:ui.discard}}</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">{{t:ui.apply}}</button>
     </div>
   </div>
 </div>
@@ -119,11 +119,11 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     Object.keys(chap).forEach(function(n){var first=secs.filter(function(r){return r.dataset.ch===n&&r.dataset.sec==='1';})[0];
       var on=!first||first.querySelector('.kind').value==='chapter';chap[n].classList.toggle('off',!on);chap[n].querySelector('.t').disabled=!on;});
     var m=model(),n=0;m.forEach(function(c){n+=c.sections.length;});
-    $('gw-apply').textContent=m.length+' Kapitel, '+n+' Abschnitte übernehmen';
+    $('gw-apply').textContent=m.length+tr("ui.chapters_2")+n+tr("ui.sections_apply");
   }
   function lock(){box.querySelectorAll('input,select,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
-  $('gw-apply').addEventListener('click',function(){var m=model();lock();gwSend('Gliederung aus dem KI-Vorschlag übernehmen ('+m.length+' Kapitel)','import.outline.apply',{chapters:m});});
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('KI-Vorschlag für die Gliederung verworfen','form.cancel',{form:'import.outline.apply'});});
+  $('gw-apply').addEventListener('click',function(){var m=model();lock();gwSend(tr("ui.apply_the_ai_outline_suggestion")+m.length+tr("ui.chapters_3"),'import.outline.apply',{chapters:m});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.ai_outline_suggestion_discarded"),'form.cancel',{form:'import.outline.apply'});});
   refresh();
 })();
 </script>

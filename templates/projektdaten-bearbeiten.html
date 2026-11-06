@@ -34,7 +34,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">Formular zum Bearbeiten der Projektdaten: Titel, Kurztitel, Autor, Kurzbeschreibung und Beschreibung.</h2>
+<h2 class="sr-only">{{t:ui.project_edit_a11y}}</h2>
 <style>
 .gw-f label{display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
 .gw-f .hint{font-size:12px;color:var(--text-muted);font-weight:400}
@@ -48,34 +48,34 @@
   <form class="gw-f" id="gw-projektdaten" novalidate style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div style="display:flex;align-items:center;gap:var(--gap-sm)">
       <i class="ti ti-edit" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
-      <span style="font-size:16px;font-weight:500">Projektdaten bearbeiten</span>
+      <span style="font-size:16px;font-weight:500">{{t:ui.edit_project_details}}</span>
     </div>
     <div>
-      <label for="gw-title">Titel</label>
-      <input id="gw-title" value="{{PROJECT_TITLE}}" placeholder="Titel des Buches">
-      <div class="gw-err" id="gw-title-err" hidden>Bitte einen Titel eingeben.</div>
+      <label for="gw-title">{{t:ui.title}}</label>
+      <input id="gw-title" value="{{PROJECT_TITLE}}" placeholder="{{t:ui.book_title}}">
+      <div class="gw-err" id="gw-title-err" hidden>{{t:ui.please_enter_a_title}}</div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--gap-md)">
       <div>
-        <label for="gw-short">Kurztitel <span class="hint">für Badge und Listen</span></label>
+        <label for="gw-short">{{t:ui.short_title}} <span class="hint">{{t:ui.for_the_badge_and_lists}}</span></label>
         <input id="gw-short" maxlength="40" value="{{PROJECT_TITLE_SHORT}}">
       </div>
       <div>
-        <label for="gw-author">Autor</label>
-        <input id="gw-author" value="{{PROJECT_AUTHOR}}" placeholder="Name des Autors">
+        <label for="gw-author">{{t:ui.author}}</label>
+        <input id="gw-author" value="{{PROJECT_AUTHOR}}" placeholder="{{t:ui.author_s_name}}">
       </div>
     </div>
     <div>
-      <label for="gw-dshort">Kurzbeschreibung <span class="hint">ein Satz</span></label>
+      <label for="gw-dshort">{{t:ui.summary}} <span class="hint">{{t:ui.one_sentence}}</span></label>
       <input id="gw-dshort" value="{{PROJECT_DESCRIPTION_SHORT}}">
     </div>
     <div>
-      <label for="gw-desc">Beschreibung</label>
+      <label for="gw-desc">{{t:ui.description}}</label>
       <textarea id="gw-desc" rows="5">{{PROJECT_DESCRIPTION}}</textarea>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
-      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">Speichern</button>
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">{{t:ui.cancel}}</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{t:ui.save}}</button>
     </div>
   </form>
 </div>
@@ -92,8 +92,8 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     var g=function(id){return $(id).value.trim();};
     var d={title:g('gw-title'),title_short:g('gw-short'),author:g('gw-author'),description_short:g('gw-dshort'),description:g('gw-desc')};
     lock();
-    gwSend('Projektdaten speichern: '+d.title,'project.update',d);
+    gwSend(tr("ui.save_project_details",{title:d.title}),'project.update',d);
   });
-  $('gw-cancel').addEventListener('click',function(){lock();gwSend('Projektdaten bearbeiten abgebrochen','form.cancel',{form:'project.update'});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.editing_project_details_cancelled"),'form.cancel',{form:'project.update'});});
 })();
 </script>

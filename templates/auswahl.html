@@ -44,7 +44,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">{{TITLE}}: Fragen mit Antwortkarten; zu jeder Frage eine Karte wählen oder eine eigene Antwort eingeben.</h2>
+<h2 class="sr-only">{{t:ui.answer_cards_choose_a_card_for_each_question_or_enter_your_own_answer}}</h2>
 <style>
 .gw-a .q{display:flex;flex-direction:column;gap:8px}
 .gw-a .q+.q{border-top:0.5px solid var(--border);padding-top:var(--pad-md)}
@@ -86,21 +86,21 @@
       <div class="qt" id="gw-qt-{{Q_INDEX}}">{{Q_TEXT}}</div>
       <div class="qh"></div>
       <div class="opts" aria-labelledby="gw-qt-{{Q_INDEX}}"></div>
-      <input class="other" type="text" placeholder="Andere Antwort (optional)" aria-label="Andere Antwort">
-      <div class="gw-err" hidden>Bitte eine Antwort wählen oder eingeben.</div>
+      <input class="other" type="text" placeholder="{{t:ui.other_answer_optional}}" aria-label="{{t:ui.other_answer}}">
+      <div class="gw-err" hidden>{{t:ui.please_choose_or_enter_an_answer}}</div>
     </div>
     {{/QUESTIONS}}
 
     <div id="gw-optpool" hidden>
       {{#OPTIONS}}
-      <button type="button" class="opt" data-q="{{OPT_Q}}" data-value="{{OPT_VALUE}}" data-rec="{{OPT_RECOMMENDED}}" data-sel="{{OPT_SELECTED}}"><span class="mk" aria-hidden="true"></span><span class="l">{{OPT_LABEL}}</span><span class="d">{{OPT_DESC}}</span><span class="rec">Empfohlen</span></button>
+      <button type="button" class="opt" data-q="{{OPT_Q}}" data-value="{{OPT_VALUE}}" data-rec="{{OPT_RECOMMENDED}}" data-sel="{{OPT_SELECTED}}"><span class="mk" aria-hidden="true"></span><span class="l">{{OPT_LABEL}}</span><span class="d">{{OPT_DESC}}</span><span class="rec">{{t:ui.recommended}}</span></button>
       {{/OPTIONS}}
     </div>
 
     <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md);display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap">
       <div style="flex:1;min-width:200px;font-size:12px;color:var(--text-muted);line-height:1.5">{{NOTE}}</div>
-      <button type="button" class="gw-btn" id="gw-skip" data-gw-if="SKIPPABLE" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Überspringen</button>
-      <button type="button" class="gw-btn" id="gw-next" style="border:none;background:var(--text-primary);color:var(--surface-1);display:inline-flex;align-items:center;gap:6px">Weiter<i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+      <button type="button" class="gw-btn" id="gw-skip" data-gw-if="SKIPPABLE" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">{{t:ui.skip}}</button>
+      <button type="button" class="gw-btn" id="gw-next" style="border:none;background:var(--text-primary);color:var(--surface-1);display:inline-flex;align-items:center;gap:6px">{{t:ui.continue}}<i class="ti ti-arrow-right" aria-hidden="true"></i></button>
     </div>
   </form>
 </div>
@@ -124,7 +124,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   pool.remove();
   qs.forEach(function(q){
     var multi=q.dataset.multi==='1',opts=q.querySelector('.opts'),other=q.querySelector('.other'),err=q.querySelector('.gw-err');
-    q.querySelector('.qh').textContent=multi?'Mehrere Antworten möglich':'Eine Antwort wählen';
+    q.querySelector('.qh').textContent=multi?tr("ui.multiple_answers_allowed"):tr("ui.choose_one_answer");
     if(!multi)opts.setAttribute('role','radiogroup');
     opts.addEventListener('click',function(e){
       var o=e.target.closest('.opt');if(!o)return;
@@ -157,6 +157,6 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     gwSend(lines.join('\n'),'wizard.answer',{step:step,answers:answers});
   });
   var sk=document.getElementById('gw-skip');
-  if(sk)sk.addEventListener('click',function(){lock();gwSend('Diesen Schritt überspringen','wizard.skip',{step:step});});
+  if(sk)sk.addEventListener('click',function(){lock();gwSend(tr("ui.skip_this_step"),'wizard.skip',{step:step});});
 })();
 </script>

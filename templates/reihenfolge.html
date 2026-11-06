@@ -35,7 +35,7 @@
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
   Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
 -->
-<h2 class="sr-only">{{REORDER_HEADING}}: Einträge mit den Pfeilen verschieben und speichern.</h2>
+<h2 class="sr-only">{{t:ui.move_entries_with_the_arrows_and_save}}</h2>
 <style>
 .gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
 .gw-btn:disabled{opacity:0.4;cursor:default}
@@ -58,16 +58,16 @@
       <div class="gw-row" data-id="{{ITEM_ID}}" data-num="{{ITEM_NUMBER}}">
         <span class="gw-num">{{ITEM_NUMBER}}</span>
         <span class="gw-t">{{ITEM_TITLE}}</span>
-        <button type="button" class="gw-mv" data-d="-1" title="Nach oben" aria-label="Nach oben"><i class="ti ti-chevron-up" aria-hidden="true"></i></button>
-        <button type="button" class="gw-mv" data-d="1" title="Nach unten" aria-label="Nach unten"><i class="ti ti-chevron-down" aria-hidden="true"></i></button>
+        <button type="button" class="gw-mv" data-d="-1" title="{{t:ui.move_up}}" aria-label="{{t:ui.move_up}}"><i class="ti ti-chevron-up" aria-hidden="true"></i></button>
+        <button type="button" class="gw-mv" data-d="1" title="{{t:ui.move_down}}" aria-label="{{t:ui.move_down}}"><i class="ti ti-chevron-down" aria-hidden="true"></i></button>
       </div>
       {{/ITEMS}}
     </div>
     <div style="display:flex;align-items:center;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-reset" style="border:none;background:transparent;color:var(--text-secondary);padding-left:0" disabled>Zurücksetzen</button>
+      <button type="button" class="gw-btn" id="gw-reset" style="border:none;background:transparent;color:var(--text-secondary);padding-left:0" disabled>{{t:ui.reset}}</button>
       <span style="flex:1"></span>
-      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">Abbrechen</button>
-      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)" disabled>Reihenfolge speichern</button>
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">{{t:ui.cancel}}</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)" disabled>{{t:ui.save_order}}</button>
     </div>
   </div>
 </div>
@@ -104,13 +104,13 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   document.getElementById('gw-save').addEventListener('click',function(){
     var o=order(),nums=rows().map(function(r){return r.dataset.num;}).join(', ');
     lock();
-    if(kind==='section')gwSend('Abschnittsreihenfolge in Kapitel '+num+' speichern: '+nums,'section.reorder',{chapter_id:ch,order:o});
-    else gwSend('Kapitelreihenfolge speichern: '+nums,'chapter.reorder',{order:o});
+    if(kind==='section')gwSend(tr("ui.section_order_in_chapter")+num+tr("ui.action_fragment_3")+nums,'section.reorder',{chapter_id:ch,order:o});
+    else gwSend(tr("ui.save_chapter_order")+nums,'chapter.reorder',{order:o});
   });
   document.getElementById('gw-cancel').addEventListener('click',function(){
     lock();
-    if(kind==='section')gwSend('Abschnittsreihenfolge in Kapitel '+num+' abgebrochen','form.cancel',{form:'section.reorder',chapter_id:ch});
-    else gwSend('Kapitelreihenfolge abgebrochen','form.cancel',{form:'chapter.reorder'});
+    if(kind==='section')gwSend(tr("ui.section_order_in_chapter")+num+tr("ui.action_fragment_2"),'form.cancel',{form:'section.reorder',chapter_id:ch});
+    else gwSend(tr("ui.chapter_reordering_cancelled"),'form.cancel',{form:'chapter.reorder'});
   });
   refresh();
 })();
