@@ -926,5 +926,8 @@
   "ui.series_action_0": "aus der Serie übernehmen",
   "ui.series_action_1": "in die Serie übernehmen",
   "ui.series_action_2": "Kopie nur für dieses Buch anlegen",
-  "ui.series_action_3": "An die Serie angleichen"
+  "ui.series_action_3": "An die Serie angleichen",
+  "ui.computer": "Rechner",
+  "ui.editions": "Auflagen",
+  "ui.open_edition_title": "{edition} von „{title}“ öffnen"
 }

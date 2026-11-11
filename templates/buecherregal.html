@@ -18,6 +18,11 @@
     Klick auf die Karte bzw. „Öffnen“ zeigt die Projektübersicht des Buchs,
     bei „im Aufbau“ geht dort der Einstiegsdialog weiter
   - ohne Bücher: kurzer Hinweis und nur „Neues Buch“
+  - Offene Sitzungssicherungen (#237, GhostWriter): direkt unter dem Kopf Anzahl und Liste,
+    neueste zuerst: Sitzung, Zielbuch, Sicherungszeitpunkt, Rechner, System, Client, Status
+    bzw. Link zum Änderungspaket; ohne offene Sicherung entfällt die Rubrik
+  - Auflagen (#235, GhostWriter): unter der Karte eines Buchs je Auflage ein Knopf
+    „Auflage N“ mit Datum; Klick öffnet die Auflage (library.edition.open)
 
   Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert):
   - {{LIBRARY_NAME}}          owner/repo
@@ -43,9 +48,16 @@
   - {{BOOK_VOLUME_TEXT}}      z. B. "Band 2" bzw. leer
   Wiederholung zwischen {{#EMPTY_SERIES}} und {{/EMPTY_SERIES}} (Serien noch ohne Band):
   - {{S_ID}}, {{S_TITLE}}, {{S_KEY}}
+  - {{SESSION_COUNT_TEXT}}    z. B. "Offene Sitzungssicherungen (2)"; leer = Rubrik entfällt
+  Wiederholung zwischen {{#SESSIONS}} und {{/SESSIONS}} (offene Sitzungssicherungen):
+  - {{SS_SESSION}}, {{SS_TITLE}}, {{SS_BOOK}}, {{SS_TIME_TEXT}}, {{SS_DEVICE_TEXT}}, {{SS_OS_TEXT}},
+    {{SS_CLIENT_TEXT}}, {{SS_STATUS}} (open | pr_pending | unknown), {{SS_STATUS_TEXT}}, {{SS_PR}} (Link oder leer)
+  Wiederholung zwischen {{#EDITIONS}} und {{/EDITIONS}} (Auflagen, flach; das Skript ordnet sie
+  über {{E_BOOK_BRANCH}} der Karte des Buchs zu):
+  - {{E_BOOK_BRANCH}}, {{E_NUMBER}}, {{E_TEXT}} ("Auflage 2"), {{E_DATE_TEXT}}, {{E_TAG}}
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert`, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: library.book.open {branch}, library.book.create.open, view.data, view.series {series_id}, series.create.open
+  Aktionen: library.book.open {branch}, library.edition.open {branch, edition}, library.book.create.open, view.data, view.series {series_id}, series.create.open
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -74,6 +86,21 @@
 .gw-sh.plain{cursor:default}
 .gw-book .vol{font-size:12px;color:var(--text-muted)}
 .gw-book .vol:empty{display:none}
+.gw-card{display:flex;flex-direction:column;gap:4px}
+.gw-card .gw-book{flex:1}
+.gw-eds{display:flex;flex-wrap:wrap;gap:4px;padding-left:12px}
+.gw-eds:empty{display:none}
+.gw-ed{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:12px;color:var(--text-secondary);background:var(--surface-2);border:0.5px solid var(--border);border-radius:999px;padding:2px 10px;cursor:pointer}
+.gw-ed:hover{color:var(--text-primary);border-color:var(--border-strong)}
+.gw-ed .d{color:var(--text-muted)}
+.gw-ed .d:empty{display:none}
+.gw-sess{display:flex;flex-direction:column;gap:6px;padding:var(--pad-md);border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2)}
+.gw-sess-h{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500}
+.gw-sess-i{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;font-size:13px;line-height:1.45}
+.gw-sess-i .t{font-weight:500}
+.gw-sess-i .m{color:var(--text-muted)}
+.gw-sess-i .s{color:var(--text-accent);text-decoration:none}
+.gw-sess-i[data-status="pr_pending"] .s,.gw-sess-i[data-status="unknown"] .s{color:var(--text-secondary)}
 .gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
 </style>
 <div style="padding:1rem 0">
@@ -91,10 +118,22 @@
       <button type="button" class="gw-btn" id="gw-newbook" style="border:none;background:var(--text-primary);color:var(--surface-1);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-plus" aria-hidden="true"></i>{{t:ui.new_book}}</button>
     </div>
 
+    <div data-gw-if="SESSIONS" class="gw-sess" aria-label="{{SESSION_COUNT_TEXT}}">
+      <div class="gw-sess-h"><i class="ti ti-cloud-upload" aria-hidden="true"></i><span>{{SESSION_COUNT_TEXT}}</span></div>
+      {{#SESSIONS}}
+      <div class="gw-sess-i" data-status="{{SS_STATUS}}">
+        <span class="t">{{SS_TITLE}}</span><span class="m">→ {{SS_BOOK}}</span>
+        <span class="m">{{SS_TIME_TEXT}} · {{t:ui.computer}}: {{SS_DEVICE_TEXT}} · {{SS_OS_TEXT}} · {{SS_CLIENT_TEXT}}</span>
+        <a class="s" href="{{SS_PR}}" target="_blank" rel="noopener">{{SS_STATUS_TEXT}}</a>
+      </div>
+      {{/SESSIONS}}
+    </div>
+
     <div data-gw-if="EMPTY" style="font-size:14px;color:var(--text-secondary);line-height:1.6;padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">{{t:ui.there_are_no_books_yet_choose_new_book_to_start_the_setup_dialogue_will_guide_you_through_the_outline}}</div>
 
     <div class="gw-shelf">
       {{#BOOKS}}
+      <div class="gw-card" data-branch="{{BOOK_BRANCH}}">
       <button type="button" class="gw-book" data-branch="{{BOOK_BRANCH}}" data-title="{{BOOK_TITLE_SHORT}}" data-state="{{BOOK_STATE}}" data-series="{{BOOK_SERIES}}" data-series-title="{{BOOK_SERIES_TITLE}}">
         <span class="chip">{{BOOK_TITLE_SHORT}}</span>
         <span class="vol">{{BOOK_VOLUME_TEXT}}</span>
@@ -107,7 +146,14 @@
         <span class="st">{{BOOK_UPDATED_TEXT}} · <code style="font-size:11px">{{BOOK_BRANCH}}</code></span>
         <span class="open"><span class="ol">{{t:ui.open}}</span><i class="ti ti-arrow-right" aria-hidden="true"></i></span>
       </button>
+      <div class="gw-eds" aria-label="{{t:ui.editions}}"></div>
+      </div>
       {{/BOOKS}}
+    </div>
+    <div class="gw-eds-src" hidden>
+      {{#EDITIONS}}
+      <button type="button" class="gw-ed" data-book="{{E_BOOK_BRANCH}}" data-edition="{{E_NUMBER}}" data-text="{{E_TEXT}}" title="{{E_TAG}}"><i class="ti ti-book-2" aria-hidden="true"></i><span>{{E_TEXT}}</span><span class="d">{{E_DATE_TEXT}}</span></button>
+      {{/EDITIONS}}
     </div>
 
     <div data-gw-if="EMPTY_SERIES" style="display:flex;flex-wrap:wrap;gap:var(--gap-sm);font-size:13px;color:var(--text-muted)">{{t:ui.series_without_volumes}}
@@ -134,8 +180,18 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     h.innerHTML=g?'<i class="ti ti-stack-2" aria-hidden="true"></i><span></span> ›':'<span></span>';
     h.querySelector('span').textContent=g?b.dataset.seriesTitle:tr("ui.standalone_books");
     if(g)h.addEventListener('click',function(){openSeries(g,b.dataset.seriesTitle);});else h.tabIndex=-1;
-    shelf.insertBefore(h,b);
+    shelf.insertBefore(h,b.parentNode&&b.parentNode.classList&&b.parentNode.classList.contains('gw-card')?b.parentNode:b);
   });
+  // Auflagen unter die Karte ihres Buchs (#235); ohne passende Karte bleiben sie verborgen
+  var cards={};r.querySelectorAll('.gw-card').forEach(function(c){cards[c.dataset.branch]=c;});
+  r.querySelectorAll('.gw-ed').forEach(function(e){
+    var c=cards[e.dataset.book];if(!c)return;
+    c.querySelector('.gw-eds').appendChild(e);
+    var title=c.querySelector('.gw-book').dataset.title;
+    e.addEventListener('click',function(){gwSend(tr("ui.open_edition_title",{title:title,edition:e.dataset.text}),'library.edition.open',{branch:e.dataset.book,edition:Number(e.dataset.edition)});});
+  });
+  // Ohne Link zum Änderungspaket kein leerer Verweis
+  r.querySelectorAll('.gw-sess-i a.s').forEach(function(a){if(!a.getAttribute('href'))a.removeAttribute('href');});
   r.querySelectorAll('.gw-es').forEach(function(x){x.addEventListener('click',function(){openSeries(x.dataset.id,x.textContent.replace(' ›',''));});});
   document.getElementById('gw-newseries').addEventListener('click',function(){gwSend(tr("ui.create_a_new_series"),'series.create.open',{});});
   r.querySelectorAll('.gw-book').forEach(function(b){

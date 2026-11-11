@@ -926,5 +926,8 @@
   "ui.series_action_0": "apply from series",
   "ui.series_action_1": "apply to series",
   "ui.series_action_2": "create a copy for this book only",
-  "ui.series_action_3": "match the series version"
+  "ui.series_action_3": "match the series version",
+  "ui.computer": "Computer",
+  "ui.editions": "Editions",
+  "ui.open_edition_title": "Open {edition} of “{title}”"
 }
