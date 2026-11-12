@@ -123,7 +123,7 @@
   "native.project_cost_hint": "Additional AI API costs through the GhostWriter backend",
   "native.estimated": "includes estimated costs",
   "native.analysis": "Background analysis “{kind}” available ({number}) · {date}",
-  "native.import_notice": "The original import file {name} will be removed on {date}.",
+  "native.import_notice": "The original import file {name} is kept, even after the earlier retention period ({date}). It is only removed on your explicit request.",
   "native.project_meta": "**{edition}** · Author: {author} · AI API costs: **{cost}**",
   "native.project_table": "| # | Chapter | Costs | Status | |",
   "native.chapter_table": "| # | Section | Markers | Costs | Status |",

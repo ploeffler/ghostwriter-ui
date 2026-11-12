@@ -123,7 +123,7 @@
   "native.project_cost_hint": "Zusätzliche KI-API-Kosten über das GhostWriter-Backend",
   "native.estimated": "einschließlich geschätzter Kosten",
   "native.analysis": "Hintergrundanalyse „{kind}“ verfügbar ({number}) · {date}",
-  "native.import_notice": "Das Import-Original {name} wird am {date} entfernt.",
+  "native.import_notice": "Das Import-Original {name} bleibt erhalten, auch nach der früheren Frist ({date}). Entfernt wird es nur auf ausdrücklichen Auftrag.",
   "native.project_meta": "**{edition}** · Autor: {author} · KI-API-Kosten: **{cost}**",
   "native.project_table": "| # | Kapitel | Kosten | Status | |",
   "native.chapter_table": "| # | Abschnitt | Marker | Kosten | Status |",
