@@ -37,12 +37,12 @@ const before=JSON.stringify(input);
 const english=GW.renderHtml('projektuebersicht',input);
 assert.match(english,/Edit project details/);
 assert.match(english,/Add a new chapter/);
-assert.match(english,/approved/);
+assert.match(english,/finalized/);  // Status approved heißt sichtbar „finalized“ (#292)
 assert.match(english,/Beschreibung \{\{t:ui.description\}\} &lt;img&gt;/);
 assert.equal(JSON.stringify(input),before);
 const german=GW.renderHtml('projektuebersicht',input,'de');
 assert.match(german,/Projektdaten bearbeiten/);
-assert.match(german,/freigegeben/);
+assert.match(german,/abgeschlossen/);
 assert.equal(GW.renderHtml('projektuebersicht',input,'fr'),german);
 assert.equal(GW.renderHtml('projektuebersicht',input,'en-US'),english);
 assert.equal(GW.supports('ki-dienste','en'),true);

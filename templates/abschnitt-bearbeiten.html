@@ -13,8 +13,8 @@
   - Ziel des Abschnitts und Kurzbeschreibung nebeneinander
   - Offene Marker aus dem Manuskript
   - Manuskript als Markdown
-  - Faktencheck und Freigaben nebeneinander; Freigaben nur als Anzeige mit
-    Knopf „Freigeben“ bzw. „Zurücknehmen“, der die Bestätigung öffnet
+  - Faktencheck und „Schreiben und Abschluss“ nebeneinander, nur als Anzeige mit
+    Knopf („Erlauben“/„Sperren“ bzw. „Abschließen“/„Wieder öffnen“, #292), der die Bestätigung öffnet
   - Abschnittssteuerung (Aktionspanel) in kompakter Form
   - Verwerfen und Speichern
 
@@ -234,14 +234,14 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
 
   $('gw-fc').value=d.factCheck||tr("ui.optional");
   document.querySelectorAll('#gw-chars input').forEach(function(c){c.checked=c.dataset.on==='1';});
-  var apr={writing:{on:d.approvalWriting==='true',yes:tr("ui.writing_permitted"),no:tr("ui.writing_not_permitted"),grant:tr("ui.writing_permission_for"),revoke:tr("ui.withdraw_writing_permission_for")},
-    section:{on:d.approvalSection==='true',yes:tr("ui.section_approved"),no:tr("ui.section_not_approved"),grant:tr("ui.approval_for"),revoke:tr("ui.withdraw_approval_for")}};
+  var apr={writing:{on:d.approvalWriting==='true',yes:tr("ui.writing_permitted"),no:tr("ui.writing_not_permitted"),grant:tr("ui.writing_permission_for"),revoke:tr("ui.withdraw_writing_permission_for"),bOn:tr("ui.lock"),bOff:tr("ui.allow"),iOn:'ti-pencil',iOff:'ti-pencil-off'},
+    section:{on:d.approvalSection==='true',yes:tr("ui.section_approved"),no:tr("ui.section_not_approved"),grant:tr("ui.approval_for"),revoke:tr("ui.withdraw_approval_for"),bOn:tr("ui.reopen"),bOff:tr("ui.finalize"),iOn:'ti-lock',iOff:'ti-lock-open'}};
   wrap.querySelectorAll('.gw-apr').forEach(function(row){
     var a=apr[row.dataset.kind],b=row.querySelector('button');
     row.classList.toggle('on',a.on);
-    row.querySelector('i').className='ti '+(a.on?'ti-circle-check':'ti-circle-dashed');
+    row.querySelector('i').className='ti '+(a.on?a.iOn:a.iOff);
     row.querySelector('span').textContent=a.on?a.yes:a.no;
-    b.textContent=a.on?tr("ui.withdraw"):tr("ui.approve");
+    b.textContent=a.on?a.bOn:a.bOff;
     b.addEventListener('click',function(){
       var data={kind:row.dataset.kind,section_id:d.sectionId};if(a.on)data.revoke=true;
       gwSend((a.on?a.revoke:a.grant)+ref+tr("ui.confirm"),'approval.open',data);

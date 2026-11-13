@@ -24,9 +24,9 @@
   - {{CHAPTER_ID}}            stabile Kapitel-ID
   - {{CHAPTER_NUMBER}}        sichtbare Kapitelnummer
   - {{CHAPTER_TITLE}}         Kapiteltitel
-  - {{CHAPTER_APPROVABLE}}    nicht leer, wenn das Kapitel freigegeben werden kann
+  - {{CHAPTER_APPROVABLE}}    nicht leer, wenn das Kapitel abgeschlossen werden kann
                              (Status ready_for_approval, alle Abschnitte approved);
-                             sonst leer, dann fehlt der Knopf „Kapitel freigeben“
+                             sonst leer, dann fehlt der Knopf „Kapitel abschließen“ (#292)
   - {{CHAPTER_REVISION_READY}} nicht leer, wenn alle Abschnitte Text im Status
                              ab „Schreiben“ enthalten; sonst fehlt „Kapitel überarbeiten“
   - {{CHAPTER_SUBTITLE}}      Untertitel; leer = Zeile entfällt
@@ -100,7 +100,7 @@
           <button type="button" class="gw-sq" data-p="{{t:ui.change_section_order_in_chapter}}" data-a="section.reorder.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="{{t:ui.change_section_order}}" aria-label="{{t:ui.change_section_order}}"><i class="ti ti-arrows-sort" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="{{t:ui.suggest_characters_from_the_text_of_chapter}}" data-a="character.suggest" data-args='{"scope":"{{CHAPTER_NUMBER}}"}' title="{{t:ui.suggest_characters_from_the_text_of_chapter}}" aria-label="{{t:ui.suggest_characters_from_the_text_of_chapter}}"><i class="ti ti-user-search" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-gw-if="CHAPTER_REVISION_READY" data-p="{{t:ui.revise_chapter}}" data-a="chapter.revision.start" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="{{t:ui.revise_chapter_2}}" aria-label="{{t:ui.revise_chapter_2}}"><i class="ti ti-file-pencil" aria-hidden="true"></i></button>
-          <button type="button" class="gw-sq" data-gw-if="CHAPTER_APPROVABLE" data-p="{{t:ui.confirm_approval_for_chapter}}" data-a="approval.open" data-args='{"kind":"chapter","chapter_id":"{{CHAPTER_ID}}"}' title="{{t:ui.approve_chapter}}" aria-label="{{t:ui.approve_chapter}}"><i class="ti ti-circle-check" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-gw-if="CHAPTER_APPROVABLE" data-p="{{t:ui.confirm_approval_for_chapter}}" data-a="approval.open" data-args='{"kind":"chapter","chapter_id":"{{CHAPTER_ID}}"}' title="{{t:ui.approve_chapter}}" aria-label="{{t:ui.approve_chapter}}"><i class="ti ti-lock" aria-hidden="true"></i></button>
         </div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--gap-md);flex-wrap:wrap;margin-top:8px">
