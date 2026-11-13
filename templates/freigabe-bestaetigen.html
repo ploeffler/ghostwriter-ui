@@ -1,14 +1,15 @@
 <!--
   Vorlage: Freigabe bestätigen (Bestätigung, siehe templates/ui/README.md)
 
-  Inline-Widget für den Chat. Wird über die Knöpfe „Freigeben“ bzw.
-  „Zurücknehmen“ im Abschnittsformular oder „Kapitel freigeben“ in der
-  Kapitelansicht geöffnet (approval.open). Eine Freigabe entsteht nur
-  hier, nie beim Speichern eines Formulars (GhostWriter #10). Regeln:
+  Inline-Widget für den Chat. Wird über die Knöpfe „Erlauben“/„Sperren“
+  (Schreiben) bzw. „Abschließen“/„Wieder öffnen“ im Abschnittsformular oder
+  „Kapitel abschließen“ in der Kapitelansicht geöffnet (approval.open). Ein
+  Abschluss (technisch: Freigabe, approvals.yml) entsteht nur hier, nie beim
+  Speichern eines Formulars (GhostWriter #10, Begriffe #292). Regeln:
   START.md, „Freigaben“.
 
   Aufbau:
-  - Kopf: Symbol, Überschrift (z. B. „Abschnitt freigeben“)
+  - Kopf: Symbol, Überschrift (z. B. „Abschnitt abschließen“)
   - Was freigegeben wird und welcher Stand (kurzer Commit)
   - Prüfpunkte: erfüllt, Hinweis oder Hindernis
   - Satz, was die Bestätigung bewirkt
@@ -18,8 +19,8 @@
   Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert):
   - {{APPROVAL_KIND}}      writing | section | chapter | matter (Teil von Vor- oder Nachspann, GhostWriter #57) | image (Bild, #54)
   - {{APPROVAL_REVOKE}}    „true“ beim Zurücknehmen, sonst leer
-  - {{APPROVAL_TITLE}}     z. B. „Abschnitt freigeben“, „Schreibfreigabe zurücknehmen“
-  - {{APPROVAL_BUTTON}}    Beschriftung des Bestätigen-Knopfs, z. B. „Freigeben“
+  - {{APPROVAL_TITLE}}     z. B. „Abschnitt abschließen“, „Schreiben sperren“
+  - {{APPROVAL_BUTTON}}    Beschriftung des Bestätigen-Knopfs, z. B. „Abschließen“
   - {{APPROVAL_EFFECT}}    Satz, was passiert, z. B. „Status wird ‚freigegeben‘ …“
   - {{TARGET_ID}}          section_id bzw. chapter_id; bei Vor- und Nachspann die mat-…-ID (wird als section_id gesendet)
   - {{TARGET_LABEL}}       z. B. „Abschnitt 8.2 „Warum ausgerechnet …““
@@ -83,7 +84,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var icons={ok:'ti-circle-check',warn:'ti-alert-triangle',block:'ti-circle-x'};
   var blocked=false;
   f.querySelectorAll('.gw-ck').forEach(function(c){c.querySelector('i').classList.add(icons[c.dataset.state]||'ti-point');if(c.dataset.state==='block')blocked=true;});
-  if(d.revoke==='true')$('gw-icon').className='ti ti-arrow-back-up';
+  $('gw-icon').className='ti '+(d.kind==='writing'?(d.revoke==='true'?'ti-pencil-off':'ti-pencil'):d.kind==='image'?(d.revoke==='true'?'ti-arrow-back-up':'ti-circle-check'):(d.revoke==='true'?'ti-lock-open':'ti-lock'));
   if(blocked){$('gw-save').disabled=true;$('gw-blocked').hidden=false;}
   function lock(){f.querySelectorAll('button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
   $('gw-save').addEventListener('click',function(){

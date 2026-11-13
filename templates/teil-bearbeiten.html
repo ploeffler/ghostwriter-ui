@@ -212,14 +212,14 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   box.querySelectorAll('.gw-sq[data-p]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,{});});});
   var fs=document.getElementById('gw-figsug');if(fs)fs.addEventListener('click',function(){gwSend(tr("ui.suggest_characters_from_the_text_2")+d.title+')','character.suggest',{scope:fs.dataset.scope});});
 
-  var apr={writing:{on:d.aw==='true',yes:tr("ui.writing_permitted"),no:tr("ui.writing_not_permitted"),grant:tr("ui.writing_permission_for"),revoke:tr("ui.withdraw_writing_permission_for")},
-    matter:{on:d.as==='true',yes:d.title+tr("ui.approved"),no:d.title+tr("ui.not_approved"),grant:tr("ui.approval_for"),revoke:tr("ui.withdraw_approval_for")}};
+  var apr={writing:{on:d.aw==='true',yes:tr("ui.writing_permitted"),no:tr("ui.writing_not_permitted"),grant:tr("ui.writing_permission_for"),revoke:tr("ui.withdraw_writing_permission_for"),bOn:tr("ui.lock"),bOff:tr("ui.allow"),iOn:'ti-pencil',iOff:'ti-pencil-off'},
+    matter:{on:d.as==='true',yes:d.title+tr("ui.approved"),no:d.title+tr("ui.not_approved"),grant:tr("ui.approval_for"),revoke:tr("ui.withdraw_approval_for"),bOn:tr("ui.reopen"),bOff:tr("ui.finalize"),iOn:'ti-lock',iOff:'ti-lock-open'}};
   box.querySelectorAll('.gw-apr').forEach(function(row){
     var a=apr[row.dataset.kind],b=row.querySelector('button');
     row.classList.toggle('on',a.on);
-    row.querySelector('i').className='ti '+(a.on?'ti-circle-check':'ti-circle-dashed');
+    row.querySelector('i').className='ti '+(a.on?a.iOn:a.iOff);
     row.querySelector('span').textContent=a.on?a.yes:a.no;
-    b.textContent=a.on?tr("ui.withdraw"):tr("ui.approve");
+    b.textContent=a.on?a.bOn:a.bOff;
     b.addEventListener('click',function(){
       var data={kind:row.dataset.kind,section_id:d.id};if(a.on)data.revoke=true;
       gwSend((a.on?a.revoke:a.grant)+d.title+tr("ui.confirm"),'approval.open',data);
