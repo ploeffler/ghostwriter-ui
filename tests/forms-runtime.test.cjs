@@ -69,6 +69,12 @@ const pdBadTrans=mount('projektdaten-bearbeiten',{'gw-title':'Titel','gw-trans':
 pdBadTrans.node('gw-save').handlers.click();
 assert.equal(pdBadTrans.sent.length,0);
 assert.equal(pdBadTrans.node('gw-trans-err').hidden,false);
+const pdTransRegion=mount('projektdaten-bearbeiten',{'gw-title':'Titel','gw-trans':'en-gb'});
+pdTransRegion.node('gw-save').handlers.click();
+assert.equal(pdTransRegion.sent.length,0);
+const pdTransOk=mount('projektdaten-bearbeiten',{'gw-title':'Titel','gw-trans':'en-GB'});
+pdTransOk.node('gw-save').handlers.click();
+assert.deepEqual(payload(pdTransOk.sent[0]).translations_planned,['en-GB']);
 const pdEmpty=mount('projektdaten-bearbeiten',{'gw-title':'Titel'});
 pdEmpty.node('gw-save').handlers.click();
 assert.deepEqual(payload(pdEmpty.sent[0]).translations_planned,[]);

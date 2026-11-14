@@ -119,14 +119,14 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var $=function(id){return document.getElementById(id);};
   var t=$('gw-title'),e=$('gw-title-err');
   t.addEventListener('input',function(){e.hidden=true;});
-  var CODE=/^[a-z]{2,3}(-[A-Za-z]{2,8})?$/;
+  var CODE=/^[a-z]{2,3}(-[A-Za-z]{2,8})?$/,TCODE=/^[a-z]{2,3}(-[A-Z]{2})?$/;   // TCODE wie project.translations_planned im Schema
   function lock(){f.querySelectorAll('input,textarea,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
   $('gw-save').addEventListener('click',function(){
     if(!t.value.trim()){e.hidden=false;t.focus();return;}
     var g=function(id){return $(id).value.trim();};
     var lang=g('gw-lang'),trans=g('gw-trans').split(/[\s,;]+/).filter(Boolean);
     $('gw-lang-err').hidden=!lang||CODE.test(lang);
-    $('gw-trans-err').hidden=trans.every(function(x){return CODE.test(x);});
+    $('gw-trans-err').hidden=trans.every(function(x){return TCODE.test(x);});
     if(!$('gw-lang-err').hidden){$('gw-lang').focus();return;}
     if(!$('gw-trans-err').hidden){$('gw-trans').focus();return;}
     var d={title:g('gw-title'),subtitle:g('gw-subtitle'),title_short:g('gw-short'),author:g('gw-author'),description_short:g('gw-dshort'),description:g('gw-desc'),
