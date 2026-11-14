@@ -32,7 +32,7 @@ Der Assistent gibt statt der fertigen Ansicht nur eine Ladezeile und die Daten a
 
 Deutsch bleibt rückwärtskompatibel die Vorgabe. Die explizite vierte Angabe von `GW.render` hat Vorrang vor `data.LANGUAGE`; unbekannte Sprachen fallen auf Deutsch zurück, Varianten wie `en-GB` auf `en`.
 
-Alle 38 Vorlagen bieten deutsche und englische feste Texte einschließlich Tooltips, barrierefreier Attribute, Formularkontrollen und Skriptmeldungen. Pflichtfeld-, Kollisions- und Freigabeprüfungen bleiben erhalten; Aktionsnamen, branchbezogene Namen, IDs, Faktencheck-Werte und numerische Positionen werden nicht übersetzt. `GW.supports(name, language)` prüft die Verfügbarkeit. Die reinen Textansichten und erzeugte Beschriftungen aus `render_view.py` werden im Programm-Repository separat migriert.
+Alle 39 Vorlagen bieten deutsche und englische feste Texte einschließlich Tooltips, barrierefreier Attribute, Formularkontrollen und Skriptmeldungen. Pflichtfeld-, Kollisions- und Freigabeprüfungen bleiben erhalten; Aktionsnamen, branchbezogene Namen, IDs, Faktencheck-Werte und numerische Positionen werden nicht übersetzt. `GW.supports(name, language)` prüft die Verfügbarkeit. Die reinen Textansichten und erzeugte Beschriftungen aus `render_view.py` werden im Programm-Repository separat migriert.
 
 ```js
 GW.render('projektuebersicht', { LANGUAGE: 'en', PROJECT_TITLE: 'Mein deutsches Buch', CHAPTERS: [] });
