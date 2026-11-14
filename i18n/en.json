@@ -933,5 +933,18 @@
   "ui.allow": "Allow",
   "ui.lock": "Lock",
   "ui.finalize": "Finalize",
-  "ui.reopen": "Reopen"
+  "ui.reopen": "Reopen",
+  "ui.book_details": "Book details",
+  "ui.book_language": "Book language",
+  "ui.language_code_hint": "language code, e.g. en or en-GB",
+  "ui.please_enter_a_language_code": "Please enter a language code such as en or en-GB.",
+  "ui.book_type": "Book type",
+  "ui.book_type_nonfiction": "Non-fiction",
+  "ui.book_type_guide": "Guide",
+  "ui.book_type_novel": "Novel",
+  "ui.book_type_children": "Children's book",
+  "ui.target_audience": "Target audience",
+  "ui.planned_translations": "Planned translations",
+  "ui.language_codes_comma_hint": "language codes, comma-separated; blank = none",
+  "ui.please_enter_language_codes": "Please enter language codes such as de or fr, separated by commas."
 }

@@ -933,5 +933,18 @@
   "ui.allow": "Erlauben",
   "ui.lock": "Sperren",
   "ui.finalize": "Abschließen",
-  "ui.reopen": "Wieder öffnen"
+  "ui.reopen": "Wieder öffnen",
+  "ui.book_details": "Buchangaben",
+  "ui.book_language": "Sprache des Buchs",
+  "ui.language_code_hint": "Sprachcode, z. B. de oder de-AT",
+  "ui.please_enter_a_language_code": "Bitte einen Sprachcode wie de oder de-AT eingeben.",
+  "ui.book_type": "Buchtyp",
+  "ui.book_type_nonfiction": "Sachbuch",
+  "ui.book_type_guide": "Ratgeber",
+  "ui.book_type_novel": "Roman",
+  "ui.book_type_children": "Kinderbuch",
+  "ui.target_audience": "Zielgruppe",
+  "ui.planned_translations": "Geplante Übersetzungen",
+  "ui.language_codes_comma_hint": "Sprachcodes, mit Komma getrennt; leer = keine",
+  "ui.please_enter_language_codes": "Bitte Sprachcodes wie en oder fr, mit Komma getrennt, eingeben."
 }
