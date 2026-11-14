@@ -1,0 +1,148 @@
+<!--
+  Vorlage: Analyse-Einstellungen (Formular, GhostWriter #299)
+
+  Inline-Widget für den Chat. Wird über den Befehl „Analyse-Einstellungen“
+  oder die Zeile in den Projekteinstellungen geöffnet (Aktion
+  project.analysis.open). Stellt die Analysen im Hintergrund ein
+  (ghostwriter.yml → analysis).
+
+  Aufbau:
+  - Kopf: Diagramm-Symbol, „Analyse-Einstellungen“
+  - Anbieter (automatisch, Anthropic, OpenAI), Modell je Abschnitt, Modell fürs Zusammenführen
+  - Preise je 1 Mio. Tokens (Eingabe, Ausgabe; leer = keine Kostenschätzung), gleichzeitige Aufrufe
+  - Sprachprüfung (LanguageTool): Sprachvariante, eigene Wörter, abgeschaltete Regeln (je Zeile eins)
+  - Hinweis: API-Schlüssel gehören in GitHub-Secrets, nie in dieses Formular
+  - Abbrechen und Speichern
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{ANALYSIS_PROVIDER}}        anthropic | openai | leer (= automatisch: erster Anbieter mit Schlüssel)
+  - {{ANALYSIS_MODEL}}, {{ANALYSIS_MERGE_MODEL}}   gesetzte Modelle, leer = Vorgabe des Anbieters
+  - {{DEFAULT_MODEL_ANTHROPIC}}, {{DEFAULT_MERGE_ANTHROPIC}}, {{DEFAULT_MODEL_OPENAI}}, {{DEFAULT_MERGE_OPENAI}}
+                                 Vorgaben der Anbieter (als Platzhaltertext)
+  - {{PRICE_INPUT}}, {{PRICE_OUTPUT}}   Zahlen, leer = keine Preise
+  - {{CURRENCY}}                 Projektwährung, z. B. EUR
+  - {{PARALLEL}}                 gleichzeitige Aufrufe, leer = Vorgabe 4
+  - {{LT_LANGUAGE}}              Sprachvariante, leer = aus der Buchsprache
+  - {{LT_LANGUAGE_DEFAULT}}      daraus abgeleitete Vorgabe, z. B. de-DE
+  - {{LT_WORDS}}, {{LT_RULES}}   je Zeile ein Eintrag
+
+  Verhalten:
+  - Speichern prüft Preise (Zahl ≥ 0 oder leer, Komma erlaubt), gleichzeitige
+    Aufrufe (1–16 oder leer) und die Sprachvariante (z. B. de-AT) und sendet
+    project.analysis.update. Doppelte Wörter und Regeln entfallen.
+  - Abbrechen meldet nur den Abbruch. Danach ist das Formular gesperrt.
+
+  Nachrichten: Klartextzeile plus Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: project.analysis.update {provider, model, merge_model, price_input_per_mtok, price_output_per_mtok,
+            parallel, languagetool {language, words, disabled_rules}}, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">{{t:ui.analysis_settings_a11y}}</h2>
+<style>
+.gw-f label{display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
+.gw-f .hint{font-size:12px;color:var(--text-muted);font-weight:400}
+.gw-f input,.gw-f select,.gw-f textarea{width:100%;box-sizing:border-box;padding:9px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px;line-height:1.5}
+.gw-f input:focus,.gw-f select:focus,.gw-f textarea:focus{outline:none;border-color:var(--border-accent)}
+.gw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--gap-md);align-items:start}
+.gw-sub{font-size:13px;font-weight:500;color:var(--text-secondary);border-top:0.5px solid var(--border);padding-top:var(--pad-md)}
+.gw-err{font-size:13px;color:var(--text-danger);margin-top:4px}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+</style>
+<div style="padding:1rem 0">
+  <form class="gw-f" id="gw-analyse" novalidate data-provider="{{ANALYSIS_PROVIDER}}"
+    data-ma="{{DEFAULT_MODEL_ANTHROPIC}}" data-mma="{{DEFAULT_MERGE_ANTHROPIC}}" data-mo="{{DEFAULT_MODEL_OPENAI}}" data-mmo="{{DEFAULT_MERGE_OPENAI}}"
+    style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="display:flex;align-items:center;gap:var(--gap-sm)">
+      <i class="ti ti-chart-dots" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
+      <span style="font-size:16px;font-weight:500">{{t:ui.analysis_settings}}</span>
+    </div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.5">{{t:ui.analysis_settings_intro}}</div>
+    <div class="gw-grid">
+      <div>
+        <label for="gw-provider">{{t:ui.provider}}</label>
+        <select id="gw-provider">
+          <option value="">{{t:ui.provider_automatic}}</option>
+          <option value="anthropic">Anthropic</option>
+          <option value="openai">OpenAI</option>
+        </select>
+      </div>
+      <div>
+        <label for="gw-model">{{t:ui.model_per_section}}</label>
+        <input id="gw-model" value="{{ANALYSIS_MODEL}}">
+      </div>
+      <div>
+        <label for="gw-merge">{{t:ui.model_for_merging}}</label>
+        <input id="gw-merge" value="{{ANALYSIS_MERGE_MODEL}}">
+      </div>
+    </div>
+    <div class="gw-grid">
+      <div>
+        <label for="gw-pin">{{t:ui.price_input_per_mtok}} <span class="hint">{{CURRENCY}}</span></label>
+        <input id="gw-pin" inputmode="decimal" value="{{PRICE_INPUT}}" placeholder="{{t:ui.blank_no_cost_estimate}}">
+        <div class="gw-err" id="gw-pin-err" hidden>{{t:ui.please_enter_a_number_or_leave_blank}}</div>
+      </div>
+      <div>
+        <label for="gw-pout">{{t:ui.price_output_per_mtok}} <span class="hint">{{CURRENCY}}</span></label>
+        <input id="gw-pout" inputmode="decimal" value="{{PRICE_OUTPUT}}" placeholder="{{t:ui.blank_no_cost_estimate}}">
+        <div class="gw-err" id="gw-pout-err" hidden>{{t:ui.please_enter_a_number_or_leave_blank}}</div>
+      </div>
+      <div>
+        <label for="gw-par">{{t:ui.parallel_calls}} <span class="hint">1–16</span></label>
+        <input id="gw-par" inputmode="numeric" value="{{PARALLEL}}" placeholder="4">
+        <div class="gw-err" id="gw-par-err" hidden>{{t:ui.please_enter_1_to_16}}</div>
+      </div>
+    </div>
+    <div class="gw-sub">{{t:ui.language_check_languagetool}}</div>
+    <div class="gw-grid">
+      <div>
+        <label for="gw-ltlang">{{t:ui.language_variant}}</label>
+        <input id="gw-ltlang" maxlength="12" value="{{LT_LANGUAGE}}" placeholder="{{LT_LANGUAGE_DEFAULT}}">
+        <div class="gw-err" id="gw-ltlang-err" hidden>{{t:ui.please_enter_a_language_variant}}</div>
+      </div>
+    </div>
+    <div class="gw-grid">
+      <div>
+        <label for="gw-words">{{t:ui.own_words}} <span class="hint">{{t:ui.one_per_line_names_added_automatically}}</span></label>
+        <textarea id="gw-words" rows="4">{{LT_WORDS}}</textarea>
+      </div>
+      <div>
+        <label for="gw-rules">{{t:ui.disabled_rules}} <span class="hint">{{t:ui.languagetool_rule_ids_one_per_line}}</span></label>
+        <textarea id="gw-rules" rows="4">{{LT_RULES}}</textarea>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5"><i class="ti ti-key" aria-hidden="true"></i> {{t:ui.api_keys_belong_in_github_secrets}}</div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">{{t:ui.cancel}}</button>
+      <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{t:ui.save}}</button>
+    </div>
+  </form>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var f=document.getElementById('gw-analyse'),ds=f.dataset,$=function(id){return document.getElementById(id);};
+  var prov=$('gw-provider');prov.value=ds.provider||'';
+  function hints(){var o=prov.value==='openai';$('gw-model').placeholder=(o?ds.mo:ds.ma)||'';$('gw-merge').placeholder=(o?ds.mmo:ds.mma)||'';}
+  hints();prov.addEventListener('change',hints);
+  function lock(){f.querySelectorAll('input,select,textarea,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
+  function lines(id){var seen={};return $(id).value.split(/\r?\n/).map(function(x){return x.trim();}).filter(function(x){if(!x||seen[x])return false;seen[x]=true;return true;});}
+  function price(id){var v=$(id).value.trim().replace(',','.');if(!v)return null;var n=Number(v);return isFinite(n)&&n>=0&&/^\d+(\.\d+)?$/.test(v)?n:NaN;}
+  $('gw-save').addEventListener('click',function(){
+    var pin=price('gw-pin'),pout=price('gw-pout'),par=$('gw-par').value.trim(),lt=$('gw-ltlang').value.trim(),ok=true;
+    var parN=par?Number(par):null;
+    var bad={'gw-pin-err':pin!==null&&isNaN(pin),'gw-pout-err':pout!==null&&isNaN(pout),
+             'gw-par-err':par!==''&&!(/^\d+$/.test(par)&&parN>=1&&parN<=16),'gw-ltlang-err':lt!==''&&!/^[a-zA-Z]{2,3}([-_][a-zA-Z]{2,8})?$/.test(lt)};
+    Object.keys(bad).forEach(function(k){$(k).hidden=!bad[k];if(bad[k]&&ok){ok=false;$(k.replace('-err','')).focus();}});
+    if(!ok)return;
+    var d={provider:prov.value,model:$('gw-model').value.trim(),merge_model:$('gw-merge').value.trim(),
+           price_input_per_mtok:pin,price_output_per_mtok:pout,parallel:parN,
+           languagetool:{language:lt,words:lines('gw-words'),disabled_rules:lines('gw-rules')}};
+    lock();
+    gwSend(tr("ui.save_analysis_settings"),'project.analysis.update',d);
+  });
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.analysis_settings_cancelled"),'form.cancel',{form:'project.analysis.update'});});
+})();
+</script>

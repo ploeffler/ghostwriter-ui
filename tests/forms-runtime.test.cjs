@@ -78,6 +78,37 @@ assert.deepEqual(payload(pdTransOk.sent[0]).translations_planned,['en-GB']);
 const pdEmpty=mount('projektdaten-bearbeiten',{'gw-title':'Titel'});
 pdEmpty.node('gw-save').handlers.click();
 assert.deepEqual(payload(pdEmpty.sent[0]).translations_planned,[]);
+// Analyse-Einstellungen (GhostWriter #299)
+const an=mount('analyse-einstellungen',{'gw-model':'mini','gw-pin':'0,25','gw-pout':'2','gw-par':'6','gw-ltlang':'de-AT','gw-words':'Opa Karl\nOpa Karl\n\nHuber','gw-rules':'DE_CASE'});
+assert.match(an.html,/Analysis settings/);
+assert.match(an.html,/GitHub secrets/);
+an.node('gw-provider').value='openai';
+an.node('gw-save').handlers.click();
+const anData=payload(an.sent[0]);
+assert.equal(anData.action,'project.analysis.update');
+assert.equal(anData.provider,'openai');
+assert.equal(anData.model,'mini');
+assert.equal(anData.merge_model,'');
+assert.equal(anData.price_input_per_mtok,0.25);
+assert.equal(anData.price_output_per_mtok,2);
+assert.equal(anData.parallel,6);
+assert.deepEqual(anData.languagetool,{language:'de-AT',words:['Opa Karl','Huber'],disabled_rules:['DE_CASE']});
+assert.equal(anData.expected_head_sha,'b'.repeat(40));
+const anEmpty=mount('analyse-einstellungen');
+anEmpty.node('gw-save').handlers.click();
+const anEmptyData=payload(anEmpty.sent[0]);
+assert.equal(anEmptyData.price_input_per_mtok,null);
+assert.equal(anEmptyData.parallel,null);
+assert.deepEqual(anEmptyData.languagetool.words,[]);
+for(const [field,value] of [['gw-pin','-1'],['gw-pout','zwei'],['gw-par','20'],['gw-par','2.5'],['gw-ltlang','Deutsch']]){
+  const bad=mount('analyse-einstellungen',{[field]:value});
+  bad.node('gw-save').handlers.click();
+  assert.equal(bad.sent.length,0,field+'='+value);
+  assert.equal(bad.node(field+'-err').hidden,false);
+}
+const anCancel=mount('analyse-einstellungen');
+anCancel.node('gw-cancel').handlers.click();
+assert.equal(payload(anCancel.sent[0]).action,'form.cancel');
 const book=mount('buch-anlegen',{'gw-wt':'Überraschung für Groß','gw-author':'Deutscher Autor'});
 book.node('gw-create').handlers.click();
 const data=payload(book.sent[0]);
