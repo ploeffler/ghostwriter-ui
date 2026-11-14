@@ -51,6 +51,27 @@ for(const [name,action] of [['kapitel-anlegen','chapter.create'],['kapitel-bearb
   invalid.node('gw-cancel').handlers.click();
   assert.equal(payload(invalid.sent[0]).action,'form.cancel');
 }
+// Buchangaben in den Projektdaten (GhostWriter #299)
+const pd=mount('projektdaten-bearbeiten',{'gw-title':'Titel','gw-subtitle':'Ein Untertitel','gw-lang':'de-AT','gw-type':'Roman','gw-audience':'Erwachsene','gw-trans':'en, fr'});
+pd.node('gw-save').handlers.click();
+const pdData=payload(pd.sent[0]);
+assert.equal(pdData.subtitle,'Ein Untertitel');
+assert.equal(pdData.language,'de-AT');
+assert.equal(pdData.book_type,'Roman');
+assert.equal(pdData.target_audience,'Erwachsene');
+assert.deepEqual(pdData.translations_planned,['en','fr']);
+assert.match(pd.html,/Planned translations/);
+const pdBad=mount('projektdaten-bearbeiten',{'gw-title':'Titel','gw-lang':'Deutsch'});
+pdBad.node('gw-save').handlers.click();
+assert.equal(pdBad.sent.length,0);
+assert.equal(pdBad.node('gw-lang-err').hidden,false);
+const pdBadTrans=mount('projektdaten-bearbeiten',{'gw-title':'Titel','gw-trans':'englisch'});
+pdBadTrans.node('gw-save').handlers.click();
+assert.equal(pdBadTrans.sent.length,0);
+assert.equal(pdBadTrans.node('gw-trans-err').hidden,false);
+const pdEmpty=mount('projektdaten-bearbeiten',{'gw-title':'Titel'});
+pdEmpty.node('gw-save').handlers.click();
+assert.deepEqual(payload(pdEmpty.sent[0]).translations_planned,[]);
 const book=mount('buch-anlegen',{'gw-wt':'Überraschung für Groß','gw-author':'Deutscher Autor'});
 book.node('gw-create').handlers.click();
 const data=payload(book.sent[0]);

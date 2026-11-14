@@ -7,10 +7,11 @@
 
   Aufbau:
   - Kopf: Stift-Symbol, Überschrift
-  - Titel (Pflichtfeld)
+  - Titel (Pflichtfeld) und Untertitel
   - Kurztitel und Autor nebeneinander
   - Kurzbeschreibung (ein Satz)
   - Beschreibung
+  - Buchangaben (GhostWriter #299): Sprache, Buchtyp, Zielgruppe, geplante Übersetzungen
   - Abbrechen und Speichern
 
   Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert,
@@ -20,6 +21,11 @@
   - {{PROJECT_AUTHOR}}             project.author
   - {{PROJECT_DESCRIPTION_SHORT}}  project.description_short
   - {{PROJECT_DESCRIPTION}}        project.description
+  - {{PROJECT_SUBTITLE}}           project.subtitle
+  - {{PROJECT_LANGUAGE}}           project.language (Sprachcode, z. B. de, de-AT)
+  - {{PROJECT_BOOK_TYPE}}          project.book_type
+  - {{PROJECT_TARGET_AUDIENCE}}    project.target_audience
+  - {{PROJECT_TRANSLATIONS}}       project.translations_planned als Komma-Liste (z. B. "en, fr")
 
   Verhalten:
   - Speichern prüft, dass ein Titel eingegeben ist, und sendet sonst
@@ -28,7 +34,8 @@
   - Abbrechen meldet nur den Abbruch. Danach ist das Formular gesperrt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: project.update {title, title_short, author, description_short, description}, form.cancel
+  Aktionen: project.update {title, subtitle, title_short, author, description_short, description, language,
+            book_type, target_audience, translations_planned (Liste von Sprachcodes)}, form.cancel
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -55,6 +62,10 @@
       <input id="gw-title" value="{{PROJECT_TITLE}}" placeholder="{{t:ui.book_title}}">
       <div class="gw-err" id="gw-title-err" hidden>{{t:ui.please_enter_a_title}}</div>
     </div>
+    <div>
+      <label for="gw-subtitle">{{t:ui.subtitle}}</label>
+      <input id="gw-subtitle" value="{{PROJECT_SUBTITLE}}">
+    </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--gap-md)">
       <div>
         <label for="gw-short">{{t:ui.short_title}} <span class="hint">{{t:ui.for_the_badge_and_lists}}</span></label>
@@ -73,6 +84,28 @@
       <label for="gw-desc">{{t:ui.description}}</label>
       <textarea id="gw-desc" rows="5">{{PROJECT_DESCRIPTION}}</textarea>
     </div>
+    <div style="font-size:13px;font-weight:500;color:var(--text-secondary);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">{{t:ui.book_details}}</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--gap-md)">
+      <div>
+        <label for="gw-lang">{{t:ui.book_language}} <span class="hint">{{t:ui.language_code_hint}}</span></label>
+        <input id="gw-lang" maxlength="12" value="{{PROJECT_LANGUAGE}}" placeholder="de">
+        <div class="gw-err" id="gw-lang-err" hidden>{{t:ui.please_enter_a_language_code}}</div>
+      </div>
+      <div>
+        <label for="gw-type">{{t:ui.book_type}}</label>
+        <input id="gw-type" list="gw-types" value="{{PROJECT_BOOK_TYPE}}">
+        <datalist id="gw-types"><option value="{{t:ui.book_type_nonfiction}}"><option value="{{t:ui.book_type_guide}}"><option value="{{t:ui.book_type_novel}}"><option value="{{t:ui.book_type_children}}"></datalist>
+      </div>
+    </div>
+    <div>
+      <label for="gw-audience">{{t:ui.target_audience}}</label>
+      <input id="gw-audience" value="{{PROJECT_TARGET_AUDIENCE}}">
+    </div>
+    <div>
+      <label for="gw-trans">{{t:ui.planned_translations}} <span class="hint">{{t:ui.language_codes_comma_hint}}</span></label>
+      <input id="gw-trans" value="{{PROJECT_TRANSLATIONS}}" placeholder="en, fr">
+      <div class="gw-err" id="gw-trans-err" hidden>{{t:ui.please_enter_language_codes}}</div>
+    </div>
     <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">{{t:ui.cancel}}</button>
       <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{t:ui.save}}</button>
@@ -86,11 +119,18 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var $=function(id){return document.getElementById(id);};
   var t=$('gw-title'),e=$('gw-title-err');
   t.addEventListener('input',function(){e.hidden=true;});
+  var CODE=/^[a-z]{2,3}(-[A-Za-z]{2,8})?$/;
   function lock(){f.querySelectorAll('input,textarea,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
   $('gw-save').addEventListener('click',function(){
     if(!t.value.trim()){e.hidden=false;t.focus();return;}
     var g=function(id){return $(id).value.trim();};
-    var d={title:g('gw-title'),title_short:g('gw-short'),author:g('gw-author'),description_short:g('gw-dshort'),description:g('gw-desc')};
+    var lang=g('gw-lang'),trans=g('gw-trans').split(/[\s,;]+/).filter(Boolean);
+    $('gw-lang-err').hidden=!lang||CODE.test(lang);
+    $('gw-trans-err').hidden=trans.every(function(x){return CODE.test(x);});
+    if(!$('gw-lang-err').hidden){$('gw-lang').focus();return;}
+    if(!$('gw-trans-err').hidden){$('gw-trans').focus();return;}
+    var d={title:g('gw-title'),subtitle:g('gw-subtitle'),title_short:g('gw-short'),author:g('gw-author'),description_short:g('gw-dshort'),description:g('gw-desc'),
+           language:lang,book_type:g('gw-type'),target_audience:g('gw-audience'),translations_planned:trans};
     lock();
     gwSend(tr("ui.save_project_details",{title:d.title}),'project.update',d);
   });
