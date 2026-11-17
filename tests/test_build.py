@@ -69,3 +69,15 @@ class OutputOptionsFieldsTest(unittest.TestCase):
         # Werte wie typesetting.pdf_cover im Schema des Programms; leer = Vorgabe proof
         self.assertEqual(re.findall(r'value="([^"]*)"', select.group(1)), ['', 'proof', 'always', 'never'])
         self.assertIn('id="cv-front" data-g="cover" data-k="front"', html)
+
+    def test_all_typesetting_fields(self):
+        """Titelseite und Probedruck-Kennzeichnung (GhostWriter #310), Broschüre als Format."""
+        import re
+        html = (ROOT / 'templates/ausgabeoptionen.html').read_text(encoding='utf-8')
+        for key, values in (('title_style', ['classic', 'rules', 'modern', 'spaced', 'band']),
+                            ('proof_mark', ['line', 'box', 'watermark', 'watermark_all'])):
+            select = re.search(rf'<select id="ts-{key}" data-g="typesetting" data-k="{key}">(.*?)</select>', html, re.S)
+            self.assertIsNotNone(select, key)
+            self.assertEqual(re.findall(r'value="([^"]*)"', select.group(1)), values)
+        formats = re.search(r'id="gw-formats">(.*?)</div>', html, re.S).group(1)
+        self.assertEqual(re.findall(r'value="(\w+)"', formats), ['pdf', 'pdf_print', 'booklet', 'cover', 'epub', 'docx'])

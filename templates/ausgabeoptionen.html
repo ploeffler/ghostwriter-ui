@@ -118,11 +118,18 @@
         <div><label for="ts-toc_depth">{{t:ui.depth}}</label><select id="ts-toc_depth" data-g="typesetting" data-k="toc_depth" data-num="1">
           <option value="1">{{t:ui.chapters_only}}</option><option value="2">{{t:ui.chapters_and_sections}}</option></select></div>
       </div>
+      <div class="gw-grid">
+        <div><label for="ts-title_style">{{t:ui.title_page_design}}</label><select id="ts-title_style" data-g="typesetting" data-k="title_style">
+          <option value="classic">{{t:ui.title_style_classic}}</option><option value="rules">{{t:ui.title_style_rules}}</option><option value="modern">{{t:ui.title_style_modern}}</option><option value="spaced">{{t:ui.title_style_spaced}}</option><option value="band">{{t:ui.title_style_band}}</option></select></div>
+        <div><label for="ts-proof_mark">{{t:ui.proof_marking}}</label><select id="ts-proof_mark" data-g="typesetting" data-k="proof_mark">
+          <option value="line">{{t:ui.proof_mark_line}}</option><option value="box">{{t:ui.proof_mark_box}}</option><option value="watermark">{{t:ui.proof_mark_watermark}}</option><option value="watermark_all">{{t:ui.proof_mark_watermark_all}}</option></select></div>
+      </div>
       <div>
         <div class="gw-sec" style="margin-bottom:6px">{{t:ui.edition_formats}}</div>
         <div class="gw-grid" id="gw-formats">
           <label class="chk"><input type="checkbox" value="pdf"> {{t:ui.pdf_screen}}</label>
           <label class="chk"><input type="checkbox" value="pdf_print"> {{t:ui.print_pdf}}</label>
+          <label class="chk"><input type="checkbox" value="booklet"> {{t:ui.booklet_home_printing}}</label>
           <label class="chk"><input type="checkbox" value="cover"> {{t:ui.cover_pdf}}</label>
           <label class="chk"><input type="checkbox" value="epub"> {{t:ui.epub}}</label>
           <label class="chk"><input type="checkbox" value="docx"> {{t:ui.docx}}</label>
