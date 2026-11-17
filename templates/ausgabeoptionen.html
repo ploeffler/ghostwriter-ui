@@ -128,6 +128,10 @@
           <label class="chk"><input type="checkbox" value="docx"> {{t:ui.docx}}</label>
         </div>
       </div>
+      <div class="gw-grid">
+        <div><label for="ts-pdf_cover">{{t:ui.front_cover_in_pdf}} <span class="hint">{{t:ui.front_cover_in_pdf_hint}}</span></label><select id="ts-pdf_cover" data-g="typesetting" data-k="pdf_cover">
+          <option value="">{{t:ui.proofs_only_default}}</option><option value="proof">{{t:ui.proofs_only}}</option><option value="always">{{t:ui.proofs_and_editions}}</option><option value="never">{{t:ui.never}}</option></select></div>
+      </div>
       <div>
         <div class="gw-sec" style="margin-bottom:6px">{{t:ui.imprint_details}}</div>
         <div class="gw-grid">
@@ -165,6 +169,7 @@
       <div class="gw-grid">
         <div><label for="cv-image">{{t:ui.front_image}} <span class="hint">{{t:ui.file_under_cover}}</span></label><input id="cv-image" data-g="cover" data-k="image" placeholder="{{t:ui.cover_vorderseite_jpg}}"></div>
         <div><label for="cv-author_image">{{t:ui.author_photo}}</label><input id="cv-author_image" data-g="cover" data-k="author_image" placeholder="{{t:ui.cover_autor_jpg}}"></div>
+        <div><label for="cv-front">{{t:ui.own_front_cover}} <span class="hint">{{t:ui.own_front_cover_hint}}</span></label><input id="cv-front" data-g="cover" data-k="front" placeholder="{{t:ui.cover_vorderseite_pdf}}"></div>
       </div>
       <div><label for="gw-blurb">{{t:ui.blurb}} <span class="hint">{{t:ui.back_cover_about_80_150_words}}</span></label><textarea id="gw-blurb" rows="5"></textarea></div>
       <div><label for="gw-bio">{{t:ui.about_you}} <span class="hint">{{t:ui.two_or_three_sentences}}</span></label><textarea id="gw-bio" rows="2"></textarea></div>

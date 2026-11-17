@@ -57,3 +57,15 @@ class BuildTranslationsTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class OutputOptionsFieldsTest(unittest.TestCase):
+    """Ausgabeoptionen: Vorderseite im PDF und eigene Vorderseite (GhostWriter #324)."""
+    def test_front_cover_fields(self):
+        import re
+        html = (ROOT / 'templates/ausgabeoptionen.html').read_text(encoding='utf-8')
+        select = re.search(r'<select id="ts-pdf_cover" data-g="typesetting" data-k="pdf_cover">(.*?)</select>', html, re.S)
+        self.assertIsNotNone(select)
+        # Werte wie typesetting.pdf_cover im Schema des Programms; leer = Vorgabe proof
+        self.assertEqual(re.findall(r'value="([^"]*)"', select.group(1)), ['', 'proof', 'always', 'never'])
+        self.assertIn('id="cv-front" data-g="cover" data-k="front"', html)
