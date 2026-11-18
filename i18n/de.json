@@ -990,5 +990,8 @@
   "ui.languagetool_rule_ids_one_per_line": "LanguageTool-Regel-IDs, je Zeile eine",
   "ui.api_keys_belong_in_github_secrets": "API-Schlüssel gehören in die GitHub-Secrets ANTHROPIC_API_KEY bzw. OPENAI_API_KEY, nie in dieses Formular oder den Chat.",
   "ui.save_analysis_settings": "Analyse-Einstellungen speichern",
-  "ui.analysis_settings_cancelled": "Analyse-Einstellungen abgebrochen"
+  "ui.analysis_settings_cancelled": "Analyse-Einstellungen abgebrochen",
+  "ui.latest_checks": "Letzte Prüfungen",
+  "ui.checks": "Prüfungen",
+  "ui.checks_are_not_approvals": "gelaufene Prüfungen, keine Freigabe"
 }

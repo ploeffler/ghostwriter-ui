@@ -69,3 +69,29 @@ const nested=JSON.parse(JSON.stringify(input));nested.CHAPTERS[0].CHAPTER_TITLE=
 const nestedHtml=GW.renderHtml('projektuebersicht',nested,'en');
 assert.match(nestedHtml,/Literal \{\{PROJECT_TITLE\}\} \{\{t:ui.description\}\} &lt;b&gt;/);
 console.log('Repeated user data is never re-interpreted as a placeholder');
+
+// Prüf-Tags (GhostWriter #331): data-gw-checks baut Tags aus JSON; fehlendes Feld oder leere Liste entfernt das Element.
+{
+  const made=[];
+  context.document.createElement=()=>{const s={style:{},attrs:{},setAttribute(k,v){this.attrs[k]=v;}};made.push(s);return s;};
+  const node=(value)=>({value,removed:false,children:[],getAttribute(){return this.value;},remove(){this.removed=true;},appendChild(c){this.children.push(c);}});
+  const ok=node(JSON.stringify([{CK_TAG:'L✓·',CK_TEXT:'Sprache: bestanden mit Hinweisen',CK_RESULT:'passed_with_notes',CK_STATE:'current',CK_REPORT:'editorial/lektorat.md'},
+                                {CK_TAG:'K✗*',CK_TEXT:'Korrektur <b>',CK_RESULT:'failed',CK_STATE:'changed'}]));
+  const missing=node('{{CHAPTER_CHECKS_JSON}}'), empty=node('[]');
+  const host={innerHTML:'',querySelectorAll:sel=>sel==='[data-gw-checks]'?[ok,missing,empty]:[]};
+  GW.render('projektuebersicht',{CHAPTERS:[]},host,'de');
+  assert.equal(ok.children.length,2);
+  assert.equal(ok.children[0].textContent,'L✓·');
+  assert.equal(ok.children[0].title,'Sprache: bestanden mit Hinweisen\neditorial/lektorat.md');
+  assert.equal(ok.children[1].textContent,'K✗*');
+  assert.equal(ok.children[1].attrs['data-result'],'failed');
+  assert.match(ok.children[1].style.cssText,/dashed/);
+  assert.match(ok.children[1].style.cssText,/--bg-warning/);
+  assert.equal(ok.removed,false);
+  assert.equal(missing.removed,true);
+  assert.equal(empty.removed,true);
+  const html=GW.renderHtml('kapitelansicht',{CHECKS_JSON:'[{"CK_TAG":"S✓"}]',SECTIONS:[{SECTION_ID:'s1',SECTION_CHECKS_JSON:'[{"CK_TAG":"L✓"}]'}]},'de');
+  assert.match(html,/data-gw-checks="\[\{&quot;CK_TAG&quot;:&quot;L✓&quot;\}\]"/);
+  assert.match(html,/Prüfungen/);
+  console.log('Check tags: JSON rendering, tooltips, failed/changed styling and missing fields passed');
+}
