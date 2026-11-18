@@ -78,6 +78,11 @@
   - {{LIMIT_STATE}}        warn | pause (GhostWriter #62); fehlt = kein Hinweis
   - {{LIMIT_TEXT}}         z. B. „Automatik pausiert: KI-Budget 8 % übrig (9,20 von 10,00 €)“
   - {{UPDATE_TEXT}}        z. B. „3 Commits hinter ploeffler/GhostWriter:main · Version 0.3.1 verfügbar (installiert 0.3.0)“
+  Prüfungen (GhostWriter #331, editorial/checks.yml); fehlt das Prüfprotokoll, entfallen die Angaben:
+  - {{CHECKS_RECENT_TEXT}}  „Letzte Prüfungen“, z. B. „Sprache ✓· 2026-11-17 · Korrektur ✓ 2026-11-16“
+  - {{CHECKS_LEGEND}}       Legende der Kürzel unter der Kapitelliste
+  - {{CHAPTER_CHECKS_JSON}} je Kapitel: JSON-Liste der Tags (CK_TAG, CK_TEXT, CK_RESULT, CK_STATE, CK_REPORT);
+                            gw.js zeigt sie über data-gw-checks als kleine Tags mit Tooltip. Ein Tag ist keine Freigabe
 
   Kosten (siehe docs/DATA-MODEL.md, Kostenmodell):
   - Währung ist project_currency aus workflow.yml (EUR), deutsches
@@ -141,6 +146,7 @@
       <button type="button" class="gw-sq" id="gw-merge" data-p="{{t:ui.apply_changes}}" data-a="changes.merge.open" style="width:auto;height:36px;padding:0 14px;font-size:14px;gap:6px;color:var(--text-primary)"><i class="ti ti-git-merge" style="font-size:16px" aria-hidden="true"></i>{{t:ui.apply_changes}}</button>
     </div>
     <div data-gw-if="IMPORT_TEXT" style="display:flex;align-items:center;gap:var(--gap-sm);padding:8px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);font-size:13px;color:var(--text-secondary)"><i class="ti ti-file-import" aria-hidden="true"></i><span>{{IMPORT_TEXT}}</span></div>
+    <div data-gw-if="CHECKS_RECENT_TEXT" style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;font-size:13px;color:var(--text-secondary)"><i class="ti ti-list-check" aria-hidden="true"></i><span>{{t:ui.latest_checks}}: {{CHECKS_RECENT_TEXT}}</span></div>
     {{#ANALYSES}}
     <div style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:10px 12px;border:0.5px solid var(--border-accent);border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent)">
       <i class="ti ti-{{A_ICON}}" style="font-size:18px" aria-hidden="true"></i>
@@ -175,9 +181,10 @@
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">{{t:ui.chapters}}</div>
       <div style="display:flex;flex-direction:column;gap:var(--gap-xs)">
         {{#CHAPTERS}}
-        <div style="display:flex;gap:var(--gap-xs);min-width:0"><button type="button" class="gw-ch" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" data-title="{{CHAPTER_TITLE}}"><span style="font-size:13px;color:var(--text-muted);min-width:20px">{{CHAPTER_NUMBER}}</span><span style="flex:1;font-size:14px;font-weight:500">{{CHAPTER_TITLE}}</span><span class="gw-cost" title="{{CHAPTER_COST_HINT}}">{{CHAPTER_COST}}</span><span style="font-size:12px;color:var(--text-muted)">{{CHAPTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button><button type="button" class="gw-ed" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" title="{{t:ui.edit_chapter}}" aria-label="{{t:ui.edit_chapter}}"><i class="ti ti-edit" aria-hidden="true"></i></button></div>
+        <div style="display:flex;gap:var(--gap-xs);min-width:0"><button type="button" class="gw-ch" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" data-title="{{CHAPTER_TITLE}}"><span style="font-size:13px;color:var(--text-muted);min-width:20px">{{CHAPTER_NUMBER}}</span><span style="flex:1;font-size:14px;font-weight:500">{{CHAPTER_TITLE}}</span><span data-gw-checks="{{CHAPTER_CHECKS_JSON}}" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end"></span><span class="gw-cost" title="{{CHAPTER_COST_HINT}}">{{CHAPTER_COST}}</span><span style="font-size:12px;color:var(--text-muted)">{{CHAPTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button><button type="button" class="gw-ed" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" title="{{t:ui.edit_chapter}}" aria-label="{{t:ui.edit_chapter}}"><i class="ti ti-edit" aria-hidden="true"></i></button></div>
         {{/CHAPTERS}}
       </div>
+      <div data-gw-if="CHECKS_LEGEND" style="margin-top:6px;font-size:11px;color:var(--text-muted)">{{CHECKS_LEGEND}}</div>
     </div>
     <div data-gw-if="MATTER_BACK" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">{{t:ui.back_matter}}</div>

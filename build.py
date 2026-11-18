@@ -46,6 +46,25 @@ RUNTIME = r'''
     var html=t.html.replace(/\{\{t:([a-z0-9_.]+)\}\}/g,function(m,key){return esc(tr(key));});
     return fill(html,localizedData(data,tr));
   }
+  // Prüf-Tags (GhostWriter #331): data-gw-checks enthält eine JSON-Liste mit CK_TAG, CK_TEXT, CK_RESULT,
+  // CK_STATE, CK_REPORT. Fehlt das Feld (Platzhalter bleibt stehen) oder ist die Liste leer, entfällt der Bereich.
+  // Ein Tag zeigt nur „Prüfung gelaufen mit Ergebnis X“, er ist keine Freigabe und sendet nichts.
+  function checks(n){
+    var list;try{list=JSON.parse(n.getAttribute('data-gw-checks')||'[]');}catch(e){list=null;}
+    if(!Array.isArray(list)||!list.length){n.remove();return;}
+    list.forEach(function(c){
+      if(!c||typeof c!=='object')return;
+      var s=document.createElement('span'),failed=c.CK_RESULT==='failed',changed=c.CK_STATE==='changed',unknown=c.CK_STATE==='unknown';
+      s.className='gw-check';
+      s.setAttribute('data-result',String(c.CK_RESULT||''));s.setAttribute('data-state',String(c.CK_STATE||''));
+      s.textContent=String(c.CK_TAG||'');
+      s.title=String(c.CK_TEXT||'')+(c.CK_REPORT?'\n'+String(c.CK_REPORT):'');
+      s.style.cssText='font-size:11px;line-height:1;padding:3px 6px;border-radius:999px;white-space:nowrap;font-variant-numeric:tabular-nums;'
+        +'border:0.5px '+(changed||unknown?'dashed':'solid')+' '+(failed?'var(--border-warning)':'var(--border-strong)')+';'
+        +'background:'+(failed?'var(--bg-warning)':'var(--surface-2)')+';color:'+(failed?'var(--text-warning)':changed||unknown?'var(--text-muted)':'var(--text-secondary)');
+      n.appendChild(s);
+    });
+  }
   var head='';
   function withHead(action,d){
     var writes=(/\.(update|create|reorder)$/.test(action)&&action!=='edition.create')||action==='changes.merge'||action==='approval.confirm';
@@ -62,6 +81,7 @@ RUNTIME = r'''
       var v=data[n.getAttribute('data-gw-if')];
       if(!v||(Array.isArray(v)&&!v.length))n.remove();
     });
+    el.querySelectorAll('[data-gw-checks]').forEach(checks);
     T[name].run(translator(lang));
   }
   window.GW={version:VERSION,templates:Object.keys(T),render:render,renderHtml:renderHtml,supports:supports,withHead:withHead,escape:esc};

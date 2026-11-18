@@ -24,6 +24,7 @@ Der Assistent gibt statt der fertigen Ansicht nur eine Ladezeile und die Daten a
 - `HEAD_SHA` in den Daten ist der Commit, aus dem gelesen wurde. `gw.js` hängt ihn an jede schreibende Aktion (`….update`, `….create` außer `edition.create`, `….reorder`, `changes.merge`, `approval.confirm`) als `expected_head_sha` an, damit der Assistent vor dem Schreiben prüfen kann, ob sich die Dateien inzwischen geändert haben.
 - Statuswerte in Feldern auf `_STATUS` (z. B. `writing`) zeigt `gw.js` in der gewählten Sprache an. Die übergebenen Daten und internen Statuscodes werden nicht verändert; unbekannte Werte bleiben erhalten.
 - Bereiche mit `data-gw-if="NAME"` entfallen, wenn `NAME` fehlt oder leer ist.
+- Elemente mit `data-gw-checks="{{…_CHECKS_JSON}}"` zeigen Prüf-Tags (GhostWriter #331): eine JSON-Liste mit `CK_TAG`, `CK_TEXT` (Tooltip), `CK_RESULT`, `CK_STATE` und `CK_REPORT`. Fehlt das Feld oder ist die Liste leer, entfällt das Element. Nicht bestandene Prüfungen sind farbig hervorgehoben, seit der Prüfung geänderte Texte gestrichelt umrandet. Ein Tag ist keine Freigabe und sendet nichts.
 - Klicks senden über `sendPrompt` eine Textzeile plus einen Block `gw` mit JSON in den Chat.
 
 `<commit>` ist ein fester Commit dieses Repos. So ändert sich eine Ansicht nicht unbemerkt, und jsDelivr kann die Datei dauerhaft zwischenspeichern. `@main` funktioniert auch, wird von jsDelivr aber bis zu zwölf Stunden zwischengespeichert.

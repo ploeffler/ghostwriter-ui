@@ -45,6 +45,8 @@
   - {{C_ID}}, {{C_NAME}}        ID und Name
   - {{C_ON}}                    „1“, wenn die Figur im Abschnitt vorkommt (characters im Kopf), sonst leer
 
+  Prüfungen (GhostWriter #331): {{CHECKS_JSON}} = JSON-Liste der Tags des Abschnitts (siehe projektuebersicht.html);
+  fehlt = kein Bereich. Nur Anzeige, keine Freigabe.
   Wiederholung pro sprachlichem Hinweis zwischen {{#HINTS}} und {{/HINTS}} (GhostWriter #124, story/hints.yml;
   fehlt = kein Bereich):
   - {{H_KIND_TEXT}}   z. B. "Langer Satz", "Wortwiederholung"
@@ -158,6 +160,11 @@
           <div class="gw-mk gw-mk-{{MARKER_TYPE}}"><i class="ti gw-mk-icon" data-type="{{MARKER_TYPE}}" style="font-size:16px;margin-top:2px" aria-hidden="true"></i><span style="flex:1"><span class="gw-mk-label">{{MARKER_LABEL}}</span> · {{MARKER_TEXT}}</span></div>
           {{/MARKERS}}
         </div>
+      </div>
+
+      <div data-gw-if="CHECKS_JSON" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+        <div class="gw-lbl">{{t:ui.checks}} <span class="gw-hint">{{t:ui.checks_are_not_approvals}}</span></div>
+        <div data-gw-checks="{{CHECKS_JSON}}" style="display:flex;gap:4px;flex-wrap:wrap"></div>
       </div>
 
       <div data-gw-if="HINTS" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
