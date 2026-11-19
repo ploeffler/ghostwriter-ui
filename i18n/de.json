@@ -125,7 +125,7 @@
   "native.analysis": "Hintergrundanalyse „{kind}“ verfügbar ({number}) · {date}",
   "native.import_notice": "Das Import-Original {name} bleibt erhalten, auch nach der früheren Frist ({date}). Entfernt wird es nur auf ausdrücklichen Auftrag.",
   "native.project_meta": "**{edition}** · Autor: {author} · KI-API-Kosten: **{cost}**",
-  "native.project_table": "| # | Kapitel | Kosten | Status | |",
+  "native.project_table": "| # | Kapitel | Umfang | Fertig | Kosten | Status | |",
   "native.chapter_table": "| # | Abschnitt | Marker | Kosten | Status |",
   "native.library_table": "| # | Buch | Status | Fortschritt | Auflage | Kosten |",
   "native.chapter_heading": "### 📖 Kapitel {number} · {title}",
@@ -1025,5 +1025,12 @@
   "ui.please_enter_a_year_month_or_day_e_g_1944_or_1944_05": "Bitte Jahr, Monat oder Tag eingeben, z. B. 1944 oder 1944-05.",
   "ui.timeline_chronology_from_notes_and_research": "Zeitleiste: Chronologie aus Unterlagen und Recherche",
   "ui.where_the_dates_do_not_fit_together": "Wo die Daten nicht zusammenpassen",
-  "ui.show_timeline": "Zeitleiste zeigen"
+  "ui.show_timeline": "Zeitleiste zeigen",
+  "ui.words_in_the_manuscript": "Wörter im Manuskript (ohne Fußnoten)",
+  "ui.open_notes_from_the_latest_check": "Offene Hinweise aus der letzten Prüfung",
+  "native.words_count": "{number} Wörter",
+  "native.words_count_one": "{number} Wort",
+  "native.open_notes": "{number} offene Hinweise",
+  "native.open_notes_one": "{number} offener Hinweis",
+  "native.no_open_notes": "keine offenen Hinweise"
 }
