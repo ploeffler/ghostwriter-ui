@@ -73,8 +73,8 @@ console.log('Repeated user data is never re-interpreted as a placeholder');
 // Prüf-Tags (GhostWriter #331): data-gw-checks baut Tags aus JSON; fehlendes Feld oder leere Liste entfernt das Element.
 {
   const made=[];
-  context.document.createElement=()=>{const s={style:{},attrs:{},setAttribute(k,v){this.attrs[k]=v;}};made.push(s);return s;};
-  const node=(value)=>({value,removed:false,children:[],getAttribute(){return this.value;},remove(){this.removed=true;},appendChild(c){this.children.push(c);}});
+  context.document.createElement=()=>{const s={style:{},attrs:{},children:[],setAttribute(k,v){this.attrs[k]=v;},appendChild(c){this.children.push(c);}};made.push(s);return s;};
+  const node=(value)=>({value,removed:false,children:[],getAttribute(){return this.value;},removeAttribute(){this.value=null;},closest(){return null;},remove(){this.removed=true;},appendChild(c){this.children.push(c);}});
   const ok=node(JSON.stringify([{CK_TAG:'L✓·',CK_TEXT:'Sprache: bestanden mit Hinweisen',CK_RESULT:'passed_with_notes',CK_STATE:'current',CK_REPORT:'editorial/lektorat.md'},
                                 {CK_TAG:'K✗*',CK_TEXT:'Korrektur <b>',CK_RESULT:'failed',CK_STATE:'changed'}]));
   const missing=node('{{CHAPTER_CHECKS_JSON}}'), empty=node('[]');
@@ -86,10 +86,25 @@ console.log('Repeated user data is never re-interpreted as a placeholder');
   assert.equal(ok.children[1].textContent,'K✗*');
   assert.equal(ok.children[1].attrs['data-result'],'failed');
   assert.match(ok.children[1].style.cssText,/dashed/);
-  assert.match(ok.children[1].style.cssText,/--bg-warning/);
+  assert.match(ok.children[1].style.cssText,/--bg-danger/);
+  assert.match(ok.children[0].style.cssText,/--bg-warning/);
   assert.equal(ok.removed,false);
   assert.equal(missing.removed,true);
   assert.equal(empty.removed,true);
+  // #340: Klartext-Tag wie bei den Markern; Verlauf nach Prüfart gruppiert, je Eintrag Datum und Uhrzeit
+  {const pill=node(JSON.stringify([{CK_TAG:'Q✓·',CK_PILL:'Qualität ✓·',CK_RESULT:'passed_with_notes',CK_STATE:'current'}]));
+   const hist=node(JSON.stringify([{CK_LABEL:'Qualität',CK_WHEN:'2026-11-19 14:05',CK_MARK:'✗',CK_RESULT:'failed',CK_STATE:'changed'},
+                                   {CK_LABEL:'Sprache',CK_WHEN:'2026-11-18',CK_MARK:'✓',CK_RESULT:'passed',CK_STATE:'current'},
+                                   {CK_LABEL:'Qualität',CK_WHEN:'2026-11-18 09:00',CK_MARK:'?',CK_RESULT:'unknown',CK_STATE:'unknown'}]));
+   const h2={innerHTML:'',querySelectorAll:sel=>sel==='[data-gw-checks]'?[pill]:sel==='[data-gw-checks-history]'?[hist]:[]};
+   GW.render('projektuebersicht',{CHAPTERS:[]},h2,'de');
+   assert.equal(pill.children.length,1);
+   assert.equal(pill.value,null);   // Attribut entfernt: kein zweiter Durchlauf
+   assert.equal(pill.children[0].textContent,'Qualität ✓·');
+   assert.equal(hist.children.length,2);
+   const q=hist.children[0].children;
+   assert.equal(q[0].textContent,'Qualität');
+   assert.deepEqual(q[1].children.map(c=>c.textContent),['2026-11-19 14:05 ✗*','2026-11-18 09:00 ?']);}
   {const h=GW.renderHtml('kapitelansicht',{CHECKS_HISTORY_JSON:'[{"CK_TAG":"Q✗"}]',CHECKS_HISTORY_COUNT:'1'},'de');
    assert.ok(h.includes('Frühere Prüfungen (1)')&&h.includes('data-gw-checks-history'));}
   const html=GW.renderHtml('kapitelansicht',{CHECKS_JSON:'[{"CK_TAG":"S✓"}]',SECTIONS:[{SECTION_ID:'s1',SECTION_CHECKS_JSON:'[{"CK_TAG":"L✓"}]'}]},'de');
