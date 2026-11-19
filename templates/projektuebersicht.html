@@ -33,6 +33,7 @@
   - {{PROJECT_COST}}               bisherige Gesamtkosten, formatiert, z. B. "1,60 €"
   - {{PROJECT_COST_HINT}}          Tooltip, z. B. "Bisherige Gesamtkosten"
   - {{PROJECT_EDITION_TEXT}}       aus project.current_edition: "Auflage 2", bei 0 "noch keine Auflage"
+  - {{CHRONOLOGY_TEXT}}           Chronologie (#354), z. B. "Chronologie: 12 Einträge, 3 Hinweise"; leer = keine Zeile
   - {{PREVIEW_TEXT}}               letzte Vorabfassung (#352), z. B. "Vorabfassung 1 vom 19.11.2026"; leer = keine Anzeige
   - {{PREVIEW_URL}}                Link zur Release-Seite der Vorabfassung
                                    (siehe book_releases in workflow.yml)
@@ -95,7 +96,7 @@
     im Tooltip ", enthält geschätzte Kosten" ergänzt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.chapter, chapter.edit.open, changes.merge.open, update.apply, project.providers.open, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open, view.library, view.matter, project.output.open, view.characters, character.suggest, analysis.open
+  Aktionen: view.chapter, chapter.edit.open, changes.merge.open, update.apply, project.providers.open, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open, view.library, view.matter, project.output.open, view.characters, character.suggest, analysis.open, view.timeline
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -132,6 +133,7 @@
           <button type="button" class="gw-sq" data-p="{{t:ui.show_front_and_back_matter}}" data-a="view.matter" title="{{t:ui.front_and_back_matter_dedication_foreword_glossary}}" aria-label="{{t:ui.front_and_back_matter}}"><i class="ti ti-bookmarks" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="{{t:ui.create_a_new_edition}}" data-a="edition.create.open" title="{{t:ui.create_a_new_edition}}" aria-label="{{t:ui.create_a_new_edition}}"><i class="ti ti-books" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="{{t:ui.show_output_options}}" data-a="project.output.open" title="{{t:ui.output_options_typesetting_cover_printing}}" aria-label="{{t:ui.output_options}}"><i class="ti ti-printer" aria-hidden="true"></i></button>
+          <button type="button" class="gw-sq" data-p="{{t:ui.show_timeline}}" data-a="view.timeline" title="{{t:ui.timeline_chronology_from_notes_and_research}}" aria-label="{{t:ui.timeline}}"><i class="ti ti-timeline" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="{{t:ui.suggest_characters_from_the_text_whole_book}}" data-a="character.suggest" data-args='{"scope":"book"}' title="{{t:ui.suggest_characters_from_the_text_whole_book}}" aria-label="{{t:ui.suggest_characters_from_the_text_whole_book}}"><i class="ti ti-user-search" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="{{t:ui.show_ai_services}}" data-a="project.providers.open" title="{{t:ui.ai_services}}" aria-label="{{t:ui.ai_services}}"><i class="ti ti-robot" aria-hidden="true"></i></button>
           <button type="button" class="gw-sq" data-p="{{t:ui.show_project_settings}}" data-a="project.settings.open" title="{{t:ui.project_settings}}" aria-label="{{t:ui.project_settings}}"><i class="ti ti-settings" aria-hidden="true"></i></button>
@@ -148,6 +150,7 @@
       <span style="flex:1;min-width:180px;font-size:14px">{{t:ui.not_yet_applied}} <span style="font-size:12px">{{t:ui.pull_request}}</span></span>
       <button type="button" class="gw-sq" id="gw-merge" data-p="{{t:ui.apply_changes}}" data-a="changes.merge.open" style="width:auto;height:36px;padding:0 14px;font-size:14px;gap:6px;color:var(--text-primary)"><i class="ti ti-git-merge" style="font-size:16px" aria-hidden="true"></i>{{t:ui.apply_changes}}</button>
     </div>
+    <div data-gw-if="CHRONOLOGY_TEXT" style="display:flex;align-items:center;gap:var(--gap-sm);font-size:13px;color:var(--text-secondary)"><i class="ti ti-timeline" aria-hidden="true"></i><span>{{CHRONOLOGY_TEXT}}</span></div>
     <div data-gw-if="IMPORT_TEXT" style="display:flex;align-items:center;gap:var(--gap-sm);padding:8px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);font-size:13px;color:var(--text-secondary)"><i class="ti ti-file-import" aria-hidden="true"></i><span>{{IMPORT_TEXT}}</span></div>
     <div data-gw-if="CHECKS_RECENT_TEXT" style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;font-size:13px;color:var(--text-secondary)"><i class="ti ti-list-check" aria-hidden="true"></i><span>{{t:ui.latest_checks}}: {{CHECKS_RECENT_TEXT}}</span></div>
     {{#ANALYSES}}

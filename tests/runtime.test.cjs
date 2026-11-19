@@ -150,3 +150,17 @@ console.log('Repeated user data is never re-interpreted as a placeholder');
   assert.match(out[1],/`gw:edition.proof formats=pdf`$/);
   console.log('Confirm buttons: preview needs a second click, sends once, shows tag and release link');
 }
+// Zeitleiste (GhostWriter #354): Hinweise als Block, Daten als JSON-Attribut, Knopf in der Projektübersicht
+{
+  const json=JSON.stringify({entries:[{id:'chr-001',kind:'event',lo:'1944-01-01',hi:'1944-12-31',label:'um 1944',what:'<b>Flucht</b>',status:'reported',lanes:['@none']}],lanes:[{key:'@none',label:'Ohne Figur'}],chapters:[]});
+  const html=GW.renderHtml('zeitleiste',{COUNT_TEXT:'1 Eintrag',TIMELINE_JSON:json,FINDINGS:[{F_KIND_TEXT:'zwei Daten',F_TEXT:'„Flucht“: 1944 und 1945',F_ENTRIES:'chr-001, chr-002'}]},'de');
+  assert.match(html,/Wo die Daten nicht zusammenpassen/);
+  assert.match(html,/zwei Daten: „Flucht“: 1944 und 1945/);
+  assert.ok(html.includes('data-json="{&quot;entries&quot;'));
+  assert.ok(!html.includes('<b>Flucht</b>'));
+  assert.match(GW.renderHtml('zeitleiste',{TIMELINE_JSON:'{}'},'en'),/Where the dates do not fit together|Timeline/);
+  const ov=GW.renderHtml('projektuebersicht',{CHAPTERS:[],CHRONOLOGY_TEXT:'Chronologie: 3 Einträge, 1 Hinweis'},'de');
+  assert.match(ov,/data-a="view.timeline"/);
+  assert.match(ov,/Chronologie: 3 Einträge, 1 Hinweis/);
+  console.log('Timeline: findings, escaped JSON data and overview button passed');
+}

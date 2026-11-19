@@ -1,0 +1,197 @@
+<!--
+  Vorlage: Zeitleiste (Chronologie aus Unterlagen und Recherche, GhostWriter #354)
+
+  Inline-Widget für den Chat. Wird über den Knopf „Zeitleiste“ der
+  Projektübersicht oder den Befehl „Zeitleiste“ geöffnet (Aktion view.timeline,
+  render_view.py timeline). Die Chronologie (story/chronology.yml) ist
+  Arbeitsmittel und kommt nie ins Buch.
+
+  Aufbau:
+  - Kopf: Uhr-Symbol, „Zeitleiste“, Zahl der Einträge, Zurück zur Übersicht
+  - Kasten „Wo die Daten nicht zusammenpassen“ (Hinweise ohne KI)
+  - Grafik: gemeinsame Zeitachse, darunter das Kapitelband und je Figur eine
+    Spur (Lebensabschnitte als Balken, Ereignisse als Zeichen), eine Spur
+    „Ohne Figur“. Farbe = Ort, Form = Belegstand (voll = belegt, Ring =
+    Angabe, gestrichelt = unsicher, Raute = Romanfreiheit), schraffiert =
+    geschätzt, roter Rand = betroffen von einem Hinweis.
+  - Zeitraum: „von“/„bis“ (Jahr, Monat oder Tag) und „Alles“; ein Klick auf
+    eine Jahreszahl der Achse zeigt dieses Jahr (Detailansicht, bei kurzen
+    Zeiträumen mit Monaten bzw. Tagen)
+  - Ein Klick auf ein Zeichen zeigt den Eintrag darunter (Datum, Belegstand,
+    Quelle, Ort, Kapitel, ID)
+  - Filter nach Belegstand, darunter die Liste aller Einträge im Zeitraum
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{PROJECT_TITLE_SHORT}}  project.title_short
+  - {{COUNT_TEXT}}           z. B. "12 Einträge · 3 Hinweise"
+  - {{TIMELINE_JSON}}        JSON (siehe GhostWriter templates/ui/BEFUELLUNG.md, „zeitleiste.html“):
+                             {"entries":[{"id","kind","lo","hi","end_lo","end_hi","open","label","what",
+                             "status","estimated","lanes","people","place","chapter","source","flag"}],
+                             "lanes":[{"key","label"}],"chapters":[{"label","lo","hi"}]}
+                             lo/hi = frühester/spätester Tag des Beginns (JJJJ-MM-TT), end_lo/end_hi des
+                             Endes bei Zeitspannen; open = Ende offen; flag = von einem Hinweis betroffen.
+  - {{EMPTY_TEXT}}           Text ohne Einträge; leer, wenn es Einträge gibt
+
+  Wiederholung je Hinweis zwischen {{#FINDINGS}} und {{/FINDINGS}}:
+  - {{F_KIND_TEXT}}  z. B. "Überschneidung"
+  - {{F_TEXT}}       Satz
+  - {{F_ENTRIES}}    IDs, z. B. "chr-001, chr-004"
+
+  Verhalten:
+  - Zeitraum, Filter und Auswahl wirken nur in der Ansicht; es wird nichts
+    gesendet und nichts gespeichert.
+  - „Übersicht“ sendet view.project.
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: view.project
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">{{t:ui.timeline_chronology_from_notes_and_research}}</h2>
+<style>
+.gw-sq{width:40px;height:40px;flex:none;border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-secondary);cursor:pointer;padding:0}
+.gw-sq:hover{border-color:var(--border-strong);color:var(--text-primary)}
+.gw-in{box-sizing:border-box;padding:6px 9px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:13px;width:110px}
+.gw-btn{padding:6px 12px;border-radius:var(--radius);font:inherit;font-size:13px;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)}
+.gw-tl svg{width:100%;height:auto;display:block;font-family:inherit}
+.gw-tl .m{cursor:pointer}
+.gw-tl .yr{cursor:pointer}
+.gw-tl .yr:hover{text-decoration:underline}
+.gw-flt{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--text-secondary);margin-right:10px}
+.gw-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.gw-tbl td{padding:5px 6px;border-top:0.5px solid var(--border);vertical-align:top}
+.gw-tbl td.s{width:110px;color:var(--text-secondary)}
+.gw-tbl td.d{width:110px;white-space:nowrap;color:var(--text-secondary);font-variant-numeric:tabular-nums}
+.gw-tbl tr.f td:first-child{box-shadow:inset 3px 0 0 var(--text-danger)}
+.gw-det{font-size:13px;line-height:1.5;padding:10px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2)}
+.gw-leg{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--text-muted);align-items:center}
+</style>
+<div style="padding:1rem 0">
+  <div id="gw-zeit" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="display:flex;align-items:flex-start;gap:var(--gap-md)">
+      <div style="flex:1">
+        <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{PROJECT_TITLE_SHORT}}</span>
+        <div style="font-size:20px;font-weight:500;display:flex;align-items:center;gap:8px;margin-top:4px"><i class="ti ti-timeline" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.timeline}}</div>
+        <div style="font-size:13px;color:var(--text-secondary);margin-top:2px">{{COUNT_TEXT}}</div>
+      </div>
+      <button type="button" class="gw-sq" id="gw-back" title="{{t:ui.project_overview}}" aria-label="{{t:ui.project_overview}}"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
+    </div>
+    <div data-gw-if="EMPTY_TEXT" style="font-size:14px;color:var(--text-secondary);line-height:1.5">{{EMPTY_TEXT}}</div>
+    <div data-gw-if="FINDINGS" style="padding:10px 12px;border:0.5px solid var(--border-warning);border-radius:var(--radius);background:var(--bg-warning);color:var(--text-warning);font-size:13px;line-height:1.5">
+      <div style="font-weight:500;display:flex;align-items:center;gap:6px;margin-bottom:4px"><i class="ti ti-alert-triangle" aria-hidden="true"></i>{{t:ui.where_the_dates_do_not_fit_together}}</div>
+      {{#FINDINGS}}
+      <div>{{F_KIND_TEXT}}: {{F_TEXT}} <span style="opacity:0.75">({{F_ENTRIES}})</span></div>
+      {{/FINDINGS}}
+    </div>
+    <div id="gw-tl-box" data-json="{{TIMELINE_JSON}}" style="display:flex;flex-direction:column;gap:var(--gap-sm)">
+      <div style="display:flex;flex-wrap:wrap;gap:var(--gap-sm);align-items:center;font-size:13px;color:var(--text-secondary)">
+        <label for="gw-from">{{t:ui.tl_from}}</label><input class="gw-in" id="gw-from" placeholder="1930">
+        <label for="gw-to">{{t:ui.tl_to}}</label><input class="gw-in" id="gw-to" placeholder="1950-05">
+        <button type="button" class="gw-btn" id="gw-zoom">{{t:ui.show_period}}</button>
+        <button type="button" class="gw-btn" id="gw-all">{{t:ui.everything}}</button>
+        <span id="gw-range" style="margin-left:auto;font-size:12px;color:var(--text-muted)"></span>
+      </div>
+      <div class="gw-tl" id="gw-tl"></div>
+      <div class="gw-leg" id="gw-leg"></div>
+      <div class="gw-det" id="gw-det" hidden></div>
+      <div id="gw-flt" style="border-top:0.5px solid var(--border);padding-top:var(--pad-sm)"></div>
+      <table class="gw-tbl" id="gw-list"></table>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.hints_are_not_decisions_the_chronology_never_goes_into_the_book}}</div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var $=function(id){return document.getElementById(id);},esc=GW.escape;
+  $('gw-back').addEventListener('click',function(){gwSend(tr("ui.project_overview"),'view.project',{});});
+  var box=$('gw-tl-box'),data;
+  try{data=JSON.parse(box.getAttribute('data-json')||'{}');}catch(e){data={};}
+  var entries=(data.entries||[]).filter(function(e){return e&&e.lo;}),lanes=data.lanes||[],chapters=data.chapters||[];
+  if(!(data.entries||[]).length){box.remove();return;}
+  var STATUS=['documented','reported','uncertain','invented'];
+  var SL={documented:tr("ui.documented"),reported:tr("ui.reported"),uncertain:tr("ui.uncertain"),invented:tr("ui.invented")};
+  var PAL=['#378ADD','#D85A30','#1D9E75','#BA7517','#7F77DD','#D4537E','#639922','#888780'];
+  var places=[];entries.forEach(function(e){if(e.place&&places.indexOf(e.place)<0)places.push(e.place);});
+  function color(e){return e.place?PAL[places.indexOf(e.place)%PAL.length]:'var(--text-secondary)';}
+  function hatch(e){return 'url(#gw-hatch-'+(e.place?places.indexOf(e.place)%PAL.length:PAL.length)+')';}
+  function day(s){var p=String(s).split('-');return Date.UTC(+p[0],(+p[1]||1)-1,+p[2]||1)/864e5;}
+  function iso(d){return new Date(d*864e5).toISOString().slice(0,10);}
+  function lo(s){return s?day(s):null;}
+  function hi(s){if(!s)return null;var p=String(s).split('-');if(p.length===1)return day(p[0]+'-12-31');if(p.length===2)return Date.UTC(+p[0],+p[1],0)/864e5;return day(s);}
+  var show={};STATUS.forEach(function(s){show[s]=true;});
+  var all=[Infinity,-Infinity];
+  entries.forEach(function(e){all[0]=Math.min(all[0],day(e.lo));all[1]=Math.max(all[1],day(e.end_hi||e.hi));});
+  chapters.forEach(function(c){all[0]=Math.min(all[0],day(c.lo));all[1]=Math.max(all[1],day(c.hi));});
+  var view=all.slice();
+  function ticks(a,b){
+    var span=b-a,out=[],y0=new Date(a*864e5).getUTCFullYear(),y1=new Date(b*864e5).getUTCFullYear();
+    if(span>730){var steps=[1,2,5,10,20,25,50,100],st=steps.filter(function(s){return (y1-y0)/s<=12;})[0]||100;
+      for(var y=Math.ceil(y0/st)*st;y<=y1;y+=st)out.push({d:day(String(y)),t:String(y),year:y});return out;}
+    if(span>62){for(var m=new Date(Date.UTC(y0,new Date(a*864e5).getUTCMonth(),1));m.getTime()/864e5<=b;m.setUTCMonth(m.getUTCMonth()+(span>400?3:1))){var d=m.getTime()/864e5;if(d>=a)out.push({d:d,t:m.getUTCMonth()?iso(d).slice(5,7):String(m.getUTCFullYear()),year:m.getUTCMonth()?null:m.getUTCFullYear()});}return out;}
+    var st2=span>20?7:1;for(var x=Math.ceil(a);x<=b;x+=st2)out.push({d:x,t:iso(x).slice(5),year:null});return out;
+  }
+  function draw(){
+    var L=120,W=680,R=12,rowH=26,top=26,a=view[0],b=view[1];
+    if(!isFinite(a)||!isFinite(b)){$('gw-tl').innerHTML='';return;}
+    if(b<=a){a-=183;b+=183;}
+    var pad=(b-a)*0.02;a-=pad;b+=pad;
+    var X=function(d){return L+(Math.max(a,Math.min(b,d))-a)/(b-a)*(W-L-R);};
+    var rows=[];if(chapters.length)rows.push({key:'@chapters',label:tr("ui.chapters")});
+    lanes.forEach(function(l){rows.push(l);});
+    var H=top+rows.length*rowH+8,s=[];
+    s.push('<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(tr("ui.timeline"))+'"><defs>'+PAL.concat(['var(--text-secondary)']).map(function(c,i){return '<pattern id="gw-hatch-'+i+'" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--surface-1)"/><line x1="0" y1="0" x2="0" y2="6" stroke="'+c+'" stroke-width="3"/></pattern>';}).join('')+'</defs>');
+    ticks(a,b).forEach(function(t){var x=X(t.d);s.push('<line x1="'+x+'" y1="'+(top-6)+'" x2="'+x+'" y2="'+H+'" stroke="var(--border)" stroke-width="0.5"/>');
+      s.push('<text x="'+x+'" y="'+(top-10)+'" font-size="11" text-anchor="middle" fill="var(--text-muted)"'+(t.year!=null?' class="yr" data-year="'+t.year+'"':'')+'>'+esc(t.t)+'</text>');});
+    rows.forEach(function(r,i){var y=top+i*rowH;
+      s.push('<text x="4" y="'+(y+rowH/2+4)+'" font-size="12" fill="var(--text-secondary)">'+esc(String(r.label).slice(0,18))+'</text>');
+      s.push('<line x1="'+L+'" y1="'+(y+rowH)+'" x2="'+(W-R)+'" y2="'+(y+rowH)+'" stroke="var(--border)" stroke-width="0.5"/>');});
+    chapters.forEach(function(c){if(hi(c.hi)<a||day(c.lo)>b)return;var x1=X(day(c.lo)),x2=Math.max(X(hi(c.hi)),x1+3),y=top+4;
+      s.push('<rect x="'+x1+'" y="'+y+'" width="'+(x2-x1)+'" height="'+(rowH-8)+'" rx="3" fill="var(--bg-accent)" stroke="var(--border-accent)" stroke-width="0.5"/>');
+      if(x2-x1>24)s.push('<text x="'+(x1+4)+'" y="'+(y+13)+'" font-size="11" fill="var(--text-accent)">'+esc(c.label)+'</text>');});
+    entries.forEach(function(e){if(!show[e.status])return;
+      var s0=day(e.lo),s1=e.kind==='span'?(e.open?Infinity:hi(e.end_hi||e.hi)):hi(e.hi);
+      if(s1<a||s0>b)return;   // außerhalb des Zeitraums: nicht an den Rand drücken
+      (e.lanes||[]).forEach(function(k){var i=-1;rows.forEach(function(r,j){if(r.key===k)i=j;});if(i<0)return;
+        var y=top+i*rowH+rowH/2,c=color(e),fl=e.flag?' stroke="var(--text-danger)" stroke-width="1.6"':'',dash=e.status==='uncertain'?' stroke-dasharray="3 2"':'',g='<g class="m" data-id="'+esc(e.id)+'" style="color:'+c+'"><title>'+esc(e.label+' · '+e.what)+'</title>';
+        if(e.kind==='span'){var x1=X(day(e.lo)),x2=e.open?X(b):X(hi(e.end_hi||e.hi)),w=Math.max(x2-x1,3);
+          var fill=e.estimated?hatch(e):(e.status==='documented'?c:e.status==='invented'?'transparent':c),op=e.status==='reported'?' fill-opacity="0.35"':'';
+          s.push(g+'<rect x="'+x1+'" y="'+(y-6)+'" width="'+w+'" height="12" rx="3" fill="'+fill+'"'+op+' stroke="'+(e.flag?'var(--text-danger)':c)+'" stroke-width="'+(e.flag?1.6:1)+'"'+(e.status==='invented'?' stroke-dasharray="1 2"':dash)+'/>'+(e.open?'<path d="M'+(x1+w)+' '+(y-6)+' l6 6 l-6 6" fill="none" stroke="'+c+'"/>':'')+'</g>');}
+        else{var x=X((day(e.lo)+hi(e.hi))/2),body;
+          if(e.kind==='birth')body='<path d="M'+x+' '+(y-7)+' l6 11 h-12 z" fill="'+c+'"'+fl+'/>';
+          else if(e.kind==='death')body='<path d="M'+x+' '+(y-8)+' v16 M'+(x-5)+' '+(y-3)+' h10" stroke="'+(e.flag?'var(--text-danger)':c)+'" stroke-width="2"/>';
+          else if(e.status==='invented')body='<path d="M'+x+' '+(y-6)+' l6 6 l-6 6 l-6 -6 z" fill="var(--surface-1)" stroke="'+(e.flag?'var(--text-danger)':c)+'" stroke-width="1.5"/>';
+          else body='<circle cx="'+x+'" cy="'+y+'" r="5.5" fill="'+(e.status==='documented'?(e.estimated?hatch(e):c):'var(--surface-1)')+'" stroke="'+(e.flag?'var(--text-danger)':c)+'" stroke-width="'+(e.flag?1.8:1.5)+'"'+dash+'/>';
+          if(hi(e.hi)-day(e.lo)>1&&X(hi(e.hi))-X(day(e.lo))>4)body='<line x1="'+X(day(e.lo))+'" y1="'+y+'" x2="'+X(hi(e.hi))+'" y2="'+y+'" stroke="'+c+'" stroke-opacity="0.45" stroke-width="3"/>'+body;
+          s.push(g+body+'</g>');}
+      });});
+    s.push('</svg>');
+    $('gw-tl').innerHTML=s.join('');
+    $('gw-range').textContent=iso(view[0]).slice(0,b-a>730?4:10)+' – '+iso(view[1]).slice(0,b-a>730?4:10);
+    $('gw-tl').querySelectorAll('.m').forEach(function(n){n.addEventListener('click',function(){detail(n.getAttribute('data-id'));});});
+    $('gw-tl').querySelectorAll('.yr').forEach(function(n){n.addEventListener('click',function(){var y=n.getAttribute('data-year');view=[day(y),hi(y)];sync();draw();list();});});
+  }
+  function detail(id){var e=null;entries.forEach(function(x){if(x.id===id)e=x;});if(!e)return;var d=$('gw-det');d.hidden=false;
+    d.innerHTML='<b>'+esc(e.label)+'</b> · '+esc(SL[e.status]||e.status)+(e.estimated?' · '+esc(tr("ui.estimated")):'')+'<br>'+esc(e.what)
+      +(e.people?'<br>'+esc(tr("ui.tl_people"))+': '+esc(e.people):'')+(e.place?'<br>'+esc(tr("ui.tl_place"))+': '+esc(e.place):'')
+      +(e.chapter?'<br>'+esc(tr("ui.tl_chapter"))+': '+esc(e.chapter):'')+(e.source?'<br>'+esc(tr("ui.source"))+': '+esc(e.source):'')
+      +'<br><span style="color:var(--text-muted)">'+esc(e.id)+'</span>';}
+  function list(){
+    var rows=(data.entries||[]).filter(function(e){if(!show[e.status])return false;if(!e.lo)return true;var s=day(e.lo),t=e.kind==='span'?(e.open?Infinity:hi(e.end_hi||e.hi)):hi(e.hi);return t>=view[0]&&s<=view[1];});
+    $('gw-list').innerHTML=rows.map(function(e){return '<tr'+(e.flag?' class="f"':'')+' data-id="'+esc(e.id)+'"><td class="d">'+esc(e.label)+'</td><td class="s">'+esc(SL[e.status]||e.status)+'</td><td>'+esc(e.what)+(e.people||e.place?'<span style="color:var(--text-muted)"> · '+esc([e.people,e.place].filter(Boolean).join(', '))+'</span>':'')+'</td></tr>';}).join('')
+      ||'<tr><td>'+esc(tr("ui.no_entries_in_this_period"))+'</td></tr>';
+    $('gw-list').querySelectorAll('tr[data-id]').forEach(function(r){r.addEventListener('click',function(){detail(r.getAttribute('data-id'));});});
+  }
+  function sync(){$('gw-from').value=iso(view[0]);$('gw-to').value=iso(view[1]);}
+  var flt=$('gw-flt');flt.innerHTML='<span style="font-size:13px;margin-right:8px">'+esc(tr("ui.tl_show"))+':</span>'+STATUS.map(function(s){return '<label class="gw-flt"><input type="checkbox" data-s="'+s+'" checked>'+esc(SL[s])+'</label>';}).join('');
+  flt.querySelectorAll('input[data-s]').forEach(function(c){c.addEventListener('change',function(){show[c.getAttribute('data-s')]=c.checked;draw();list();});});
+  $('gw-zoom').addEventListener('click',function(){var f=$('gw-from').value.trim(),t=$('gw-to').value.trim(),ok=/^\d{4}(-\d{2}(-\d{2})?)?$/;
+    if(ok.test(f)&&ok.test(t)&&hi(t)>=lo(f)){view=[lo(f),hi(t)];draw();list();}else{$('gw-range').textContent=tr("ui.please_enter_a_year_month_or_day_e_g_1944_or_1944_05");}});
+  $('gw-all').addEventListener('click',function(){view=all.slice();sync();draw();list();});
+  $('gw-leg').innerHTML=[['●',SL.documented],['○',SL.reported],['◌',SL.uncertain],['◇',SL.invented],['▨',tr("ui.estimated")],['▲',tr("ui.birth")],['✝',tr("ui.death")]].map(function(p){return '<span>'+p[0]+' '+esc(p[1])+'</span>';}).join('')
+    +places.slice(0,8).map(function(p,i){return '<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:'+PAL[i%PAL.length]+';vertical-align:-1px"></span> '+esc(p)+'</span>';}).join('');
+  sync();draw();list();
+})();
+</script>
