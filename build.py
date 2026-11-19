@@ -46,40 +46,47 @@ RUNTIME = r'''
     var html=t.html.replace(/\{\{t:([a-z0-9_.]+)\}\}/g,function(m,key){return esc(tr(key));});
     return fill(html,localizedData(data,tr));
   }
-  // Prüf-Tags (GhostWriter #331): data-gw-checks enthält eine JSON-Liste mit CK_TAG, CK_TEXT, CK_RESULT,
-  // CK_STATE, CK_REPORT. Fehlt das Feld (Platzhalter bleibt stehen) oder ist die Liste leer, entfällt der Bereich.
-  // Ein Tag zeigt nur „Prüfung gelaufen mit Ergebnis X“, er ist keine Freigabe und sendet nichts.
-  function checks(n){
-    var list;try{list=JSON.parse(n.getAttribute('data-gw-checks')||'[]');}catch(e){list=null;}
-    if(!Array.isArray(list)||!list.length){n.remove();return;}
-    list.forEach(function(c){
-      if(!c||typeof c!=='object')return;
-      var s=document.createElement('span'),failed=c.CK_RESULT==='failed',changed=c.CK_STATE==='changed',unknown=c.CK_STATE==='unknown';
-      s.className='gw-check';
-      s.setAttribute('data-result',String(c.CK_RESULT||''));s.setAttribute('data-state',String(c.CK_STATE||''));
-      s.textContent=String(c.CK_TAG||'');
-      s.title=String(c.CK_TEXT||'')+(c.CK_REPORT?'\n'+String(c.CK_REPORT):'');
-      s.style.cssText='font-size:11px;line-height:1;padding:3px 6px;border-radius:999px;white-space:nowrap;font-variant-numeric:tabular-nums;'
-        +'border:0.5px '+(changed||unknown?'dashed':'solid')+' '+(failed?'var(--border-warning)':'var(--border-strong)')+';'
-        +'background:'+(failed?'var(--bg-warning)':'var(--surface-2)')+';color:'+(failed?'var(--text-warning)':changed||unknown?'var(--text-muted)':'var(--text-secondary)');
-      n.appendChild(s);
-    });
+  // Prüf-Tags (GhostWriter #331, #340): data-gw-checks enthält eine JSON-Liste mit CK_TAG, CK_PILL, CK_TEXT,
+  // CK_RESULT, CK_STATE, CK_REPORT. Angezeigt wird ein Tag wie bei den Markern („Qualität ✓·“, sonst CK_TAG),
+  // gefärbt nach Ergebnis; gestrichelt, wenn seit der Prüfung geändert oder Stand unbekannt.
+  // Fehlt das Feld oder ist die Liste leer, entfällt der Bereich. Ein Tag ist keine Freigabe und sendet nichts.
+  var TONE={passed:'success',passed_with_notes:'warning',failed:'danger'};
+  function checkTag(c,text){
+    var s=document.createElement('span'),tone=TONE[c.CK_RESULT],soft=c.CK_STATE==='changed'||c.CK_STATE==='unknown';
+    s.className='gw-check';
+    s.setAttribute('data-result',String(c.CK_RESULT||''));s.setAttribute('data-state',String(c.CK_STATE||''));
+    s.textContent=String(text);
+    s.title=String(c.CK_TEXT||'')+(c.CK_REPORT?'\n'+String(c.CK_REPORT):'');
+    s.style.cssText='font-size:11px;padding:1px 7px;border-radius:999px;white-space:nowrap;font-variant-numeric:tabular-nums;'
+      +'border:0.5px '+(soft?'dashed':'solid')+' '+(tone?'var(--border-'+tone+',var(--border-strong))':'var(--border)')+';'
+      +'background:'+(tone?'var(--bg-'+tone+',var(--surface-1))':'var(--surface-1)')+';'
+      +'color:'+(tone?'var(--text-'+tone+',var(--text-secondary))':'var(--text-secondary)');
+    return s;
   }
-  // Frühere Prüfungen (GhostWriter #340): data-gw-checks-history enthält eine JSON-Liste mit CK_DATE, CK_TAG,
-  // CK_TEXT, CK_RESULT, CK_STATE, CK_REPORT, neueste zuerst. Eine Zeile je Eintrag; leer oder fehlend: entfällt.
+  function parse(n,attr){var l;try{l=JSON.parse(n.getAttribute(attr)||'[]');}catch(e){l=null;}n.removeAttribute(attr);return Array.isArray(l)?l:[];}
+  function checks(n){
+    var list=parse(n,'data-gw-checks').filter(function(c){return c&&typeof c==='object';});
+    if(!list.length){n.remove();return;}
+    list.forEach(function(c){n.appendChild(checkTag(c,c.CK_PILL||c.CK_TAG||''));});
+  }
+  // Frühere Prüfungen (#340): data-gw-checks-history, neueste zuerst; gruppiert nach Prüfart (CK_LABEL),
+  // je Eintrag ein kleiner Tag mit Datum und Uhrzeit (CK_WHEN) und Ergebniszeichen; Bericht im Tooltip.
   function checkHistory(n){
-    var list;try{list=JSON.parse(n.getAttribute('data-gw-checks-history')||'[]');}catch(e){list=null;}
-    if(!Array.isArray(list)||!list.length){var box=n.closest('[data-gw-checks-box]');(box||n).remove();return;}
-    list.forEach(function(c){
-      if(!c||typeof c!=='object')return;
-      var row=document.createElement('div'),tag=document.createElement('span');
-      row.className='gw-check-past';
-      row.style.cssText='display:flex;gap:6px;align-items:baseline;font-size:12px;color:var(--text-secondary);flex-wrap:wrap';
-      tag.setAttribute('data-gw-checks',JSON.stringify([c]));tag.style.cssText='display:inline-flex';
-      row.appendChild(tag);checks(tag);
-      var txt=document.createElement('span');txt.textContent=String(c.CK_TEXT||c.CK_DATE||'');row.appendChild(txt);
-      if(c.CK_REPORT){var r=document.createElement('code');r.textContent=String(c.CK_REPORT);r.style.cssText='font-size:11px;color:var(--text-muted)';row.appendChild(r);}
-      n.appendChild(row);
+    var list=parse(n,'data-gw-checks-history').filter(function(c){return c&&typeof c==='object';});
+    if(!list.length){var box=n.closest('[data-gw-checks-box]');(box||n).remove();return;}
+    var groups=[],by={};
+    list.forEach(function(c){var k=String(c.CK_LABEL||c.CK_KIND||'');if(!by[k]){by[k]=[];groups.push(k);}by[k].push(c);});
+    groups.forEach(function(k){
+      var row=document.createElement('div'),name=document.createElement('span'),items=document.createElement('span');
+      row.className='gw-check-group';
+      row.style.cssText='display:flex;gap:8px;align-items:baseline;flex-wrap:wrap';
+      name.textContent=k;name.style.cssText='font-size:12px;color:var(--text-secondary);min-width:90px';
+      items.style.cssText='display:flex;gap:4px;flex-wrap:wrap';
+      by[k].forEach(function(c){
+        var mark=String(c.CK_MARK||''),st=c.CK_STATE==='changed'?'*':(c.CK_STATE==='unknown'&&mark!=='?'?'?':'');
+        items.appendChild(checkTag(c,(String(c.CK_WHEN||c.CK_DATE||'')+' '+mark+st).trim()));
+      });
+      row.appendChild(name);row.appendChild(items);n.appendChild(row);
     });
   }
   var head='';
