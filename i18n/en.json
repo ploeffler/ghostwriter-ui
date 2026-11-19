@@ -125,7 +125,7 @@
   "native.analysis": "Background analysis “{kind}” available ({number}) · {date}",
   "native.import_notice": "The original import file {name} is kept, even after the earlier retention period ({date}). It is only removed on your explicit request.",
   "native.project_meta": "**{edition}** · Author: {author} · AI API costs: **{cost}**",
-  "native.project_table": "| # | Chapter | Costs | Status | |",
+  "native.project_table": "| # | Chapter | Words | Done | Costs | Status | |",
   "native.chapter_table": "| # | Section | Markers | Costs | Status |",
   "native.library_table": "| # | Book | Status | Progress | Edition | Costs |",
   "native.chapter_heading": "### 📖 Chapter {number} · {title}",
@@ -1025,5 +1025,12 @@
   "ui.please_enter_a_year_month_or_day_e_g_1944_or_1944_05": "Please enter a year, month or day, e.g. 1944 or 1944-05.",
   "ui.timeline_chronology_from_notes_and_research": "Timeline: chronology from notes and research",
   "ui.where_the_dates_do_not_fit_together": "Where the dates do not fit together",
-  "ui.show_timeline": "Show timeline"
+  "ui.show_timeline": "Show timeline",
+  "ui.words_in_the_manuscript": "Words in the manuscript (without footnotes)",
+  "ui.open_notes_from_the_latest_check": "Open notes from the latest check",
+  "native.words_count": "{number} words",
+  "native.words_count_one": "{number} word",
+  "native.open_notes": "{number} open notes",
+  "native.open_notes_one": "{number} open note",
+  "native.no_open_notes": "no open notes"
 }

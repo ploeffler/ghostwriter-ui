@@ -74,5 +74,10 @@
   "native.first_section",
   "native.section_beginning",
   "native.after_section",
-  "native.section_end"
+  "native.section_end",
+  "native.words_count",
+  "native.words_count_one",
+  "native.open_notes",
+  "native.open_notes_one",
+  "native.no_open_notes"
 ]
