@@ -1,37 +1,43 @@
 <!--
-  Vorlage: KI-Angabe im Buch (Formular, GhostWriter #78)
+  Vorlage: KI-Angabe im Buch (Formular, GhostWriter #78, #356)
 
   Inline-Widget für den Chat. Wird über den Befehl „KI-Angabe“ oder den Knopf
   in den Projekteinstellungen geöffnet (Aktion project.ai_disclosure.open).
-  Der Autor legt fest, ob und wie im Buch steht, wie bei diesem Buch KI genutzt
-  wurde. Der Hinweis auf die Entwicklung von GhostWriter ist etwas anderes und
+  In jedem Buch steht die Mindestangabe (Mustersatz „Funktionen einer KI“, #356);
+  der Autor legt fest, ob ein Zusatz dazukommt, wo die Angabe steht und welche
+  Funktionen der Mustersatz aufzählt. Der Hinweis auf die Entwicklung von GhostWriter ist etwas anderes und
   kommt nie ins Buch.
 
   Aufbau:
   - Kopf: Roboter-Symbol, „KI-Angabe im Buch“
-  - Angabe (keine, kurz, ausführlich, eigener Text), Ort, Dienste nennen
+  - Mindestangabe (fest, steht immer im Buch)
+  - Angabe (nur Mindestangabe; dazu kurz, ausführlich, eigener Text), Ort, Dienste nennen
+  - Funktionen im Mustersatz (Aufzählung)
   - Laut den Läufen genutzte Aufgaben und Dienste
-  - Wortlaut im Buch (Textfeld) mit Knopf „Vorschlag übernehmen“
+  - Zusatz im Buch (Textfeld) mit Knopf „Vorschlag übernehmen“
   - Hinweis zu Kennzeichnungspflichten (keine Rechtsberatung)
   - Abbrechen und Speichern
 
   Platzhalter (Text wird von gw.js HTML-maskiert):
-  - {{AI_MODE}}             none | short | detailed | custom
+  - {{AI_MODE}}             functions | short | detailed | custom (none gilt als functions)
+  - {{AI_MINIMUM}}          Mindestangabe mit Autor
+  - {{AI_FUNCTIONS}}        Aufzählung im Mustersatz, kommagetrennt
   - {{AI_PLACEMENT}}        imprint | foreword | afterword | page
   - {{AI_NAME_SERVICES}}    true | false
-  - {{AI_TEXT}}             bestätigter Wortlaut (leer = noch nicht bestätigt)
+  - {{AI_TEXT}}             bestätigter Zusatz (leer = noch nicht bestätigt)
   - {{AI_USED_TEXT}}        z. B. „Recherche: Perplexity · Textentwürfe: Anthropic Claude“; leer = keine Läufe
   - {{AI_PROPOSAL_SHORT}}, {{AI_PROPOSAL_SHORT_NAMED}}, {{AI_PROPOSAL_DETAILED}}, {{AI_PROPOSAL_DETAILED_NAMED}}
-                            Vorschläge aus den Läufen je Angabe und Dienste-Nennung; leer = keine Läufe
+                            Vorschläge für den Zusatz aus den Läufen je Angabe und Dienste-Nennung; leer = keine Läufe
   - {{AI_PLACES_MISSING}}   Orte, die es noch nicht gibt, kommagetrennt (z. B. „foreword,afterword“); werden markiert
   - {{AI_LEGAL_HINT}}       Hinweis zu Kennzeichnungspflichten
 
   Verhalten:
   - „Vorschlag übernehmen“ setzt den Vorschlag passend zu Angabe und
     Dienste-Nennung ins Textfeld; erst Speichern bestätigt ihn.
-  - Bei „keine Angabe“ sind Ort, Dienste und Text ausgegraut.
+  - Bei „nur Mindestangabe“ sind Dienste und Zusatz ausgegraut; Ort und
+    Funktionen bleiben änderbar. Dienste nennen gibt es nur bei kurz/ausführlich.
   - Speichern sendet project.ai_disclosure.update mit mode, placement,
-    name_services und text (der Wortlaut, den der Autor bestätigt).
+    name_services, functions und text (der Zusatz, den der Autor bestätigt).
     Abbrechen meldet nur den Abbruch. Danach ist das Formular gesperrt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
@@ -45,8 +51,8 @@
 <style>
 .gw-f label{display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
 .gw-f .hint{font-size:12px;color:var(--text-muted);font-weight:400}
-.gw-f select,.gw-f textarea{width:100%;box-sizing:border-box;padding:9px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px;line-height:1.6}
-.gw-f select:focus,.gw-f textarea:focus{outline:none;border-color:var(--border-accent)}
+.gw-f select,.gw-f textarea,.gw-f input[type=text]{width:100%;box-sizing:border-box;padding:9px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:14px;line-height:1.6}
+.gw-f select:focus,.gw-f textarea:focus,.gw-f input[type=text]:focus{outline:none;border-color:var(--border-accent)}
 .gw-f .chk{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:400;margin:0;cursor:pointer}
 .gw-f .chk input{width:16px;height:16px;margin:0;accent-color:var(--text-accent)}
 .gw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--gap-md);align-items:end}
@@ -57,26 +63,27 @@
 .gw-off{opacity:0.45;pointer-events:none}
 </style>
 <div style="padding:1rem 0">
-  <form class="gw-f" id="gw-ki" novalidate data-mode="{{AI_MODE}}" data-place="{{AI_PLACEMENT}}" data-names="{{AI_NAME_SERVICES}}" data-missing="{{AI_PLACES_MISSING}}"
+  <form class="gw-f" id="gw-ki" novalidate data-mode="{{AI_MODE}}" data-fn="{{AI_FUNCTIONS}}" data-place="{{AI_PLACEMENT}}" data-names="{{AI_NAME_SERVICES}}" data-missing="{{AI_PLACES_MISSING}}"
     data-ps="{{AI_PROPOSAL_SHORT}}" data-psn="{{AI_PROPOSAL_SHORT_NAMED}}" data-pd="{{AI_PROPOSAL_DETAILED}}" data-pdn="{{AI_PROPOSAL_DETAILED_NAMED}}"
     style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div style="display:flex;align-items:center;gap:var(--gap-sm)">
       <i class="ti ti-robot" style="font-size:18px;color:var(--text-secondary)" aria-hidden="true"></i>
       <span style="font-size:16px;font-weight:500">{{t:ui.ai_disclosure_in_the_book}}</span>
     </div>
+    <div style="font-size:13px;color:var(--text-secondary);padding:8px 10px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);line-height:1.5"><b>{{t:ui.minimum_always_in_the_book}}</b> {{AI_MINIMUM}}</div>
     <div style="font-size:13px;color:var(--text-secondary);line-height:1.5">{{t:ui.you_decide_whether_and_how_the_book_discloses_your_ai_use_only_the_wording_you_save_here_appears_in_the_book}}</div>
 
     <div class="gw-grid">
       <div>
         <label for="gw-mode">{{t:ui.disclosure}}</label>
         <select id="gw-mode">
-          <option value="none">{{t:ui.no_disclosure}}</option>
+          <option value="functions">{{t:ui.minimum_only}}</option>
           <option value="short">{{t:ui.brief_one_sentence}}</option>
           <option value="detailed">{{t:ui.detailed_per_task}}</option>
           <option value="custom">{{t:ui.custom_text}}</option>
         </select>
       </div>
-      <div class="gw-dep">
+      <div>
         <label for="gw-place">{{t:ui.location}}</label>
         <select id="gw-place">
           <option value="imprint">{{t:ui.imprint}}</option>
@@ -85,9 +92,13 @@
           <option value="page">{{t:ui.separate_page_at_the_end}}</option>
         </select>
       </div>
-      <div class="gw-dep">
+      <div class="gw-run">
         <label class="chk"><input type="checkbox" id="gw-names"> {{t:ui.name_the_services}}</label>
       </div>
+    </div>
+    <div>
+      <label for="gw-fn">{{t:ui.functions_in_the_standard_sentence}} <span class="hint">{{t:ui.functions_hint}}</span></label>
+      <input type="text" id="gw-fn">
     </div>
     <div id="gw-place-hint" style="font-size:12px;color:var(--text-warning)" hidden>{{t:ui.this_part_does_not_exist_yet_create_and_approve_it_under_front_and_back_matter_before_an_edition_can_be_produc}}</div>
 
@@ -95,7 +106,7 @@
 
     <div class="gw-dep">
       <div style="display:flex;align-items:end;gap:var(--gap-sm);margin-bottom:4px">
-        <label for="gw-text" style="margin:0;flex:1">{{t:ui.wording_in_the_book}} <span class="hint" id="gw-state"></span></label>
+        <label for="gw-text" style="margin:0;flex:1">{{t:ui.addition_in_the_book}} <span class="hint" id="gw-state"></span></label>
         <button type="button" class="gw-mini" id="gw-use"><i class="ti ti-wand" aria-hidden="true"></i> {{t:ui.apply_suggestion}}</button>
       </div>
       <textarea id="gw-text" rows="5">{{AI_TEXT}}</textarea>
@@ -113,7 +124,7 @@
 function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
 (function(){
   var f=document.getElementById('gw-ki'),ds=f.dataset,$=function(id){return document.getElementById(id);};
-  $('gw-mode').value=ds.mode||'none';$('gw-place').value=ds.place||'imprint';$('gw-names').checked=ds.names==='true';
+  $('gw-mode').value=ds.mode&&ds.mode!=='none'?ds.mode:'functions';$('gw-fn').value=ds.fn||'';$('gw-place').value=ds.place||'imprint';$('gw-names').checked=ds.names==='true';
   var confirmed=$('gw-text').value.trim(),missing=(ds.missing||'').split(',');
   function proposal(){
     var m=$('gw-mode').value,n=$('gw-names').checked;
@@ -122,11 +133,12 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     return '';
   }
   function refresh(){
-    var m=$('gw-mode').value,none=m==='none';
+    var m=$('gw-mode').value,none=m==='functions';
     f.querySelectorAll('.gw-dep').forEach(function(x){x.classList.toggle('gw-off',none);});
+    f.querySelectorAll('.gw-run').forEach(function(x){x.classList.toggle('gw-off',m!=='short'&&m!=='detailed');});
     $('gw-use').disabled=!proposal()||m==='custom';
     $('gw-use').title=proposal()?'':tr("ui.no_ai_runs_recorded");
-    $('gw-place-hint').hidden=none||missing.indexOf($('gw-place').value)<0;
+    $('gw-place-hint').hidden=missing.indexOf($('gw-place').value)<0;
     var t=$('gw-text').value.trim();
     $('gw-state').textContent=none?'':(!t?tr("ui.not_yet_confirmed"):(t===confirmed?tr("ui.confirmed_2"):tr("ui.confirmed_when_saved")));
   }
@@ -135,7 +147,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   function lock(){f.querySelectorAll('input,select,textarea,button').forEach(function(x){x.disabled=true;});f.style.opacity='0.6';}
   $('gw-save').addEventListener('click',function(){
     var m=$('gw-mode').value;
-    var data={mode:m,placement:$('gw-place').value,name_services:$('gw-names').checked,text:m==='none'?'':$('gw-text').value.trim()};
+    var data={mode:m,placement:$('gw-place').value,name_services:$('gw-names').checked,functions:$('gw-fn').value.trim(),text:m==='functions'?'':$('gw-text').value.trim()};
     lock();gwSend(tr("ui.save_ai_disclosure"),'project.ai_disclosure.update',data);
   });
   $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.ai_disclosure_cancelled"),'form.cancel',{form:'project.ai_disclosure.update'});});
