@@ -65,6 +65,23 @@ RUNTIME = r'''
       n.appendChild(s);
     });
   }
+  // Frühere Prüfungen (GhostWriter #340): data-gw-checks-history enthält eine JSON-Liste mit CK_DATE, CK_TAG,
+  // CK_TEXT, CK_RESULT, CK_STATE, CK_REPORT, neueste zuerst. Eine Zeile je Eintrag; leer oder fehlend: entfällt.
+  function checkHistory(n){
+    var list;try{list=JSON.parse(n.getAttribute('data-gw-checks-history')||'[]');}catch(e){list=null;}
+    if(!Array.isArray(list)||!list.length){var box=n.closest('[data-gw-checks-box]');(box||n).remove();return;}
+    list.forEach(function(c){
+      if(!c||typeof c!=='object')return;
+      var row=document.createElement('div'),tag=document.createElement('span');
+      row.className='gw-check-past';
+      row.style.cssText='display:flex;gap:6px;align-items:baseline;font-size:12px;color:var(--text-secondary);flex-wrap:wrap';
+      tag.setAttribute('data-gw-checks',JSON.stringify([c]));tag.style.cssText='display:inline-flex';
+      row.appendChild(tag);checks(tag);
+      var txt=document.createElement('span');txt.textContent=String(c.CK_TEXT||c.CK_DATE||'');row.appendChild(txt);
+      if(c.CK_REPORT){var r=document.createElement('code');r.textContent=String(c.CK_REPORT);r.style.cssText='font-size:11px;color:var(--text-muted)';row.appendChild(r);}
+      n.appendChild(row);
+    });
+  }
   var head='';
   function withHead(action,d){
     var writes=(/\.(update|create|reorder)$/.test(action)&&action!=='edition.create')||action==='changes.merge'||action==='approval.confirm';
@@ -81,6 +98,7 @@ RUNTIME = r'''
       var v=data[n.getAttribute('data-gw-if')];
       if(!v||(Array.isArray(v)&&!v.length))n.remove();
     });
+    el.querySelectorAll('[data-gw-checks-history]').forEach(checkHistory);
     el.querySelectorAll('[data-gw-checks]').forEach(checks);
     T[name].run(translator(lang));
   }

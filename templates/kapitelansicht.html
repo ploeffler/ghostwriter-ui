@@ -115,6 +115,7 @@
         </div>
         <div style="font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;margin-left:auto" title="{{CHAPTER_COST_HINT}}"><i class="ti ti-coins" aria-hidden="true"></i><span style="font-variant-numeric:tabular-nums">{{CHAPTER_COST}}</span></div>
       </div>
+      <details data-gw-if="CHECKS_HISTORY_JSON" data-gw-checks-box style="margin-top:8px"><summary style="font-size:13px;color:var(--text-secondary);cursor:pointer">{{t:ui.earlier_checks}} ({{CHECKS_HISTORY_COUNT}})</summary><div data-gw-checks-history="{{CHECKS_HISTORY_JSON}}" style="display:flex;flex-direction:column;gap:4px;margin-top:6px"></div></details>
     </div>
     <div style="display:flex;align-items:flex-start;gap:var(--gap-md);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <div class="gw-two" style="flex:1;min-width:0;display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-md)">
