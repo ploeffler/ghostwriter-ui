@@ -994,5 +994,12 @@
   "ui.latest_checks": "Latest checks",
   "ui.checks": "Checks",
   "ui.earlier_checks": "Earlier checks",
-  "ui.checks_are_not_approvals": "checks run, not approvals"
+  "ui.checks_are_not_approvals": "checks run, not approvals",
+  "ui.preview": "Preview version",
+  "ui.preview_title": "Keep this state with a tag and pre-release, not an edition",
+  "ui.create_preview": "Create preview version",
+  "ui.preview_confirm": "The preview version creates the tag {{PREVIEW_TAG}} and a pre-release with the files. The release is visible in the repository, to everyone if the repository is public. Click again to create it.",
+  "ui.preview_confirm_label": "Yes, create preview version",
+  "ui.preview_requested": "Preview version requested",
+  "ui.preview_release": "Release page of the latest preview version"
 }

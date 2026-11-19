@@ -11,7 +11,7 @@
   - Erscheinungsdatum (Pflichtfeld)
   - Anmerkungen (optional)
   - Hinweis, falls nicht alle Kapitel freigegeben sind
-  - Probedruck (links), Abbrechen und Erzeugen
+  - Probedruck und Vorabfassung (links), Abbrechen und Erzeugen
 
   Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert):
   - {{EDITION_NUMBER}}         nächste Auflage: project.current_edition + 1
@@ -21,6 +21,8 @@
   - {{APPROVAL_WARNING_TEXT}}  z. B. "Bisher sind 3 von 5 Kapiteln freigegeben; nur diese
                                kommen in die Auflage." Leer = alle Kapitel freigegeben,
                                der Hinweis entfällt.
+  - {{PREVIEW_TAG}}            Tag der nächsten Vorabfassung (GhostWriter #348, #352), z. B.
+                               "adhs-im-erwachsenenleben-vorab-1". Leer = kein Knopf „Vorabfassung“.
 
   Wiederholung pro Format zwischen {{#FORMATS}} und {{/FORMATS}}
   (book_releases.assets, in v0.5: PDF, DOCX, EPUB):
@@ -31,6 +33,11 @@
     sonst Name, Tag, Datum, Formate und Anmerkungen als Nachricht in
     den Chat. Abbrechen meldet nur den Abbruch. Danach ist das
     Formular gesperrt.
+  - Vorabfassung (#352): Der erste Klick zeigt über der Knopfzeile, dass
+    der Tag {{PREVIEW_TAG}} und ein im Repository sichtbares Pre-Release
+    entstehen; erst der zweite Klick sendet edition.preview (ohne
+    Formate, es gelten typesetting.formats). Umgesetzt über die Laufzeit
+    (data-gw-send, data-gw-confirm), nicht im Vorlagenskript.
   - Release Notes sind Pflicht (book_releases.release_notes_required).
     Die Anmerkungen gehen in die Release Notes ein. Bleiben sie leer,
     werden die Release Notes aus den Änderungen seit der letzten
@@ -39,7 +46,7 @@
     (book_releases.approval).
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: edition.create {name, tag, date, formats, notes}, edition.proof (Probedruck des aktuellen Stands, keine Auflage), form.cancel
+  Aktionen: edition.create {name, tag, date, formats, notes}, edition.proof (Probedruck des aktuellen Stands, keine Auflage), edition.preview (Vorabfassung mit Tag und Pre-Release, #352), form.cancel
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
@@ -91,8 +98,11 @@
       <span id="gw-warning-text">{{APPROVAL_WARNING_TEXT}}</span>
     </div>
 
-    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <button type="button" class="gw-btn" id="gw-proof" title="{{t:ui.pdf_of_the_current_draft_with_all_sections_and_highlighted_markers_without_publishing}}" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-secondary);margin-right:auto;display:inline-flex;align-items:center;gap:6px"><i class="ti ti-printer" aria-hidden="true"></i>{{t:ui.proof}}</button>
+    <div data-gw-confirm-at style="display:flex;justify-content:flex-end;gap:var(--gap-sm);flex-wrap:wrap;border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <div style="display:flex;gap:var(--gap-sm);flex-wrap:wrap;margin-right:auto">
+        <button type="button" class="gw-btn" id="gw-proof" title="{{t:ui.pdf_of_the_current_draft_with_all_sections_and_highlighted_markers_without_publishing}}" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-secondary);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-printer" aria-hidden="true"></i>{{t:ui.proof}}</button>
+        <button type="button" class="gw-btn" id="gw-preview" data-gw-if="PREVIEW_TAG" data-gw-send="edition.preview" data-gw-text="{{t:ui.create_preview}}" data-gw-confirm="{{t:ui.preview_confirm}}" data-gw-confirm-label="{{t:ui.preview_confirm_label}}" data-gw-done="{{t:ui.preview_requested}}" title="{{t:ui.preview_title}}" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-secondary);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-tag" aria-hidden="true"></i>{{t:ui.preview}}</button>
+      </div>
       <button type="button" class="gw-btn" id="gw-cancel" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)">{{t:ui.cancel}}</button>
       <button type="button" class="gw-btn" id="gw-save" style="border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{t:ui.create_2}}</button>
     </div>

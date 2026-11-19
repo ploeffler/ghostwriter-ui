@@ -89,6 +89,33 @@ RUNTIME = r'''
       row.appendChild(name);row.appendChild(items);n.appendChild(row);
     });
   }
+  // Knopf mit Rückfrage (GhostWriter #352): data-gw-send=<Aktion>, data-gw-text=<Klartextzeile>, data-gw-args=<JSON>,
+  // data-gw-confirm=<Hinweis vor dem Senden>, data-gw-confirm-label=<Beschriftung zum Bestätigen>,
+  // data-gw-done=<Beschriftung nach dem Senden>. Mit data-gw-confirm zeigt der erste Klick den Hinweis über der
+  // Knopfzeile (Element mit data-gw-confirm-at, sonst vor dem Elternelement), erst der zweite sendet; ohne sendet schon der erste. Danach ist der Knopf gesperrt.
+  function sendAction(text,action,data){
+    var d=withHead(action,data||{}),k=Object.keys(d);
+    var short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});
+    sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');
+  }
+  function confirmSend(n){
+    var a=function(k){return n.getAttribute(k)||'';},action=a('data-gw-send'),hint=a('data-gw-confirm'),box=null,args;
+    try{args=JSON.parse(a('data-gw-args')||'{}');}catch(e){args={};}
+    if(!args||typeof args!=='object'||Array.isArray(args))args={};
+    function label(t){if(!t)return;var l=n.lastChild;if(l&&l.nodeType===3)l.textContent=t;else n.appendChild(document.createTextNode(t));}
+    n.addEventListener('click',function(){
+      if(n.disabled)return;
+      if(hint&&!box){
+        box=document.createElement('div');box.setAttribute('role','alert');box.setAttribute('data-gw-confirm-box','');
+        box.style.cssText='padding:10px 12px;border:0.5px solid var(--border-warning);border-radius:var(--radius);background:var(--bg-warning);color:var(--text-warning);font-size:13px;line-height:1.5';
+        box.textContent=hint;
+        var row=(n.closest&&n.closest('[data-gw-confirm-at]'))||n.parentNode;   // vor der Knopfzeile
+        if(row&&row.parentNode)row.parentNode.insertBefore(box,row);
+        label(a('data-gw-confirm-label'));return;
+      }
+      n.disabled=true;label(a('data-gw-done'));sendAction(a('data-gw-text')||action,action,args);
+    });
+  }
   var head='';
   function withHead(action,d){
     var writes=(/\.(update|create|reorder)$/.test(action)&&action!=='edition.create')||action==='changes.merge'||action==='approval.confirm';
@@ -107,6 +134,7 @@ RUNTIME = r'''
     });
     el.querySelectorAll('[data-gw-checks-history]').forEach(checkHistory);
     el.querySelectorAll('[data-gw-checks]').forEach(checks);
+    el.querySelectorAll('[data-gw-send]').forEach(confirmSend);
     T[name].run(translator(lang));
   }
   window.GW={version:VERSION,templates:Object.keys(T),render:render,renderHtml:renderHtml,supports:supports,withHead:withHead,escape:esc};
