@@ -993,5 +993,6 @@
   "ui.analysis_settings_cancelled": "Analyse-Einstellungen abgebrochen",
   "ui.latest_checks": "Letzte Prüfungen",
   "ui.checks": "Prüfungen",
+  "ui.earlier_checks": "Frühere Prüfungen",
   "ui.checks_are_not_approvals": "gelaufene Prüfungen, keine Freigabe"
 }

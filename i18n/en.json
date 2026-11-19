@@ -993,5 +993,6 @@
   "ui.analysis_settings_cancelled": "Analysis settings cancelled",
   "ui.latest_checks": "Latest checks",
   "ui.checks": "Checks",
+  "ui.earlier_checks": "Earlier checks",
   "ui.checks_are_not_approvals": "checks run, not approvals"
 }

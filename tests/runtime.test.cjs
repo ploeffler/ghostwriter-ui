@@ -90,6 +90,8 @@ console.log('Repeated user data is never re-interpreted as a placeholder');
   assert.equal(ok.removed,false);
   assert.equal(missing.removed,true);
   assert.equal(empty.removed,true);
+  {const h=GW.renderHtml('kapitelansicht',{CHECKS_HISTORY_JSON:'[{"CK_TAG":"Q✗"}]',CHECKS_HISTORY_COUNT:'1'},'de');
+   assert.ok(h.includes('Frühere Prüfungen (1)')&&h.includes('data-gw-checks-history'));}
   const html=GW.renderHtml('kapitelansicht',{CHECKS_JSON:'[{"CK_TAG":"S✓"}]',SECTIONS:[{SECTION_ID:'s1',SECTION_CHECKS_JSON:'[{"CK_TAG":"L✓"}]'}]},'de');
   assert.match(html,/data-gw-checks="\[\{&quot;CK_TAG&quot;:&quot;L✓&quot;\}\]"/);
   assert.match(html,/Prüfungen/);
