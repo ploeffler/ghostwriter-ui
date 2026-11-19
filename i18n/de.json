@@ -994,5 +994,12 @@
   "ui.latest_checks": "Letzte Prüfungen",
   "ui.checks": "Prüfungen",
   "ui.earlier_checks": "Frühere Prüfungen",
-  "ui.checks_are_not_approvals": "gelaufene Prüfungen, keine Freigabe"
+  "ui.checks_are_not_approvals": "gelaufene Prüfungen, keine Freigabe",
+  "ui.preview": "Vorabfassung",
+  "ui.preview_title": "Stand mit Tag und Pre-Release festhalten, keine Auflage",
+  "ui.create_preview": "Vorabfassung anlegen",
+  "ui.preview_confirm": "Die Vorabfassung legt den Tag {{PREVIEW_TAG}} und ein Pre-Release mit den Dateien an. Das Release ist im Repository sichtbar, bei einem öffentlichen Repository für alle. Zum Anlegen noch einmal klicken.",
+  "ui.preview_confirm_label": "Ja, Vorabfassung anlegen",
+  "ui.preview_requested": "Vorabfassung angefordert",
+  "ui.preview_release": "Release-Seite der letzten Vorabfassung"
 }

@@ -112,3 +112,41 @@ console.log('Repeated user data is never re-interpreted as a placeholder');
   assert.match(html,/Prüfungen/);
   console.log('Check tags: JSON rendering, tooltips, failed/changed styling and missing fields passed');
 }
+// Knopf mit Rückfrage (GhostWriter #352): Vorabfassung im Formular „Neue Auflage“
+{
+  const html=GW.renderHtml('auflage-erzeugen',{PREVIEW_TAG:'mein-buch-vorab-2',FORMATS:[]},'de');
+  assert.match(html,/data-gw-send="edition.preview"/);
+  assert.match(html,/data-gw-confirm="Die Vorabfassung legt den Tag mein-buch-vorab-2 und ein Pre-Release/);
+  assert.ok(GW.renderHtml('auflage-erzeugen',{PREVIEW_TAG:'x-vorab-1',FORMATS:[]},'en').includes('Click again to create it.'));
+  const overview=GW.renderHtml('projektuebersicht',{PREVIEW_TEXT:'Vorabfassung 2 vom 19.11.2026',PREVIEW_URL:'https://github.com/o/r/releases/tag/t-vorab-2',CHAPTERS:[]},'de');
+  assert.match(overview,/href="https:\/\/github.com\/o\/r\/releases\/tag\/t-vorab-2"[^>]*>.*Vorabfassung 2 vom 19.11.2026<\/a>/);
+  const out=[];context.sendPrompt=t=>out.push(t);
+  const inserted=[];
+  const label={nodeType:3,textContent:'Vorabfassung'};
+  const row={parentNode:{insertBefore(box,before){inserted.push([box,before]);}}};
+  const attrs={'data-gw-send':'edition.preview','data-gw-text':'Vorabfassung anlegen','data-gw-confirm':'Legt den Tag t-vorab-2 an.','data-gw-confirm-label':'Ja, anlegen','data-gw-done':'angefordert'};
+  const btn={disabled:false,lastChild:label,parentNode:{},getAttribute:k=>attrs[k]||null,closest:()=>row,handlers:{},addEventListener(e,fn){this.handlers[e]=fn;}};
+  const plain={disabled:false,lastChild:{nodeType:3,textContent:'x'},parentNode:row,getAttribute:k=>({'data-gw-send':'edition.proof','data-gw-args':'{"formats":"pdf"}'})[k]||null,closest:()=>null,handlers:{},addEventListener(e,fn){this.handlers[e]=fn;}};
+  context.document.createElement=()=>({style:{},attrs:{},setAttribute(k,v){this.attrs[k]=v;}});
+  const host={innerHTML:'',querySelectorAll:sel=>sel==='[data-gw-send]'?[btn,plain]:[]};
+  const getById=context.document.getElementById;
+  context.document.getElementById=()=>({textContent:'Hinweis',dataset:{},addEventListener(){},remove(){},querySelectorAll:()=>[]});
+  GW.render('auflage-erzeugen',{PREVIEW_TAG:'t-vorab-2',FORMATS:[]},host,'de');
+  context.document.getElementById=getById;
+  btn.handlers.click();
+  assert.equal(out.length,0,'erster Klick sendet nicht');
+  assert.equal(inserted.length,1);
+  assert.equal(inserted[0][0].textContent,'Legt den Tag t-vorab-2 an.');
+  assert.equal(inserted[0][1],row);
+  assert.equal(label.textContent,'Ja, anlegen');
+  btn.handlers.click();
+  assert.equal(out.length,1);
+  assert.match(out[0],/^Vorabfassung anlegen\n\n`gw:edition.preview`$/);
+  assert.equal(btn.disabled,true);
+  assert.equal(label.textContent,'angefordert');
+  btn.handlers.click();
+  assert.equal(out.length,1,'gesperrt nach dem Senden');
+  plain.handlers.click();
+  assert.match(out[1],/`gw:edition.proof formats=pdf`$/);
+  console.log('Confirm buttons: preview needs a second click, sends once, shows tag and release link');
+}

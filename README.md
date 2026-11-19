@@ -25,6 +25,7 @@ Der Assistent gibt statt der fertigen Ansicht nur eine Ladezeile und die Daten a
 - Statuswerte in Feldern auf `_STATUS` (z. B. `writing`) zeigt `gw.js` in der gewählten Sprache an. Die übergebenen Daten und internen Statuscodes werden nicht verändert; unbekannte Werte bleiben erhalten.
 - Bereiche mit `data-gw-if="NAME"` entfallen, wenn `NAME` fehlt oder leer ist.
 - Elemente mit `data-gw-checks="{{…_CHECKS_JSON}}"` zeigen Prüf-Tags (GhostWriter #331): eine JSON-Liste mit `CK_TAG`, `CK_TEXT` (Tooltip), `CK_RESULT`, `CK_STATE` und `CK_REPORT`. Fehlt das Feld oder ist die Liste leer, entfällt das Element. Nicht bestandene Prüfungen sind farbig hervorgehoben, seit der Prüfung geänderte Texte gestrichelt umrandet. Ein Tag ist keine Freigabe und sendet nichts.
+- Knöpfe mit `data-gw-send="<aktion>"` senden die Aktion über die Laufzeit (GhostWriter #352): Klartextzeile aus `data-gw-text`, Daten optional als JSON in `data-gw-args`. Mit `data-gw-confirm` zeigt der erste Klick den Hinweis über der Knopfzeile (`data-gw-confirm-at`) und ändert die Beschriftung auf `data-gw-confirm-label`; erst der zweite Klick sendet. Danach ist der Knopf gesperrt und zeigt `data-gw-done`. Verwendet für „Vorabfassung“ im Formular „Neue Auflage“.
 - Klicks senden über `sendPrompt` eine Textzeile plus einen Block `gw` mit JSON in den Chat.
 
 `<commit>` ist ein fester Commit dieses Repos. So ändert sich eine Ansicht nicht unbemerkt, und jsDelivr kann die Datei dauerhaft zwischenspeichern. `@main` funktioniert auch, wird von jsDelivr aber bis zu zwölf Stunden zwischengespeichert.
