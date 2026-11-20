@@ -1,0 +1,123 @@
+<!--
+  Vorlage: Chronologie aus Unterlagen (Auswahl, GhostWriter #364)
+
+  Inline-Widget für den Chat. Zeigt die Vorschläge eines Laufs der Art
+  chronology (scripts/analyze.py bzw. Chatweg): Einträge aus Figuren, Orten,
+  Quellenliste, Recherche und eigenen Beiträgen in gesicherten Gesprächen –
+  nie aus dem Manuskript –, nach Datum, je mit Belegstand, Quelle und Zitat.
+  Hier wählt der Benutzer aus, was nach story/chronology.yml kommt; vorhandene
+  Einträge bleiben unverändert. Entschieden wird nichts.
+
+  Aufbau:
+  - Kopf: Symbol, „Chronologie-Vorschläge“, Anzahl, Lauf
+  - je Vorschlag: Häkchen (nicht vorgewählt bei „schon da“), Nummer, Datum
+    (änderbar), Belegstand (Auswahl), was geschah (änderbar), Quelle, Zitat,
+    Hinweise „schon da“, „gleiches Ereignis wie N“, Notiz
+  - Alle / keine, Verwerfen, Übernehmen
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{KIND}}                chronology
+  - {{RUN_ID}}, {{RUN_TEXT}}  Lauf, z. B. „Hintergrundlauf 001 vom 20.11.2026“
+  - {{SUGGEST_COUNT_TEXT}}  z. B. „12 Vorschläge · 2 schon da“
+  Wiederholung je Vorschlag zwischen {{#ENTRIES}} und {{/ENTRIES}}:
+  - {{C_IDX}}, {{C_N}}      Nummer in der Vorschlagsdatei und laufende Nummer (ab 1)
+  - {{C_DATE}}              Datum bzw. Beginn (JJJJ, JJJJ-MM, JJJJ-MM-TT; leer = ohne)
+  - {{C_LABEL}}             Anzeige des Datums („um 1944“, „1949–1952“)
+  - {{C_STATUS}}            documented | reported | uncertain
+  - {{C_WHAT}}, {{C_SOURCE}}, {{C_QUOTE}}, {{C_NOTE}}  was geschah, Fundort, Zitat, Notiz
+  - {{C_EXISTING}}          nicht leer = gleicher Eintrag schon vorhanden (ID)
+  - {{C_SAME}}              nicht leer = Nummer des Vorschlags zum selben Ereignis
+
+  Verhalten:
+  - Übernehmen sendet analysis.apply mit kind, run und choices: je angehaktem
+    Vorschlag {index, what, status} und date nur, wenn geändert.
+  - Verwerfen sendet form.cancel (form analysis.apply, kind, run).
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: analysis.apply, form.cancel
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">{{t:ui.chr_heading_sr}}</h2>
+<style>
+.gw-cv .en{display:grid;grid-template-columns:auto 2.2em 7.5em 8.5em minmax(0,1fr);gap:6px;align-items:start;padding:7px 0;border-bottom:0.5px solid var(--border)}
+.gw-cv .en:last-child{border-bottom:0}
+.gw-cv .en.off{opacity:0.55}
+.gw-cv .n{font-size:13px;color:var(--text-muted);text-align:right;padding-top:6px}
+.gw-cv .en[data-same]:not([data-same=""]) .n{color:var(--text-danger);font-weight:500}
+.gw-cv input[type=text],.gw-cv select{font:inherit;font-size:13px;padding:4px 7px;border:0.5px solid var(--border-strong);border-radius:8px;background:var(--surface-1);color:var(--text-primary);width:100%;box-sizing:border-box;min-width:0}
+.gw-cv .meta{grid-column:3 / 6;font-size:12px;color:var(--text-muted);display:flex;flex-wrap:wrap;gap:4px 10px}
+.gw-cv .meta .q{font-style:italic}
+.gw-cv .tag{font-size:11px;padding:1px 7px;border-radius:999px;border:0.5px solid var(--border-strong)}
+.gw-cv .tag.warn{border-color:var(--border-warning);color:var(--text-warning)}
+.gw-cv .tag:empty,.gw-cv .meta span:empty{display:none}
+@media (max-width:560px){.gw-cv .en{grid-template-columns:auto 2.2em 1fr 1fr}.gw-cv .en .wt{grid-column:3 / 5}.gw-cv .meta{grid-column:3 / 5}}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)}
+.gw-btn.pri{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-btn:disabled{opacity:0.45;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-cv" id="gw-cv" data-kind="{{KIND}}" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div>
+      <div style="font-size:12px;color:var(--text-muted)">{{SUGGEST_COUNT_TEXT}}<span data-gw-if="RUN_TEXT"> · {{RUN_TEXT}}</span></div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-calendar-time" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.chr_title}}</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;font-weight:500">{{t:ui.chr_entries}}</span><span style="font-size:13px"><button type="button" id="gw-all" style="background:none;border:0;padding:0;font:inherit;color:var(--text-accent);cursor:pointer">{{t:ui.all}}</button> · <button type="button" id="gw-nothing" style="background:none;border:0;padding:0;font:inherit;color:var(--text-accent);cursor:pointer">{{t:ui.none}}</button></span></div>
+    <div id="gw-list">
+      {{#ENTRIES}}
+      <div class="en" data-idx="{{C_IDX}}" data-date="{{C_DATE}}" data-status="{{C_STATUS}}" data-existing="{{C_EXISTING}}" data-same="{{C_SAME}}">
+        <input type="checkbox" class="on" checked aria-label="{{t:ui.chr_apply_entry}}" style="margin-top:7px">
+        <span class="n">{{C_N}}</span>
+        <input type="text" class="dt" value="{{C_DATE}}" placeholder="{{C_LABEL}}" aria-label="{{t:ui.chr_date}}">
+        <select class="st" aria-label="{{t:ui.chr_status}}">
+          <option value="documented">{{t:ui.chr_documented}}</option>
+          <option value="reported">{{t:ui.chr_reported}}</option>
+          <option value="uncertain">{{t:ui.chr_uncertain}}</option>
+          <option value="invented">{{t:ui.chr_invented}}</option>
+        </select>
+        <input type="text" class="wt" value="{{C_WHAT}}" aria-label="{{t:ui.what}}">
+        <div class="meta"><span>{{C_LABEL}}</span><span>{{C_SOURCE}}</span><span class="q">„{{C_QUOTE}}“</span><span>{{C_NOTE}}</span><span class="tag ex"></span><span class="tag warn sm"></span></div>
+      </div>
+      {{/ENTRIES}}
+    </div>
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">{{t:ui.chr_none}}</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.chr_footer}}</div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel">{{t:ui.discard}}</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">{{t:ui.apply}}</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var box=document.getElementById('gw-cv'),ds=box.dataset,$=function(id){return document.getElementById(id);};
+  var rows=Array.prototype.slice.call(box.querySelectorAll('.en'));
+  if(rows.length)$('gw-none').remove();else $('gw-apply').disabled=true;
+  rows.forEach(function(r){
+    var on=r.querySelector('.on');
+    r.querySelector('.st').value=r.dataset.status||'uncertain';
+    if(r.dataset.existing){on.checked=false;r.classList.add('off');r.querySelector('.ex').textContent=tr("ui.chr_existing")+' '+r.dataset.existing;}
+    if(r.dataset.same)r.querySelector('.sm').textContent=tr("ui.chr_same_as")+' '+r.dataset.same;
+    on.addEventListener('change',function(){r.classList.toggle('off',!on.checked);refresh();});
+  });
+  function set(v){rows.forEach(function(r){r.querySelector('.on').checked=v;r.classList.toggle('off',!v);});refresh();}
+  $('gw-all').addEventListener('click',function(){set(true);});
+  $('gw-nothing').addEventListener('click',function(){set(false);});
+  box.addEventListener('input',refresh);
+  function choices(){
+    return rows.filter(function(r){return r.querySelector('.on').checked&&r.querySelector('.wt').value.trim();}).map(function(r){
+      var c={index:+r.dataset.idx,what:r.querySelector('.wt').value.trim(),status:r.querySelector('.st').value},d=r.querySelector('.dt').value.trim();
+      if(d!==(r.dataset.date||''))c.date=d;
+      return c;
+    });
+  }
+  function refresh(){var n=choices().length;$('gw-apply').disabled=!n;$('gw-apply').textContent=n?(n+tr("ui.chr_apply_count")):tr("ui.apply");}
+  function lock(){box.querySelectorAll('input,button,select').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
+  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend(tr("ui.chr_apply_text")+ch.length+')','analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.suggestions_discarded"),'form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
+  refresh();
+})();
+</script>

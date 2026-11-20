@@ -1049,5 +1049,21 @@
   "ui.rephrase": "Anders formulieren",
   "ui.solvable_without_the_author": "Ohne Autor lösbar",
   "ui.suggestion": "Vorschlag",
-  "ui.your_wording": "Deine Fassung"
+  "ui.your_wording": "Deine Fassung",
+  "ui.chr_heading_sr": "Chronologie aus Unterlagen zum Auswählen und Übernehmen",
+  "ui.chr_title": "Chronologie-Vorschläge",
+  "ui.chr_entries": "Einträge",
+  "ui.chr_apply_entry": "Eintrag übernehmen",
+  "ui.chr_date": "Datum",
+  "ui.chr_status": "Belegstand",
+  "ui.chr_documented": "belegt",
+  "ui.chr_reported": "Angabe",
+  "ui.chr_uncertain": "unsicher",
+  "ui.chr_invented": "Romanfreiheit",
+  "ui.chr_none": "Keine Einträge mit wörtlicher Fundstelle.",
+  "ui.chr_footer": "Aus Unterlagen und Recherche, nicht aus dem Manuskript. Ein Datum nur, wenn das Zitat es nennt; „belegt“ nur aus Quellenliste und Recherche. Übernommen wird nur, was angehakt ist; vorhandene Einträge bleiben unverändert.",
+  "ui.chr_existing": "schon da:",
+  "ui.chr_same_as": "gleiches Ereignis wie",
+  "ui.chr_apply_count": " Einträge übernehmen",
+  "ui.chr_apply_text": "Chronologie übernehmen ("
 }
