@@ -18,6 +18,7 @@
   - {{PROJECT_TITLE_SHORT}}       project.title_short
   - {{CHARACTER_ID}}              stabile ID (char-…)
   - {{CHARACTER_NAME}}, {{CHARACTER_ROLE}}  name, role (main | supporting | minor)
+  - {{CHARACTER_PORTRAIT}}, {{CHARACTER_PORTRAIT_ID}}  Profilbild als verkleinerte Daten-URL und Referenzbild-ID (GhostWriter #417); leer = kein Bild
   - {{CHARACTER_SHORT}}, {{CHARACTER_AGE}}, {{CHARACTER_APPEARANCE}}, {{CHARACTER_VOICE}}, {{CHARACTER_VISUAL}}
                                    Felder aus dem Kopf der Figurendatei
   - {{CHARACTER_TRAITS}}          Eigenschaften, kommagetrennt
@@ -69,6 +70,7 @@
 <div style="padding:1rem 0">
   <div id="gw-figur" data-id="{{CHARACTER_ID}}" data-role="{{CHARACTER_ROLE}}" data-source="{{CHARACTER_SOURCE}}" data-series="{{SERIES_ID}}" data-series-title="{{SERIES_TITLE}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
     <div style="display:flex;align-items:flex-start;gap:var(--gap-md)">
+      <figure data-gw-if="CHARACTER_PORTRAIT" style="margin:0;flex:none;text-align:center"><img src="{{CHARACTER_PORTRAIT}}" alt="{{CHARACTER_NAME}}" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:0.5px solid var(--border);display:block"><figcaption style="font-size:11px;color:var(--text-muted);margin-top:4px;max-width:96px;overflow-wrap:anywhere">{{t:ui.portrait}} · {{CHARACTER_PORTRAIT_ID}}</figcaption></figure>
       <div style="flex:1">
         <span style="font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{PROJECT_TITLE_SHORT}}</span>
         <div style="font-size:20px;font-weight:500;margin-top:4px">{{CHARACTER_NAME}}</div>
