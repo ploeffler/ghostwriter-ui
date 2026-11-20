@@ -63,6 +63,12 @@ const action=GW.withHead('chapter.update',raw);
 assert.equal(action.chapter_id,'ch-1');
 assert.equal(action.expected_head_sha,'a'.repeat(40));
 assert.equal(raw.expected_head_sha,undefined);
+// GhostWriter #179: alle schreibenden Aktionen tragen den gelesenen Stand, reine Aufträge und Ansichten nicht
+for(const name of ['chapter.sections.add','chapter.research.start','series.volume.add','series.omnibus.publish','import.apply','analysis.apply','character.suggest.apply','image.place'])
+  assert.equal(GW.withHead(name,{}).expected_head_sha,'a'.repeat(40),name);
+for(const name of ['run.start','edition.proof','edition.create','view.section','form.cancel','character.suggest'])
+  assert.equal(GW.withHead(name,{}).expected_head_sha,undefined,name);
+assert.ok(GW.writes.includes('changes.merge'));
 console.log('UI runtime: bilingual core views, fallback, escaping, actions and immutable input passed');
 
 const nested=JSON.parse(JSON.stringify(input));nested.CHAPTERS[0].CHAPTER_TITLE='Literal {{PROJECT_TITLE}} {{t:ui.description}} <b>';
