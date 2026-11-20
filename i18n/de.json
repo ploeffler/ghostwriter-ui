@@ -1065,5 +1065,7 @@
   "ui.chr_existing": "schon da:",
   "ui.chr_same_as": "gleiches Ereignis wie",
   "ui.chr_apply_count": " Einträge übernehmen",
-  "ui.chr_apply_text": "Chronologie übernehmen ("
+  "ui.chr_apply_text": "Chronologie übernehmen (",
+  "ui.tl_day": "Tag",
+  "ui.tl_enter_days": "Bitte Tage als Zahl eingeben, z. B. −3 und 15."
 }

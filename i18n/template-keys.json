@@ -908,6 +908,8 @@
   "ui.title_style_rules",
   "ui.title_style_spaced",
   "ui.tl_chapter",
+  "ui.tl_day",
+  "ui.tl_enter_days",
   "ui.tl_from",
   "ui.tl_people",
   "ui.tl_place",
