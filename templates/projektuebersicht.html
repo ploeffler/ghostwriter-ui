@@ -92,6 +92,10 @@
   - {{CHECKS_LEGEND}}       Legende der Kürzel unter der Kapitelliste
   - {{CHAPTER_CHECKS_JSON}} je Kapitel: JSON-Liste der Tags (CK_TAG, CK_TEXT, CK_RESULT, CK_STATE, CK_REPORT);
                             gw.js zeigt sie über data-gw-checks als kleine Tags mit Tooltip. Ein Tag ist keine Freigabe
+  - {{CHAPTER_CHECK_DETAILS}}  nur bei „Darstellung: erweitert“ (GhostWriter #398): Prüfdetails in einer Zeile
+    (Art, Prüf-ID, Notiz, Zahl früherer Prüfungen, letzte nicht bestandene); sonst leer
+  - {{CHAPTER_HISTORY_JSON}}, {{CHAPTER_HISTORY_COUNT}}  nur erweitert: frühere Prüfungen des Kapitels (wie
+    CHECKS_HISTORY_JSON der Kapitelansicht); ohne Wert wird der aufklappbare Bereich entfernt
 
   Kosten (siehe docs/DATA-MODEL.md, Kostenmodell):
   - Währung ist project_currency aus workflow.yml (EUR), deutsches
@@ -110,6 +114,10 @@
 -->
 <h2 class="sr-only">{{t:ui.project_overview_for_by_including_costs_and_chapters_click_to_open_a_chapter}}</h2>
 <style>
+.gw-ckd{font-size:12px;color:var(--text-secondary);padding:0 12px 2px 32px;overflow-wrap:anywhere}
+.gw-ckd:empty{display:none}
+.gw-ckh{padding:0 12px 4px 32px}
+.gw-ckh summary{font-size:12px;color:var(--text-muted);cursor:pointer}
 .gw-ch{display:flex;align-items:center;gap:var(--gap-md);padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);cursor:pointer;text-align:left;font:inherit;width:100%}
 .gw-ch:hover{border-color:var(--border-strong)}
 .gw-card{flex-direction:column;align-items:stretch;gap:4px}
@@ -203,6 +211,8 @@
       <div style="display:flex;flex-direction:column;gap:var(--gap-xs)">
         {{#CHAPTERS}}
         <div style="display:flex;gap:var(--gap-xs);min-width:0"><button type="button" class="gw-ch gw-card" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" data-title="{{CHAPTER_TITLE}}"><span class="gw-r"><span style="font-size:13px;color:var(--text-muted);min-width:20px">{{CHAPTER_NUMBER}}</span><span style="flex:1;min-width:0;font-size:14px;font-weight:500;overflow-wrap:anywhere">{{CHAPTER_TITLE}}</span><span style="font-size:12px;color:var(--text-muted);white-space:nowrap">{{CHAPTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></span><span class="gw-r gw-sub"><span data-gw-checks="{{CHAPTER_CHECKS_JSON}}" style="display:flex;gap:4px;flex-wrap:wrap;flex:1;min-width:0"></span><span class="gw-e" title="{{t:ui.approved_sections}}"><i class="ti ti-circle-check" aria-hidden="true"></i>{{CHAPTER_APPROVED_TEXT}}</span></span><span class="gw-r gw-sub"><span class="gw-words" title="{{t:ui.words_in_the_manuscript}}"><span class="gw-bar" aria-hidden="true"><span style="width:{{CHAPTER_WORDS_PCT}}%"></span></span><span>{{CHAPTER_WORDS_TEXT}}</span></span><span class="gw-e" title="{{t:ui.open_notes_from_the_latest_check}}"><i class="ti ti-message-exclamation" aria-hidden="true"></i>{{CHAPTER_NOTES_TEXT}}</span><span class="gw-cost" title="{{CHAPTER_COST_HINT}}">{{CHAPTER_COST}}</span></span></button><button type="button" class="gw-ed" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" title="{{t:ui.edit_chapter}}" aria-label="{{t:ui.edit_chapter}}"><i class="ti ti-edit" aria-hidden="true"></i></button></div>
+        <div class="gw-ckd">{{CHAPTER_CHECK_DETAILS}}</div>
+        <details data-gw-checks-box class="gw-ckh"><summary>{{t:ui.earlier_checks}} ({{CHAPTER_HISTORY_COUNT}})</summary><div data-gw-checks-history="{{CHAPTER_HISTORY_JSON}}" style="display:flex;flex-direction:column;gap:4px;margin-top:6px"></div></details>
         {{/CHAPTERS}}
       </div>
       <div data-gw-if="CHECKS_LEGEND" style="margin-top:6px;font-size:11px;color:var(--text-muted)">{{CHECKS_LEGEND}}</div>

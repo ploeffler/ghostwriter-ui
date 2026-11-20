@@ -56,7 +56,7 @@ RUNTIME = r'''
     s.className='gw-check';
     s.setAttribute('data-result',String(c.CK_RESULT||''));s.setAttribute('data-state',String(c.CK_STATE||''));
     s.textContent=String(text);
-    s.title=String(c.CK_TEXT||'')+(c.CK_REPORT?'\n'+String(c.CK_REPORT):'');
+    s.title=String(c.CK_TEXT||'')+(c.CK_ID?' ('+String(c.CK_ID)+')':'')+(c.CK_NOTE?'\n'+String(c.CK_NOTE):'')+(c.CK_REPORT?'\n'+String(c.CK_REPORT):'');   // Prüf-ID und Notiz (GhostWriter #398)
     s.style.cssText='font-size:11px;padding:1px 7px;border-radius:999px;white-space:nowrap;font-variant-numeric:tabular-nums;'
       +'border:0.5px '+(soft?'dashed':'solid')+' '+(tone?'var(--border-'+tone+',var(--border-strong))':'var(--border)')+';'
       +'background:'+(tone?'var(--bg-'+tone+',var(--surface-1))':'var(--surface-1)')+';'
