@@ -117,8 +117,14 @@ RUNTIME = r'''
     });
   }
   var head='';
+  // Schreibende Aktionen ohne Endung .update/.create/.reorder (GhostWriter #179): auch sie bekommen den gelesenen
+  // Stand, damit ein veraltetes Formular keine zwischenzeitliche Änderung überschreibt. Reine Aufträge, die nur
+  // einen Lauf oder eine Action starten (run.start, edition.*), gehören nicht dazu.
+  var WRITES=['changes.merge','approval.confirm','chapter.sections.add','chapter.research.start','series.volume.add',
+    'series.volume.remove','series.omnibus.approve','series.omnibus.revoke','series.omnibus.publish','import.apply',
+    'import.edit','import.outline.apply','analysis.apply','character.suggest.apply','image.place'];
   function withHead(action,d){
-    var writes=(/\.(update|create|reorder)$/.test(action)&&action!=='edition.create')||action==='changes.merge'||action==='approval.confirm';
+    var writes=(/\.(update|create|reorder)$/.test(action)&&action!=='edition.create')||WRITES.indexOf(action)>=0;
     if(!head||!writes||Object.prototype.hasOwnProperty.call(d,'expected_head_sha'))return d;
     var o={};Object.keys(d).forEach(function(k){o[k]=d[k];});o.expected_head_sha=head;return o;
   }
@@ -137,7 +143,7 @@ RUNTIME = r'''
     el.querySelectorAll('[data-gw-send]').forEach(confirmSend);
     T[name].run(translator(lang));
   }
-  window.GW={version:VERSION,templates:Object.keys(T),render:render,renderHtml:renderHtml,supports:supports,withHead:withHead,escape:esc};
+  window.GW={version:VERSION,templates:Object.keys(T),render:render,renderHtml:renderHtml,supports:supports,withHead:withHead,writes:WRITES.slice(),escape:esc};
 
 '''
 
