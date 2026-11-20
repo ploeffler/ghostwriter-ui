@@ -1032,5 +1032,22 @@
   "native.words_count_one": "{number} word",
   "native.open_notes": "{number} open notes",
   "native.open_notes_one": "{number} open note",
-  "native.no_open_notes": "no open notes"
+  "native.no_open_notes": "no open notes",
+  "ui.accept_suggestion": "Accept suggestion",
+  "ui.author_decision": "Author decision",
+  "ui.check_what_can_be_applied": "Check what can be applied",
+  "ui.do_not_change": "Do not change",
+  "ui.new": "new",
+  "ui.no_open_notes": "No open notes.",
+  "ui.not_included": "Not included",
+  "ui.notes_review": "Notes review",
+  "ui.notes_review_decision": "Notes review: {id} {decision}",
+  "ui.notes_review_for_deciding_entry_by_entry": "Notes review: open notes from check reports, decide entry by entry",
+  "ui.nothing_changes_automatically_each_answer_is_saved_on_its_own": "Nothing changes automatically. Each answer is saved on its own; changes are applied only after “Check what can be applied”.",
+  "ui.old": "old",
+  "ui.own_answer": "Own answer",
+  "ui.rephrase": "Rephrase",
+  "ui.solvable_without_the_author": "Solvable without the author",
+  "ui.suggestion": "Suggestion",
+  "ui.your_wording": "Your wording"
 }

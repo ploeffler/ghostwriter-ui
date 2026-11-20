@@ -1032,5 +1032,22 @@
   "native.words_count_one": "{number} Wort",
   "native.open_notes": "{number} offene Hinweise",
   "native.open_notes_one": "{number} offener Hinweis",
-  "native.no_open_notes": "keine offenen Hinweise"
+  "native.no_open_notes": "keine offenen Hinweise",
+  "ui.accept_suggestion": "Vorschlag übernehmen",
+  "ui.author_decision": "Autorenentscheidung",
+  "ui.check_what_can_be_applied": "Umsetzen prüfen",
+  "ui.do_not_change": "Nicht ändern",
+  "ui.new": "neu",
+  "ui.no_open_notes": "Keine offenen Hinweise.",
+  "ui.not_included": "Nicht aufgenommen",
+  "ui.notes_review": "Hinweisdurchsicht",
+  "ui.notes_review_decision": "Hinweisdurchsicht: {id} {decision}",
+  "ui.notes_review_for_deciding_entry_by_entry": "Hinweisdurchsicht: offene Hinweise aus Prüfberichten, je Eintrag entscheiden",
+  "ui.nothing_changes_automatically_each_answer_is_saved_on_its_own": "Nichts ändert sich automatisch. Jede Antwort wird einzeln gespeichert; umgesetzt wird erst nach „Umsetzen prüfen“.",
+  "ui.old": "alt",
+  "ui.own_answer": "Eigene Antwort",
+  "ui.rephrase": "Anders formulieren",
+  "ui.solvable_without_the_author": "Ohne Autor lösbar",
+  "ui.suggestion": "Vorschlag",
+  "ui.your_wording": "Deine Fassung"
 }
