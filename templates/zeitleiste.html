@@ -62,10 +62,10 @@
 .gw-tl .yr{cursor:pointer}
 .gw-tl .yr:hover{text-decoration:underline}
 .gw-flt{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--text-secondary);margin-right:10px}
-.gw-tbl{width:100%;border-collapse:collapse;font-size:13px}
-.gw-tbl td{padding:5px 6px;border-top:0.5px solid var(--border);vertical-align:top}
-.gw-tbl td.s{width:110px;color:var(--text-secondary)}
-.gw-tbl td.d{width:110px;white-space:nowrap;color:var(--text-secondary);font-variant-numeric:tabular-nums}
+.gw-tbl{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.gw-tbl td{padding:5px 6px;border-top:0.5px solid var(--border);vertical-align:top;overflow-wrap:anywhere}
+.gw-tbl td.s{width:96px;color:var(--text-secondary)}
+.gw-tbl td.d{width:150px;color:var(--text-secondary);font-variant-numeric:tabular-nums}
 .gw-tbl tr.f td:first-child{box-shadow:inset 3px 0 0 var(--text-danger)}
 .gw-det{font-size:13px;line-height:1.5;padding:10px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:var(--surface-2)}
 .gw-leg{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--text-muted);align-items:center}
