@@ -27,6 +27,8 @@
   - {{I_SOURCE}}    z. B. „Auftrag kopiert“
   - {{I_SIZE}}      z. B. „3000 × 2100 px“
   - {{I_IN_TEXT}}   „1“, wenn das Bild im Text steht
+  - {{I_POSITION}}  top-left … bottom-right; leer = an der Stelle im Text (Medienplatzierung, GhostWriter #54)
+  - {{I_WIDTH}}     Breite in Prozent der Seitenbreite (10–100)
 
   Verhalten:
   - „Freigeben“/„Zurücknehmen“ senden approval.open mit kind image und der
@@ -34,9 +36,12 @@
   - „In den Text setzen“ sendet image.place (der Assistent setzt die Zeile nur
     mit Schreibfreigabe an die gewünschte Stelle).
   - „Auftrag erstellen“ sendet image.prompt mit der Szene.
+  - Je Bild Lage (sechs Positionen oder „an der Stelle im Text“) und Breitenregler
+    mit Prozentanzeige; „Lage speichern“ sendet image.layout mit image_id,
+    position und width. Keine Freigabe, Text und Bild bleiben unverändert.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.section, approval.open, image.place, image.prompt
+  Aktionen: view.section, approval.open, image.place, image.prompt, image.layout
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -53,6 +58,10 @@
 .gw-btn:disabled{opacity:0.4;cursor:default}
 .gw-tag{font-size:12px;padding:1px 8px;border-radius:999px;border:0.5px solid var(--border)}
 .gw-tag.ok{color:var(--text-success);border-color:var(--text-success)}
+.gw-lay{flex-basis:100%;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:4px 0 2px 28px;font-size:13px}
+.gw-lay .gw-pos{width:auto;min-width:11em}
+.gw-lay .gw-w{flex:1;min-width:120px}
+.gw-lay .gw-wv{min-width:3.2em;font-variant-numeric:tabular-nums;color:var(--text-secondary)}
 </style>
 <div style="padding:1rem 0">
   <div id="gw-bilder" data-target="{{TARGET_ID}}" data-title="{{TARGET_TITLE}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
@@ -76,6 +85,15 @@
         <span class="gw-tag gw-st"></span>
         <button type="button" class="gw-mini gw-place">{{t:ui.insert_into_text}}</button>
         <button type="button" class="gw-mini gw-apr"></button>
+        <div class="gw-lay" data-pos="{{I_POSITION}}" data-w="{{I_WIDTH}}">
+          <select class="gw-in gw-pos" aria-label="{{t:ui.img_position}}">
+            <option value="text">{{t:ui.img_pos_text}}</option>
+            <option value="top-left">{{t:ui.img_pos_top_left}}</option><option value="top-center">{{t:ui.img_pos_top_center}}</option><option value="top-right">{{t:ui.img_pos_top_right}}</option>
+            <option value="bottom-left">{{t:ui.img_pos_bottom_left}}</option><option value="bottom-center">{{t:ui.img_pos_bottom_center}}</option><option value="bottom-right">{{t:ui.img_pos_bottom_right}}</option>
+          </select>
+          <input type="range" class="gw-w" min="10" max="100" step="5" aria-label="{{t:ui.img_width}}"><output class="gw-wv"></output>
+          <button type="button" class="gw-mini gw-lsave">{{t:ui.img_save_layout}}</button>
+        </div>
       </div>
       {{/IMAGES}}
     </div>
@@ -93,7 +111,7 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
   var box=document.getElementById('gw-bilder'),d=box.dataset,$=function(id){return document.getElementById(id);};
   if(!$('gw-style').textContent.trim())$('gw-style').textContent=tr("ui.none_yet_set_in_output_options_or_images_style");
   if(!$('gw-figs').textContent.trim())$('gw-figs').textContent=tr("ui.none");
-  function lock(){box.querySelectorAll('button,textarea').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
+  function lock(){box.querySelectorAll('button,textarea,select,input').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
   box.querySelectorAll('.gw-im').forEach(function(r){
     var on=r.dataset.status==='approved',st=r.querySelector('.gw-st'),b=r.querySelector('.gw-apr'),p=r.querySelector('.gw-place');
     st.textContent=on?'freigegeben':tr("ui.draft");st.classList.toggle('ok',on);
@@ -102,6 +120,11 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
       gwSend((on?tr("ui.withdraw_image_approval_for"):tr("ui.approval_for_image"))+r.dataset.caption+tr("ui.confirm_2"),'approval.open',data);});
     if(r.dataset.in==='1'){p.textContent=tr("ui.included_in_the_text");p.disabled=true;}
     p.addEventListener('click',function(){lock();gwSend(tr("ui.image")+r.dataset.caption+'“ in „'+d.title+tr("ui.insert_i_will_specify_where"),'image.place',{image_id:r.dataset.id,section_id:d.target});});
+    var l=r.querySelector('.gw-lay'),ps=l.querySelector('.gw-pos'),w=l.querySelector('.gw-w'),wv=l.querySelector('.gw-wv');
+    ps.value=l.dataset.pos||'text';w.value=l.dataset.w||'100';wv.textContent=w.value+' %';
+    w.addEventListener('input',function(){wv.textContent=w.value+' %';});
+    l.querySelector('.gw-lsave').addEventListener('click',function(){lock();
+      gwSend(tr("ui.img_layout_for")+r.dataset.caption+'“: '+ps.options[ps.selectedIndex].text+', '+w.value+' %','image.layout',{image_id:r.dataset.id,position:ps.value,width:+w.value});});
   });
   $('gw-back').addEventListener('click',function(){gwSend(tr("ui.back_to_section")+d.title+'“','view.section',{section_id:d.target});});
   $('gw-prompt').addEventListener('click',function(){

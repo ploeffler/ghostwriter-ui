@@ -1067,5 +1067,16 @@
   "ui.chr_apply_count": " Einträge übernehmen",
   "ui.chr_apply_text": "Chronologie übernehmen (",
   "ui.tl_day": "Tag",
-  "ui.tl_enter_days": "Bitte Tage als Zahl eingeben, z. B. −3 und 15."
+  "ui.tl_enter_days": "Bitte Tage als Zahl eingeben, z. B. −3 und 15.",
+  "ui.img_position": "Lage im Abschnitt",
+  "ui.img_pos_text": "an der Stelle im Text",
+  "ui.img_pos_top_left": "oben links",
+  "ui.img_pos_top_center": "oben mittig",
+  "ui.img_pos_top_right": "oben rechts",
+  "ui.img_pos_bottom_left": "unten links",
+  "ui.img_pos_bottom_center": "unten mittig",
+  "ui.img_pos_bottom_right": "unten rechts",
+  "ui.img_width": "Breite in Prozent der Seitenbreite",
+  "ui.img_save_layout": "Lage speichern",
+  "ui.img_layout_for": "Lage für Bild „"
 }

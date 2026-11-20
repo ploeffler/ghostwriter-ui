@@ -1067,5 +1067,16 @@
   "ui.chr_apply_count": " entries – apply",
   "ui.chr_apply_text": "Apply chronology (",
   "ui.tl_day": "Day",
-  "ui.tl_enter_days": "Please enter days as numbers, e.g. −3 and 15."
+  "ui.tl_enter_days": "Please enter days as numbers, e.g. −3 and 15.",
+  "ui.img_position": "Position in the section",
+  "ui.img_pos_text": "where it is in the text",
+  "ui.img_pos_top_left": "top left",
+  "ui.img_pos_top_center": "top centre",
+  "ui.img_pos_top_right": "top right",
+  "ui.img_pos_bottom_left": "bottom left",
+  "ui.img_pos_bottom_center": "bottom centre",
+  "ui.img_pos_bottom_right": "bottom right",
+  "ui.img_width": "Width as a percentage of the page width",
+  "ui.img_save_layout": "Save position",
+  "ui.img_layout_for": "Position for image “"
 }
