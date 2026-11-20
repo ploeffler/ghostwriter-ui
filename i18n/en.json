@@ -1065,5 +1065,7 @@
   "ui.chr_existing": "already there:",
   "ui.chr_same_as": "same event as",
   "ui.chr_apply_count": " entries – apply",
-  "ui.chr_apply_text": "Apply chronology ("
+  "ui.chr_apply_text": "Apply chronology (",
+  "ui.tl_day": "Day",
+  "ui.tl_enter_days": "Please enter days as numbers, e.g. −3 and 15."
 }
