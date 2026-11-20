@@ -461,6 +461,7 @@
   "ui.daily_automatic_updates_pause_below_10_a_warning_appears_below_20_set_amounts_in_project_settings": "Unter 10 % pausiert die tägliche Update-Automatik, unter 20 % gibt es eine Vorwarnung. Beträge in den Projekteinstellungen.",
   "ui.recent_runs": "Letzte Läufe",
   "ui.edit_character": "Figur „{{CHARACTER_NAME}}“ bearbeiten.",
+  "ui.portrait": "Profilbild",
   "ui.appears_in": "kommt vor in: {{CHARACTER_USED}}",
   "ui.all_characters": "Alle Figuren",
   "ui.series": "· Serie „{{SERIES_TITLE}}“",

@@ -461,6 +461,7 @@
   "ui.daily_automatic_updates_pause_below_10_a_warning_appears_below_20_set_amounts_in_project_settings": "Daily automatic updates pause below 10%; a warning appears below 20%. Set amounts in project settings.",
   "ui.recent_runs": "Recent runs",
   "ui.edit_character": "Edit character “{{CHARACTER_NAME}}”.",
+  "ui.portrait": "Portrait",
   "ui.appears_in": "appears in: {{CHARACTER_USED}}",
   "ui.all_characters": "All characters",
   "ui.series": "· Series “{{SERIES_TITLE}}”",
