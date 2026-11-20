@@ -1,0 +1,119 @@
+<!--
+  Vorlage: Hinweisdurchsicht (GhostWriter #367)
+
+  Inline-Widget für den Chat. Zeigt die gesammelten offenen Hinweise einer
+  Dialogdatei (editorial/durchsicht-<datum>.yml, scripts/hinweise.py collect)
+  zum Durchsehen. Es ändert nichts von selbst: Jede Antwort wird einzeln
+  gespeichert, umgesetzt wird erst über „Umsetzen prüfen“.
+
+  Aufbau:
+  - Kopf: Buch, Stand, Zahl der Einträge, entschiedene und offene
+  - Gruppe „Ohne Autor lösbar“, kapitelweise: je Eintrag Abschnitt, Art, Grund,
+    alt und neu nebeneinander, Kontext; Knöpfe Übernehmen, Nicht ändern,
+    Anders formulieren (Textfeld)
+  - Gruppe „Autorenentscheidung“ darunter: Frage, Kontext, Vorschlag (falls
+    vorhanden); Knöpfe Vorschlag übernehmen, Nicht ändern, Eigene Antwort
+  - nicht aufgenommene Befunde mit Grund
+  - Fuß: Umsetzen prüfen (zeigt ✅/⚠️/⛔, ändert noch nichts)
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{REVIEW_FILE}}        Pfad der Dialogdatei im Buch
+  - {{REVIEW_BOOK}}        Buchtitel
+  - {{REVIEW_DATE_TEXT}}   z. B. „Stand 20.11.2026“
+  - {{REVIEW_COUNT_TEXT}}  z. B. „12 Einträge · 3 entschieden · 9 offen“
+  Wiederholung je Eintrag zwischen {{#AUTO}} und {{/AUTO}} bzw. {{#AUTHOR}} und {{/AUTHOR}}:
+  - {{E_ID}}, {{E_WHERE}}, {{E_CHAPTER_TEXT}}  Eintrag (e-001), Abschnitt („1.2“), „Kapitel 1 · in Arbeit“
+  - {{E_KIND}}, {{E_REASON}}  Art und Befund
+  - {{E_CONTEXT}}, {{E_OLD}}, {{E_NEW}}  Satz mit Umgebung, alter Wortlaut, Vorschlag
+  - {{E_DECISION}}         offen | ja | nein | geändert | umgesetzt
+  - {{E_QUESTION}}         nur bei Autorenentscheidungen
+  Wiederholung je nicht aufgenommenem Befund zwischen {{#SKIPPED}} und {{/SKIPPED}}: {{SK_REF}}, {{SK_REASON}}
+
+  Verhalten:
+  - Übernehmen / Vorschlag übernehmen sendet notes_review.decide mit file,
+    entry und decision ja; Nicht ändern mit decision nein; Anders formulieren
+    bzw. Eigene Antwort mit decision geändert und new (Pflichtfeld).
+  - Umsetzen prüfen sendet notes_review.plan mit file.
+  - Entschiedene Einträge sind gesperrt und zeigen ihre Entscheidung.
+-->
+<h2 class="sr-only">{{t:ui.notes_review_for_deciding_entry_by_entry}}</h2>
+<style>
+.gw-nr .grp{font-size:13px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.04em;margin-top:var(--gap-sm)}
+.gw-nr .it{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:1.45}
+.gw-nr .it.done{opacity:0.6}
+.gw-nr .hd{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline;color:var(--text-muted);font-size:12px}
+.gw-nr .hd b{color:var(--text-primary);font-weight:500;font-size:13px}
+.gw-nr .st{margin-left:auto;font-size:12px;padding:1px 8px;border-radius:999px;border:0.5px solid var(--border)}
+.gw-nr .cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px}
+.gw-nr .old,.gw-nr .new{padding:6px 8px;border-radius:8px;border:0.5px solid var(--border)}
+.gw-nr .old{background:var(--bg-danger,transparent);color:var(--text-primary)}
+.gw-nr .new{background:var(--bg-success,transparent);color:var(--text-primary)}
+.gw-nr .lbl{display:block;font-size:11px;color:var(--text-muted)}
+.gw-nr .ctx{font-style:italic;color:var(--text-muted);font-size:12px}
+.gw-nr .q{font-weight:500}
+.gw-nr .act{display:flex;gap:6px;flex-wrap:wrap}
+.gw-nr textarea{width:100%;box-sizing:border-box;font:inherit;font-size:13px;padding:6px 8px;border:0.5px solid var(--border-strong);border-radius:8px;background:var(--surface-1);color:var(--text-primary)}
+.gw-btn{padding:6px 12px;border-radius:var(--radius);font:inherit;font-size:13px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)}
+.gw-btn.pri{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-btn:disabled{opacity:0.45;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-nr" id="gw-nr" data-file="{{REVIEW_FILE}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div>
+      <div style="font-size:12px;color:var(--text-muted)">{{REVIEW_BOOK}} · {{REVIEW_DATE_TEXT}} · {{REVIEW_COUNT_TEXT}}</div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-checklist" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.notes_review}}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">{{t:ui.nothing_changes_automatically_each_answer_is_saved_on_its_own}}</div>
+    </div>
+    <div data-gw-if="AUTO" class="grp">{{t:ui.solvable_without_the_author}}</div>
+    {{#AUTO}}
+    <div class="it" data-id="{{E_ID}}" data-decision="{{E_DECISION}}" data-new="{{E_NEW}}">
+      <div class="hd"><b>{{E_WHERE}}</b><span>{{E_CHAPTER_TEXT}}</span><span>{{E_KIND}}</span><span class="st">{{E_DECISION}}</span></div>
+      <div>{{E_REASON}}</div>
+      <div class="cmp"><div class="old"><span class="lbl">{{t:ui.old}}</span>{{E_OLD}}</div><div class="new"><span class="lbl">{{t:ui.new}}</span>{{E_NEW}}</div></div>
+      <div class="ctx">{{E_CONTEXT}}</div>
+      <div class="act"><button type="button" class="gw-btn pri" data-d="ja">{{t:ui.apply_2}}</button><button type="button" class="gw-btn" data-d="nein">{{t:ui.do_not_change}}</button><button type="button" class="gw-btn" data-d="geändert">{{t:ui.rephrase}}</button></div>
+    </div>
+    {{/AUTO}}
+    <div data-gw-if="AUTHOR" class="grp">{{t:ui.author_decision}}</div>
+    {{#AUTHOR}}
+    <div class="it" data-id="{{E_ID}}" data-decision="{{E_DECISION}}" data-new="{{E_NEW}}">
+      <div class="hd"><b>{{E_WHERE}}</b><span>{{E_CHAPTER_TEXT}}</span><span>{{E_KIND}}</span><span class="st">{{E_DECISION}}</span></div>
+      <div>{{E_REASON}}</div>
+      <div class="q">{{E_QUESTION}}</div>
+      <div class="ctx">{{E_CONTEXT}}</div>
+      <div class="new" data-opt="new"><span class="lbl">{{t:ui.suggestion}}</span>{{E_NEW}}</div>
+      <div class="act"><button type="button" class="gw-btn pri" data-d="ja" data-opt="new">{{t:ui.accept_suggestion}}</button><button type="button" class="gw-btn" data-d="nein">{{t:ui.do_not_change}}</button><button type="button" class="gw-btn" data-d="geändert">{{t:ui.own_answer}}</button></div>
+    </div>
+    {{/AUTHOR}}
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">{{t:ui.no_open_notes}}</div>
+    <div data-gw-if="SKIPPED" style="font-size:12px;color:var(--text-muted);line-height:1.5"><div style="font-weight:500">{{t:ui.not_included}}</div>
+      {{#SKIPPED}}<div>{{SK_REF}}: {{SK_REASON}}</div>{{/SKIPPED}}
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn pri" id="gw-plan">{{t:ui.check_what_can_be_applied}}</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var box=document.getElementById('gw-nr'),file=box.dataset.file;
+  var items=Array.prototype.slice.call(box.querySelectorAll('.it'));
+  var none=document.getElementById('gw-none');if(items.length&&none)none.remove();
+  function lock(it,label){it.classList.add('done');it.querySelectorAll('button,textarea').forEach(function(x){x.disabled=true;});var st=it.querySelector('.st');if(st&&label)st.textContent=label;}
+  items.forEach(function(it){
+    var id=it.dataset.id;
+    if(!it.dataset.new)it.querySelectorAll('[data-opt="new"]').forEach(function(x){x.remove();});
+    if(it.dataset.decision&&it.dataset.decision!=='offen'){lock(it);return;}
+    it.querySelectorAll('button[data-d]').forEach(function(b){b.addEventListener('click',function(){
+      var d=b.dataset.d;
+      if(d!=='geändert'){lock(it,d);gwSend(tr("ui.notes_review_decision",{id:id,decision:d}),'notes_review.decide',{file:file,entry:id,decision:d});return;}
+      var ta=it.querySelector('textarea');
+      if(!ta){ta=document.createElement('textarea');ta.rows=2;ta.placeholder=tr("ui.your_wording");ta.value=it.dataset.new||'';it.querySelector('.act').before(ta);ta.focus();return;}
+      var v=ta.value.trim();if(!v){ta.focus();return;}
+      lock(it,d);gwSend(tr("ui.notes_review_decision",{id:id,decision:d}),'notes_review.decide',{file:file,entry:id,decision:d,new:v});
+    });});
+  });
+  document.getElementById('gw-plan').addEventListener('click',function(){gwSend(tr("ui.check_what_can_be_applied"),'notes_review.plan',{file:file});});
+})();
+</script>
