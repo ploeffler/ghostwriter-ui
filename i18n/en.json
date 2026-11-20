@@ -1049,5 +1049,21 @@
   "ui.rephrase": "Rephrase",
   "ui.solvable_without_the_author": "Solvable without the author",
   "ui.suggestion": "Suggestion",
-  "ui.your_wording": "Your wording"
+  "ui.your_wording": "Your wording",
+  "ui.chr_heading_sr": "Chronology from notes to select and apply",
+  "ui.chr_title": "Chronology suggestions",
+  "ui.chr_entries": "Entries",
+  "ui.chr_apply_entry": "Apply entry",
+  "ui.chr_date": "Date",
+  "ui.chr_status": "Evidence",
+  "ui.chr_documented": "documented",
+  "ui.chr_reported": "reported",
+  "ui.chr_uncertain": "uncertain",
+  "ui.chr_invented": "creative licence",
+  "ui.chr_none": "No entries with a verbatim reference.",
+  "ui.chr_footer": "From notes and research, not from the manuscript. A date only when the quotation states it; “documented” only from the source list and research. Only checked entries are applied; existing entries stay unchanged.",
+  "ui.chr_existing": "already there:",
+  "ui.chr_same_as": "same event as",
+  "ui.chr_apply_count": " entries – apply",
+  "ui.chr_apply_text": "Apply chronology ("
 }
