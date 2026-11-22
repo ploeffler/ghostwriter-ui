@@ -1087,5 +1087,6 @@
   "ui.only_own_values": "Own values only",
   "ui.origin": "Origin",
   "ui.setting": "Setting",
-  "ui.value": "Value"
+  "ui.value": "Value",
+  "ui.background_queue": "Queue"
 }

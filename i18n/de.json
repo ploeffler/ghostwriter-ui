@@ -1087,5 +1087,6 @@
   "ui.only_own_values": "Nur eigene Werte",
   "ui.origin": "Herkunft",
   "ui.setting": "Einstellung",
-  "ui.value": "Wert"
+  "ui.value": "Wert",
+  "ui.background_queue": "Warteschlange"
 }
