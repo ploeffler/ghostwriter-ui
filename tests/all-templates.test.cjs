@@ -7,7 +7,7 @@ const de=JSON.parse(fs.readFileSync(path.join(root,'i18n/de.json'),'utf8'));
 const context={window:{}};
 vm.runInNewContext(fs.readFileSync(path.join(root,'dist/gw.js'),'utf8'),context);
 const GW=context.window.GW;
-assert.equal(GW.templates.length,42);
+assert.equal(GW.templates.length,43);
 for(const name of GW.templates){
   assert.equal(GW.supports(name,'en'),true,name);
   const input={LANGUAGE:'en',SECTION_TITLE:'Titel {{PROJECT_TITLE}} <b>',MANUSCRIPT:'Noch nicht begonnen. {{t:ui.description}} <script>',TITLE:'Titel',CHAPTER_NUMBER:3,SECTION_NUMBER:'3.2'};
@@ -36,7 +36,16 @@ function approval(blocked, revoke){
   else {assert.match(sent[0],/approval.confirm/);assert.match(sent[0],/section_id=sec-2/);assert.match(sent[0],/expected_head_sha=abc123/);if(revoke)assert.match(sent[0],/revoke=true/);}
 }
 approval(true,false);approval(false,false);approval(false,true);
-console.log('All 42 bilingual templates: compilation, fallback, immutable data and approval gates passed');
+// Alle Einstellungen (GhostWriter #299): Zeilen als JSON im Attribut, maskiert, nie als HTML eingesetzt.
+{
+  const rows=JSON.stringify([{key:'typesetting.font','label':'','value':'<b>x</b> "q"',origin:'book',origin_text:'eigener Wert',differs:true,form_text:'Ausgabe'}]);
+  const html=GW.renderHtml('einstellungen',{SETTINGS_TITLE:'Alle Einstellungen',SETTINGS_INTRO:'1',SETTINGS_KIND:'book',GROUPS:[{G_KEY:'typesetting',G_TITLE:'Buchsatz',G_ROWS:rows}]},'de');
+  assert(!html.includes('<b>x</b>'));
+  assert(html.includes('data-rows="'));
+  const attr=html.match(/data-rows="([^"]*)"/)[1].replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&#39;/g,"'").replace(/&amp;/g,'&');
+  assert.equal(JSON.parse(attr)[0].value,'<b>x</b> "q"');
+}
+console.log('All 43 bilingual templates: compilation, fallback, immutable data and approval gates passed');
 // Rückübersetzung ausschließlich der Quelltextliterale: IDs, Selektoren,
 // Bedingungen, strukturierte Aktionen und Freigaberegeln müssen identisch bleiben.
 const crypto=require('node:crypto');

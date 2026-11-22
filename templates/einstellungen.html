@@ -1,0 +1,108 @@
+<!--
+  Vorlage: Alle Einstellungen (Ansicht, GhostWriter #299)
+
+  Inline-Widget für den Chat. Nur lesend: je Einstellung aktueller Wert, Herkunft
+  und das Formular, in dem man sie ändert. Seiten: Buch, Bibliothek (assistant.yml),
+  Serie, Sammelband. Geöffnet über den Befehl „Alle Einstellungen“
+  (render_view.py <ordner> settings-overview [wo]).
+
+  Aufbau:
+  - Kopf: Symbol, Titel, kurzer Einleitungssatz, Knopf „Projektübersicht“
+  - Schalter „Nur eigene Werte“ und Suchfeld (wirken nur in der Ansicht)
+  - je Gruppe eine Tabelle: Einstellung, Wert, Herkunft, Ändern;
+    Abweichungen von der Vorgabe hervorgehoben
+
+  Platzhalter (vor der Ausgabe ersetzen; Text HTML-maskiert):
+  - {{SETTINGS_TITLE}}   z. B. „Alle Einstellungen · Mein Buch“
+  - {{SETTINGS_INTRO}}   z. B. „104 Einstellungen, davon 21 mit eigenem Wert …“
+  - {{SETTINGS_KIND}}    book | library | series | omnibus
+  Wiederholung zwischen {{#GROUPS}} und {{/GROUPS}}:
+  - {{G_KEY}}, {{G_TITLE}}  Gruppe und Überschrift
+  - {{G_ROWS}}              JSON-Liste: {key, label, value, origin, origin_text, differs, form_text}
+                            origin: book | library | default | unset | own | series | omnibus | section
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion`, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: view.project, view.library
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
+  Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">{{t:ui.all_settings_with_value_origin_and_form}}</h2>
+<style>
+.gw-st .sec{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin:4px 0 6px}
+.gw-st table{width:100%;border-collapse:collapse;font-size:13px}
+.gw-st th{text-align:left;font-weight:500;color:var(--text-muted);font-size:12px;padding:4px 8px 4px 0}
+.gw-st td{padding:5px 8px 5px 0;border-top:0.5px solid var(--border);vertical-align:top;color:var(--text-secondary)}
+.gw-st td code{font-size:12px;color:var(--text-primary)}
+.gw-st td.v{color:var(--text-primary);word-break:break-word}
+.gw-st tr.diff td.v{color:var(--text-accent);font-weight:500}
+.gw-st .o{display:inline-block;padding:1px 6px;border:0.5px solid var(--border);font-size:11px;white-space:nowrap}
+.gw-st .o[data-o="book"],.gw-st .o[data-o="own"],.gw-st .o[data-o="omnibus"],.gw-st .o[data-o="section"]{border-color:var(--border-accent);color:var(--text-accent)}
+.gw-st .o[data-o="unset"]{color:var(--text-muted)}
+.gw-st .tools{display:flex;gap:var(--gap-md);align-items:center;flex-wrap:wrap;font-size:13px}
+.gw-st .tools input[type=search]{font:inherit;font-size:13px;padding:5px 8px;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary);min-width:180px}
+.gw-btn{padding:7px 12px;font:inherit;font-size:13px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary);display:inline-flex;align-items:center;gap:6px}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-st" data-kind="{{SETTINGS_KIND}}" style="border:0.5px solid var(--border);background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="display:flex;align-items:flex-start;gap:var(--gap-md);flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div style="display:flex;align-items:center;gap:var(--gap-sm)">
+          <i class="ti ti-adjustments" style="font-size:20px;color:var(--text-secondary)" aria-hidden="true"></i>
+          <span style="font-size:20px;font-weight:500">{{SETTINGS_TITLE}}</span>
+        </div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:2px">{{SETTINGS_INTRO}}</div>
+      </div>
+      <button type="button" class="gw-btn" id="gw-st-back"><i class="ti ti-arrow-left" aria-hidden="true"></i><span></span></button>
+    </div>
+    <div class="tools">
+      <label><input type="checkbox" id="gw-st-own"> {{t:ui.only_own_values}}</label>
+      <input type="search" id="gw-st-find" placeholder="{{t:ui.find_setting}}" aria-label="{{t:ui.find_setting}}">
+    </div>
+    {{#GROUPS}}
+    <div class="grp">
+      <div class="sec">{{G_TITLE}}</div>
+      <table>
+        <thead><tr><th>{{t:ui.setting}}</th><th>{{t:ui.value}}</th><th>{{t:ui.origin}}</th><th>{{t:ui.change_in}}</th></tr></thead>
+        <tbody data-rows="{{G_ROWS}}"></tbody>
+      </table>
+    </div>
+    {{/GROUPS}}
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var root=document.querySelector('.gw-st');
+  var own={book:1,own:1,omnibus:1,section:1};
+  // Zeilen aus JSON bauen; nur textContent, nie HTML aus den Daten
+  root.querySelectorAll('tbody[data-rows]').forEach(function(tb){
+    var rows=[];try{rows=JSON.parse(tb.getAttribute('data-rows'));}catch(e){}
+    rows.forEach(function(r){
+      var tr=document.createElement('tr');if(r.differs)tr.className='diff';tr.dataset.own=own[r.origin]?'1':'';
+      tr.dataset.find=(r.key+' '+(r.label||'')+' '+r.value).toLowerCase();
+      var a=document.createElement('td'),c=document.createElement('code');c.textContent=r.key;a.appendChild(c);
+      if(r.label){a.appendChild(document.createTextNode(' '+r.label));}
+      var v=document.createElement('td');v.className='v';v.textContent=r.value;
+      var o=document.createElement('td'),s=document.createElement('span');s.className='o';s.dataset.o=r.origin;s.textContent=r.origin_text;o.appendChild(s);
+      var f=document.createElement('td');f.textContent=r.form_text;
+      tr.append(a,v,o,f);tb.appendChild(tr);
+    });
+    tb.removeAttribute('data-rows');
+  });
+  function filter(){
+    var only=document.getElementById('gw-st-own').checked,q=document.getElementById('gw-st-find').value.trim().toLowerCase();
+    root.querySelectorAll('.grp').forEach(function(g){
+      var any=false;
+      g.querySelectorAll('tbody tr').forEach(function(tr){var show=(!only||tr.dataset.own)&&(!q||tr.dataset.find.indexOf(q)>=0);tr.hidden=!show;any=any||show;});
+      g.hidden=!any;
+    });
+  }
+  document.getElementById('gw-st-own').addEventListener('change',filter);
+  document.getElementById('gw-st-find').addEventListener('input',filter);
+  var book=root.dataset.kind==='book',back=document.getElementById('gw-st-back');
+  back.querySelector('span').textContent=book?tr("ui.project_overview"):tr("ui.library_short");
+  back.addEventListener('click',function(){book?gwSend(tr("ui.back_to_project_overview"),'view.project',{}):gwSend(tr("ui.back_to_library"),'view.library',{});});
+})();
+</script>
