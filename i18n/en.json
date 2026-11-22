@@ -1079,5 +1079,13 @@
   "ui.img_pos_bottom_right": "bottom right",
   "ui.img_width": "Width as a percentage of the page width",
   "ui.img_save_layout": "Save position",
-  "ui.img_layout_for": "Position for image “"
+  "ui.img_layout_for": "Position for image “",
+  "ui.all_settings_with_value_origin_and_form": "All settings with current value, origin and the form that changes them.",
+  "ui.change_in": "Change in",
+  "ui.find_setting": "Find setting",
+  "ui.library_short": "Library",
+  "ui.only_own_values": "Own values only",
+  "ui.origin": "Origin",
+  "ui.setting": "Setting",
+  "ui.value": "Value"
 }

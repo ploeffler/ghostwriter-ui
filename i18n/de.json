@@ -1079,5 +1079,13 @@
   "ui.img_pos_bottom_right": "unten rechts",
   "ui.img_width": "Breite in Prozent der Seitenbreite",
   "ui.img_save_layout": "Lage speichern",
-  "ui.img_layout_for": "Lage für Bild „"
+  "ui.img_layout_for": "Lage für Bild „",
+  "ui.all_settings_with_value_origin_and_form": "Alle Einstellungen mit aktuellem Wert, Herkunft und dem Formular, in dem man sie ändert.",
+  "ui.change_in": "Ändern",
+  "ui.find_setting": "Einstellung suchen",
+  "ui.library_short": "Bücherregal",
+  "ui.only_own_values": "Nur eigene Werte",
+  "ui.origin": "Herkunft",
+  "ui.setting": "Einstellung",
+  "ui.value": "Wert"
 }
