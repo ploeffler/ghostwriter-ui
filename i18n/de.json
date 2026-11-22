@@ -1088,5 +1088,18 @@
   "ui.origin": "Herkunft",
   "ui.setting": "Einstellung",
   "ui.value": "Wert",
-  "ui.background_queue": "Warteschlange"
+  "ui.background_queue": "Warteschlange",
+  "ui.queue_sr": "Hintergrund-Warteschlange mit wartenden, fehlgeschlagenen und fertigen Aufträgen; wartende lassen sich vorziehen oder abbrechen.",
+  "ui.queue_heading": "Hintergrund-Warteschlange",
+  "ui.queue_empty": "Keine Aufträge in der Warteschlange.",
+  "ui.queue_waiting": "Wartet",
+  "ui.queue_failed": "Fehlgeschlagen",
+  "ui.queue_done": "Fertig, noch nicht übernommen",
+  "ui.queue_prioritize": "Vorziehen",
+  "ui.queue_prioritize_text": "Auftrag vorziehen",
+  "ui.queue_prioritize_done": "Wird vorgezogen …",
+  "ui.queue_cancel_text": "Auftrag abbrechen",
+  "ui.queue_cancel_confirm": "Der Auftrag wird aus der Warteschlange entfernt. Ein schon laufender Auftrag lässt sich so nicht stoppen.",
+  "ui.queue_cancel_confirm_label": "Wirklich abbrechen",
+  "ui.queue_cancel_done": "Wird abgebrochen …"
 }

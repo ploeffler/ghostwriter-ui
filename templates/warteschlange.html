@@ -1,0 +1,100 @@
+<!--
+  Vorlage: Hintergrund-Warteschlange (GhostWriter #478)
+
+  Inline-Widget für den Chat. Zeigt die Aufträge der Hintergrund-Warteschlange
+  eines Buchs (Recherche, Analyse, Colorieren, Import) mit Zustand. Wartende
+  Aufträge lassen sich vorziehen oder abbrechen. Die Ansicht ändert nichts von
+  selbst; die Reihenfolge bestimmen feste Regeln (docs/DATA-MODEL.md), nicht die KI.
+
+  Aufbau:
+  - Kopf: Titel, Buch, Zahl der Aufträge
+  - Gruppe „Wartet“: je Auftrag Titel, Zustand (wartet, wartet auf Bestätigung
+    wegen Budget, wartet auf einen anderen Auftrag), Frage bzw. Angabe, Zeitpunkt;
+    Knöpfe Vorziehen und Abbrechen
+  - Gruppe „Fehlgeschlagen“: Titel, Grund (ohne Knöpfe)
+  - Gruppe „Fertig, noch nicht übernommen“: Titel (ohne Knöpfe)
+  - Leerzustand
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{QUEUE_BOOK}}        Buchtitel
+  - {{QUEUE_COUNT_TEXT}}  z. B. „3 Aufträge“ bzw. „keine Aufträge“
+  - {{HEAD_SHA}}          gelesener Stand (für expected_head_sha)
+  Bereiche (Arrays; entfallen, wenn leer; Wiederholung zwischen {{#NAME}} und {{/NAME}}):
+  - PENDING:  {{J_TITLE}}, {{J_DETAIL}}, {{J_STATE_TEXT}}, {{J_WHEN_TEXT}}, {{J_PRIORITY_TEXT}} (leer = nicht vorgezogen),
+              {{J_BLOCKED_TEXT}} (leer = nicht abhängig), {{J_NOTE}} (z. B. Ring bei „after“), {{J_PRIO_DISABLED}} (`disabled`
+              bei schon vorgezogenen), {{J_ARGS}} (JSON `{"request":"<Pfad im Buch>"}`)
+  - FAILED:   {{J_TITLE}}, {{J_DETAIL}}, {{J_WHEN_TEXT}}
+  - DONE:     {{J_TITLE}}, {{J_DETAIL}}
+  - {{QUEUE_EMPTY}}       „1“ bei leerer Warteschlange, sonst leer
+
+  Verhalten:
+  - Vorziehen sendet queue.prioritize mit request (ohne Rückfrage, jederzeit umkehrbar nur durch Abbrechen und neu einreihen).
+  - Abbrechen sendet queue.cancel mit request; der erste Klick zeigt den Hinweis, erst der zweite sendet.
+  - Beide Aktionen gehen nur bei wartenden Aufträgen; ein schon laufender Auftrag lässt sich so nicht stoppen.
+
+  Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
+  Aktionen: queue.prioritize {request}, queue.cancel {request}
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
+  (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius,
+  --font-mono), Tabler-Icons (ti-*) und eine globale Funktion sendPrompt(text).
+-->
+<h2 class="sr-only">{{t:ui.queue_sr}}</h2>
+<style>
+.gw-q .grp{font-size:13px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.04em;margin-top:var(--gap-sm)}
+.gw-q .it{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;display:flex;gap:var(--gap-md);align-items:flex-start;font-size:13px;line-height:1.45}
+.gw-q .main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.gw-q .ttl{font-size:14px;color:var(--text-primary);display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+.gw-q .meta{font-size:12px;color:var(--text-muted)}
+.gw-q .badge{font-size:11px;padding:0 8px;border-radius:999px;border:0.5px solid var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-q .badge:empty,.gw-q .meta:empty,.gw-q .warn:empty{display:none}
+.gw-q .warn{font-size:12px;color:var(--text-warning)}
+.gw-q .err{font-size:12px;color:var(--text-danger)}
+.gw-q .act{display:flex;gap:6px;flex-wrap:wrap}
+.gw-btn{padding:6px 12px;border-radius:var(--radius);font:inherit;font-size:13px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)}
+.gw-btn:disabled{opacity:0.45;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-q" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div>
+      <div style="font-size:12px;color:var(--text-muted)">{{QUEUE_BOOK}} · {{QUEUE_COUNT_TEXT}}</div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-list-details" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.queue_heading}}</div>
+    </div>
+    <div data-gw-if="QUEUE_EMPTY" style="font-size:14px;color:var(--text-secondary)">{{t:ui.queue_empty}}</div>
+    <div data-gw-if="PENDING" class="grp">{{t:ui.queue_waiting}}</div>
+    {{#PENDING}}
+    <div class="it">
+      <div class="main">
+        <div class="ttl"><span>{{J_TITLE}}</span><span class="badge">{{J_PRIORITY_TEXT}}</span></div>
+        <div class="meta">{{J_DETAIL}}</div>
+        <div class="meta">{{J_STATE_TEXT}} · {{J_WHEN_TEXT}}</div>
+        <div class="warn">{{J_BLOCKED_TEXT}}</div>
+        <div class="warn">{{J_NOTE}}</div>
+      </div>
+      <div class="act" data-gw-confirm-at>
+        <button type="button" class="gw-btn" {{J_PRIO_DISABLED}} data-gw-send="queue.prioritize" data-gw-args="{{J_ARGS}}" data-gw-text="{{t:ui.queue_prioritize_text}}" data-gw-done="{{t:ui.queue_prioritize_done}}" style="border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{t:ui.queue_prioritize}}</button>
+        <button type="button" class="gw-btn" data-gw-send="queue.cancel" data-gw-args="{{J_ARGS}}" data-gw-text="{{t:ui.queue_cancel_text}}" data-gw-confirm="{{t:ui.queue_cancel_confirm}}" data-gw-confirm-label="{{t:ui.queue_cancel_confirm_label}}" data-gw-done="{{t:ui.queue_cancel_done}}">{{t:ui.cancel}}</button>
+      </div>
+    </div>
+    {{/PENDING}}
+    <div data-gw-if="FAILED" class="grp">{{t:ui.queue_failed}}</div>
+    {{#FAILED}}
+    <div class="it">
+      <div class="main">
+        <div class="ttl"><span>{{J_TITLE}}</span></div>
+        <div class="err">{{J_DETAIL}}</div>
+        <div class="meta">{{J_WHEN_TEXT}}</div>
+      </div>
+    </div>
+    {{/FAILED}}
+    <div data-gw-if="DONE" class="grp">{{t:ui.queue_done}}</div>
+    {{#DONE}}
+    <div class="it">
+      <div class="main">
+        <div class="ttl"><span>{{J_TITLE}}</span></div>
+        <div class="meta">{{J_DETAIL}}</div>
+      </div>
+    </div>
+    {{/DONE}}
+  </div>
+</div>

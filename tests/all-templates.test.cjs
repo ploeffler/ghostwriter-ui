@@ -7,7 +7,7 @@ const de=JSON.parse(fs.readFileSync(path.join(root,'i18n/de.json'),'utf8'));
 const context={window:{}};
 vm.runInNewContext(fs.readFileSync(path.join(root,'dist/gw.js'),'utf8'),context);
 const GW=context.window.GW;
-assert.equal(GW.templates.length,43);
+assert.equal(GW.templates.length,44);
 for(const name of GW.templates){
   assert.equal(GW.supports(name,'en'),true,name);
   const input={LANGUAGE:'en',SECTION_TITLE:'Titel {{PROJECT_TITLE}} <b>',MANUSCRIPT:'Noch nicht begonnen. {{t:ui.description}} <script>',TITLE:'Titel',CHAPTER_NUMBER:3,SECTION_NUMBER:'3.2'};
@@ -45,7 +45,22 @@ approval(true,false);approval(false,false);approval(false,true);
   const attr=html.match(/data-rows="([^"]*)"/)[1].replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&#39;/g,"'").replace(/&amp;/g,'&');
   assert.equal(JSON.parse(attr)[0].value,'<b>x</b> "q"');
 }
-console.log('All 43 bilingual templates: compilation, fallback, immutable data and approval gates passed');
+// Hintergrund-Warteschlange (GhostWriter #478): drei Gruppen, Argumente maskiert, Leerzustand
+{
+  const row={J_TITLE:'Recherche · 2.1 <b>Titel</b>',J_DETAIL:'Frage "x"',J_STATE_TEXT:'wartet',J_WHEN_TEXT:'22.11., 20:00',J_PRIORITY_TEXT:'',J_BLOCKED_TEXT:'',J_NOTE:'',J_PRIO_DISABLED:'',J_ARGS:JSON.stringify({request:'chapters/ch-01/research/s-1/request-001.yml'})};
+  const html=GW.renderHtml('warteschlange',{QUEUE_BOOK:'Buch',QUEUE_COUNT_TEXT:'2 Aufträge',PENDING:[row,Object.assign({},row,{J_PRIO_DISABLED:'disabled'})],FAILED:[{J_TITLE:'Analyse',J_DETAIL:'Anbieter antwortet nicht',J_WHEN_TEXT:''}],DONE:[]},'de');
+  assert(!html.includes('<b>Titel</b>'));
+  assert.equal((html.match(/data-gw-send="queue.prioritize"/g)||[]).length,2);
+  assert.equal((html.match(/data-gw-send="queue.cancel"/g)||[]).length,2);
+  assert(html.includes('data-gw-confirm="'));
+  assert(html.includes('disabled data-gw-send="queue.prioritize"'));
+  const arg=html.match(/data-gw-args="([^"]*)"/)[1].replace(/&quot;/g,'"').replace(/&amp;/g,'&');
+  assert.equal(JSON.parse(arg).request,'chapters/ch-01/research/s-1/request-001.yml');
+  assert(html.includes('Anbieter antwortet nicht'));
+  const en=GW.renderHtml('warteschlange',{QUEUE_EMPTY:'1',QUEUE_BOOK:'Book',QUEUE_COUNT_TEXT:'no jobs'},'en');
+  assert(en.includes('Background queue')&&en.includes('No jobs in the queue.'));
+}
+console.log('All 44 bilingual templates: compilation, fallback, immutable data and approval gates passed');
 // Rückübersetzung ausschließlich der Quelltextliterale: IDs, Selektoren,
 // Bedingungen, strukturierte Aktionen und Freigaberegeln müssen identisch bleiben.
 const crypto=require('node:crypto');
