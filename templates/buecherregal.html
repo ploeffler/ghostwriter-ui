@@ -41,6 +41,7 @@
   - {{BOOK_EDITION_TEXT}}     "Auflage 2" | "noch keine Auflage"
   - {{BOOK_COST}}             KI-API-Kosten, z. B. "≈ 4,77 €"
   - {{BOOK_PENDING_TEXT}}     z. B. "3 Änderungen offen"; leer = entfällt
+  - {{BOOK_JOBS_TEXT}}        Hintergrund-Warteschlange des Buchs (GhostWriter #484), z. B. "Warteschlange: 2 fertig · 1 wartet"; leer = entfällt
   - {{BOOK_UPDATED_TEXT}}     z. B. "zuletzt geändert am 01.11.2026"
   - {{BOOK_SERIES}}           ID der Serie (ser-…) bzw. leer
   - {{BOOK_SERIES_TITLE}}     Reihentitel bzw. leer
@@ -49,6 +50,7 @@
   Wiederholung zwischen {{#EMPTY_SERIES}} und {{/EMPTY_SERIES}} (Serien noch ohne Band):
   - {{S_ID}}, {{S_TITLE}}, {{S_KEY}}
   - {{SESSION_COUNT_TEXT}}    z. B. "Offene Sitzungssicherungen (2)"; leer = Rubrik entfällt
+  - {{JOBS_TEXT}}             Summe der Warteschlange aller Bücher (#484), z. B. "Hintergrund-Warteschlange: 3 fertig · 1 fehlgeschlagen"; leer = entfällt
   Wiederholung zwischen {{#SESSIONS}} und {{/SESSIONS}} (offene Sitzungssicherungen):
   - {{SS_SESSION}}, {{SS_TITLE}}, {{SS_BOOK}}, {{SS_TIME_TEXT}}, {{SS_DEVICE_TEXT}}, {{SS_OS_TEXT}},
     {{SS_CLIENT_TEXT}}, {{SS_STATUS}} (open | pr_pending | unknown), {{SS_STATUS_TEXT}}, {{SS_PR}} (Link oder leer)
@@ -118,6 +120,10 @@
       <button type="button" class="gw-btn" id="gw-newbook" style="border:none;background:var(--text-primary);color:var(--surface-1);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-plus" aria-hidden="true"></i>{{t:ui.new_book}}</button>
     </div>
 
+    <div data-gw-if="JOBS_TEXT" class="gw-sess" aria-label="{{JOBS_TEXT}}">
+      <div class="gw-sess-h"><i class="ti ti-list-check" aria-hidden="true"></i><span>{{JOBS_TEXT}}</span></div>
+    </div>
+
     <div data-gw-if="SESSIONS" class="gw-sess" aria-label="{{SESSION_COUNT_TEXT}}">
       <div class="gw-sess-h"><i class="ti ti-cloud-upload" aria-hidden="true"></i><span>{{SESSION_COUNT_TEXT}}</span></div>
       {{#SESSIONS}}
@@ -143,6 +149,7 @@
         <span class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{BOOK_PROGRESS}}" aria-label="{{t:ui.approved_sections}}"><span style="width:{{BOOK_PROGRESS}}%"></span></span>
         <span class="st">{{BOOK_PROGRESS_TEXT}}</span>
         <span class="pend">{{BOOK_PENDING_TEXT}}</span>
+        <span class="pend" title="{{t:ui.background_queue}}">{{BOOK_JOBS_TEXT}}</span>
         <span class="st">{{BOOK_UPDATED_TEXT}} · <code style="font-size:11px">{{BOOK_BRANCH}}</code></span>
         <span class="open"><span class="ol">{{t:ui.open}}</span><i class="ti ti-arrow-right" aria-hidden="true"></i></span>
       </button>
