@@ -1088,5 +1088,18 @@
   "ui.origin": "Origin",
   "ui.setting": "Setting",
   "ui.value": "Value",
-  "ui.background_queue": "Queue"
+  "ui.background_queue": "Queue",
+  "ui.queue_sr": "Background queue with waiting, failed and finished jobs; waiting jobs can be moved up or cancelled.",
+  "ui.queue_heading": "Background queue",
+  "ui.queue_empty": "No jobs in the queue.",
+  "ui.queue_waiting": "Waiting",
+  "ui.queue_failed": "Failed",
+  "ui.queue_done": "Finished, not yet applied",
+  "ui.queue_prioritize": "Move up",
+  "ui.queue_prioritize_text": "Move job to the front",
+  "ui.queue_prioritize_done": "Moving up …",
+  "ui.queue_cancel_text": "Cancel job",
+  "ui.queue_cancel_confirm": "The job is removed from the queue. A job that is already running cannot be stopped this way.",
+  "ui.queue_cancel_confirm_label": "Cancel for sure",
+  "ui.queue_cancel_done": "Cancelling …"
 }
