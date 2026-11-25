@@ -1,0 +1,92 @@
+<!--
+  Vorlage: Rückgabe eingecheckt (GhostWriter #573, #209, #630)
+
+  Inline-Widget für den Chat. Zeigt das Ergebnis von scripts/checkin.py: Kennung, Art der Rückgabe und
+  Programm, Befunde und Kommentare, Hinweise (nicht übernommen, „Vergleich über den Text“), bei Scans die
+  Seiten mit Zuordnung, offene Fragen und die Aufbau-Änderungen (neue, gelöschte, verschobene, umbenannte
+  Abschnitte), die nur nach eigener Auswahl und bei beendetem Checkout übernommen werden. Nichts ist
+  vorangehakt. Die Rückgabe beendet den Checkout nie.
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{RET_ID}}, {{RET_KIND_TEXT}}, {{RET_DATE_TEXT}}   Kennung, „Word-Datei (DOCX)“, „25.11.2026“
+  - {{RET_STATS_TEXT}}      „12 Befunde · 3 Kommentare“
+  - {{RET_LATE_TEXT}}       Hinweis bei später Rückgabe (leer = keine)
+  - {{RET_FOLDER}}          Ablageordner der Rückgabe (für checkout.aufbau)
+  - {{RET_FINDINGS_FILE}}   Befunddatei (leer = keine Befunde); Knopf „Befunde durchsehen“ sendet view.notes_review
+  - {{RET_END_ARGS}}        JSON {"id":"GW-…"} für „Checkout beenden“ (leer = Knopf entfällt)
+  - {{RET_CAN_APPLY}}       `1`, wenn der Checkout beendet ist (Aufbau-Änderungen übernehmbar)
+  - {{RET_APPLY_HINT}}      Hinweis, solange der Checkout läuft
+  Blöcke: {{#NOTES}} {{N_TEXT}}; {{#PAGES}} {{P_TEXT}}; {{#QUESTIONS}} {{Q_TEXT}};
+          {{#AUFBAU}} {{A_ID}}, {{A_TEXT}}, {{A_STATE}} (offen | uebernommen | nicht-moeglich)
+
+  Verhalten:
+  - „Ausgewählte Aufbau-Änderungen übernehmen“ sendet checkout.aufbau mit folder, ids und confirm=true (die Auswahl
+    ist die ausdrückliche Bestätigung).
+  - „Befunde durchsehen“ sendet view.notes_review mit file.
+  - „Checkout beenden“ fragt nach und sendet checkout.end.
+
+  Aktionen: checkout.aufbau, view.notes_review, checkout.end
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts, Tabler-Icons und sendPrompt(text).
+-->
+<h2 class="sr-only">{{t:ui.return_checked_in}}</h2>
+<style>
+.gw-rt .row{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:8px 12px;display:flex;gap:var(--gap-sm);align-items:flex-start;font-size:13px;line-height:1.45}
+.gw-rt .row.done{opacity:0.6}
+.gw-rt .note{font-size:13px;color:var(--text-secondary);line-height:1.5}
+.gw-rt .grp{font-size:13px;font-weight:500;color:var(--text-secondary);margin-top:4px}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)}
+.gw-btn.pri{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-btn:disabled{opacity:0.45;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-rt" id="gw-rt" data-folder="{{RET_FOLDER}}" data-file="{{RET_FINDINGS_FILE}}" data-can-apply="{{RET_CAN_APPLY}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div>
+      <div style="font-size:12px;color:var(--text-muted)">{{RET_ID}} · {{RET_KIND_TEXT}} · {{RET_DATE_TEXT}}</div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-inbox" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.return_checked_in}}</div>
+      <div style="font-size:14px;margin-top:4px">{{RET_STATS_TEXT}}</div>
+    </div>
+    <div data-gw-if="RET_LATE_TEXT" class="note" style="padding:8px 12px;border:0.5px solid var(--border-warning);border-radius:var(--radius);background:var(--bg-warning);color:var(--text-warning)">{{RET_LATE_TEXT}}</div>
+    <div data-gw-if="NOTES" style="display:flex;flex-direction:column;gap:2px">
+      {{#NOTES}}<div class="note">{{N_TEXT}}</div>{{/NOTES}}
+    </div>
+    <div data-gw-if="PAGES" style="display:flex;flex-direction:column;gap:2px"><div class="grp">{{t:ui.pages}}</div>
+      {{#PAGES}}<div class="note">{{P_TEXT}}</div>{{/PAGES}}
+    </div>
+    <div data-gw-if="QUESTIONS" style="display:flex;flex-direction:column;gap:2px"><div class="grp">{{t:ui.open_questions}}</div>
+      {{#QUESTIONS}}<div class="note">{{Q_TEXT}}</div>{{/QUESTIONS}}
+    </div>
+    <div data-gw-if="AUFBAU" id="gw-aufbau" style="display:flex;flex-direction:column;gap:6px"><div class="grp">{{t:ui.structure_changes}}</div>
+      <div class="note">{{t:ui.structure_changes_note}}</div>
+      {{#AUFBAU}}
+      <label class="row" data-id="{{A_ID}}" data-state="{{A_STATE}}"><input type="checkbox" class="on" aria-label="{{t:ui.apply_2}}" style="margin-top:2px"><span style="flex:1">{{A_TEXT}}</span><span class="note">{{A_STATE}}</span></label>
+      {{/AUFBAU}}
+      <div class="note" data-gw-if="RET_APPLY_HINT">{{RET_APPLY_HINT}}</div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);flex-wrap:wrap;border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-end" data-gw-send="checkout.end" data-gw-args="{{RET_END_ARGS}}" data-gw-text="{{t:ui.end_checkout}}" data-gw-confirm="{{t:ui.end_checkout_confirm}}" data-gw-confirm-label="{{t:ui.end_checkout}}" data-gw-done="{{t:ui.queue_cancel_done}}" data-gw-optional>{{t:ui.end_checkout}}</button>
+      <button type="button" class="gw-btn" id="gw-review">{{t:ui.review_findings}}</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">{{t:ui.apply_structure_changes}}</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var box=document.getElementById('gw-rt'),ds=box.dataset,$=function(id){return document.getElementById(id);};
+  var rows=Array.prototype.slice.call(box.querySelectorAll('#gw-aufbau .row'));
+  var canApply=!!ds.canApply;
+  rows.forEach(function(r){
+    var on=r.querySelector('.on');
+    if(r.dataset.state!=='offen'){on.disabled=true;r.classList.add('done');}
+    on.addEventListener('change',refresh);
+  });
+  function picked(){return rows.filter(function(r){return r.querySelector('.on').checked&&!r.querySelector('.on').disabled;}).map(function(r){return r.dataset.id;});}
+  function refresh(){var ids=picked();$('gw-apply').disabled=!canApply||!ids.length;$('gw-apply').textContent=ids.length?ids.length+tr("ui.apply_structure_changes_n"):tr("ui.apply_structure_changes");}
+  if(!rows.length)$('gw-apply').remove();
+  else $('gw-apply').addEventListener('click',function(){var ids=picked();if(!ids.length||!canApply)return;box.querySelectorAll('input,button').forEach(function(x){x.disabled=true;});
+    gwSend(ids.length+tr("ui.apply_structure_changes_message"),'checkout.aufbau',{folder:ds.folder,ids:ids.join(','),confirm:true});});
+  if(!ds.file)$('gw-review').remove();
+  else $('gw-review').addEventListener('click',function(){$('gw-review').disabled=true;gwSend(tr("ui.review_findings"),'view.notes_review',{file:ds.file});});
+  if(rows.length)refresh();
+})();
+</script>

@@ -127,13 +127,32 @@ RUNTIME = r'''
       n.disabled=true;label(a('data-gw-done'));sendAction(a('data-gw-text')||action,action,args);
     });
   }
+  // Varianten (GhostWriter #473, #630): data-gw-variants=<JSON-Liste der Wortlaute>, data-gw-variants-label=<Beschriftung>,
+  // data-gw-variants-file=<Durchsichtsdatei>, data-gw-variants-entry=<Eintrags-ID>. Je Variante ein Knopf; ein Klick sendet
+  // notes_review.decide mit decision=geändert, variant=<N ab 1> und new=<Wortlaut>. Ohne gültige Liste entfällt das Element.
+  function variants(n){
+    var list,a=function(k){return n.getAttribute(k)||'';};
+    try{list=JSON.parse(a('data-gw-variants')||'[]');}catch(e){list=[];}
+    if(!Array.isArray(list)||!list.length||!a('data-gw-variants-entry')){n.remove();return;}
+    var label=a('data-gw-variants-label'),buttons=[];
+    list.forEach(function(text,i){
+      var b=document.createElement('button');b.type='button';b.className='gw-btn';b.setAttribute('data-variant',String(i+1));
+      b.style.cssText='text-align:left;white-space:normal;height:auto';
+      var shown=String(text);b.textContent=label+' '+(i+1)+': '+(shown.length>160?shown.slice(0,157)+'…':shown);b.title=shown;
+      b.addEventListener('click',function(){
+        if(b.disabled)return;buttons.forEach(function(x){x.disabled=true;});
+        sendAction(label+' '+(i+1),'notes_review.decide',{file:a('data-gw-variants-file'),entry:a('data-gw-variants-entry'),decision:'geändert',variant:i+1,new:String(text)});
+      });
+      buttons.push(b);n.appendChild(b);
+    });
+  }
   var head='';
   // Schreibende Aktionen ohne Endung .update/.create/.reorder (GhostWriter #179): auch sie bekommen den gelesenen
   // Stand, damit ein veraltetes Formular keine zwischenzeitliche Änderung überschreibt. Reine Aufträge, die nur
   // einen Lauf oder eine Action starten (run.start, edition.*), gehören nicht dazu.
   var WRITES=['changes.merge','approval.confirm','chapter.sections.add','chapter.research.start','series.volume.add',
     'series.volume.remove','series.omnibus.approve','series.omnibus.revoke','series.omnibus.publish','import.apply',
-    'import.edit','import.outline.apply','analysis.apply','character.suggest.apply','image.place'];
+    'import.edit','import.outline.apply','analysis.apply','character.suggest.apply','image.place','checkout.aufbau'];
   function withHead(action,d){
     var writes=(/\.(update|create|reorder)$/.test(action)&&action!=='edition.create')||WRITES.indexOf(action)>=0;
     if(!head||!writes||Object.prototype.hasOwnProperty.call(d,'expected_head_sha'))return d;
@@ -152,6 +171,7 @@ RUNTIME = r'''
     el.querySelectorAll('[data-gw-checks-history]').forEach(checkHistory);
     el.querySelectorAll('[data-gw-checks]').forEach(checks);
     el.querySelectorAll('[data-gw-send]').forEach(confirmSend);
+    el.querySelectorAll('[data-gw-variants]').forEach(variants);
     T[name].run(translator(lang));
   }
   window.GW={version:VERSION,templates:Object.keys(T),render:render,renderHtml:renderHtml,supports:supports,withHead:withHead,writes:WRITES.slice(),escape:esc};
@@ -168,7 +188,7 @@ def split(path):
     return html, script
 
 
-LOCALIZED = ['abschnitt-anlegen', 'analyse-einstellungen', 'abschnitt-bearbeiten', 'abschnittssteuerung', 'aenderungen-uebernehmen', 'auflage-erzeugen', 'ausgabeoptionen', 'auswahl', 'bilder', 'buch-anlegen', 'buecherregal', 'chronologie-vorschlag', 'daten', 'einstellungen', 'figur-bearbeiten', 'figuren', 'figuren-vorschlag', 'freigabe-bestaetigen', 'gliederung-vorschlag', 'hinweisdurchsicht', 'import-vorschau', 'kapitel-anlegen', 'kapitel-bearbeiten', 'kapitelansicht', 'kapitelrecherche', 'ki-angabe', 'ki-dienste', 'kurzbeschreibung-vorschlag', 'orte-vorschlag', 'projektdaten-bearbeiten', 'projekteinstellungen', 'projektuebersicht', 'reihenfolge', 'sammelband', 'serie', 'serie-bearbeiten', 'sprache-vorschlag', 'stilprofil-vorschlag', 'teil-bearbeiten', 'vor-nachspann', 'warteschlange', 'widerspruch-vorschlag', 'zeitleiste', 'zeitleiste-vorschlag']
+LOCALIZED = ['glossar-vorschlag', 'rueckgabe', 'abschnitt-anlegen', 'analyse-einstellungen', 'abschnitt-bearbeiten', 'abschnittssteuerung', 'aenderungen-uebernehmen', 'auflage-erzeugen', 'ausgabeoptionen', 'auswahl', 'bilder', 'buch-anlegen', 'buecherregal', 'chronologie-vorschlag', 'daten', 'einstellungen', 'figur-bearbeiten', 'figuren', 'figuren-vorschlag', 'freigabe-bestaetigen', 'gliederung-vorschlag', 'hinweisdurchsicht', 'import-vorschau', 'kapitel-anlegen', 'kapitel-bearbeiten', 'kapitelansicht', 'kapitelrecherche', 'ki-angabe', 'ki-dienste', 'kurzbeschreibung-vorschlag', 'orte-vorschlag', 'projektdaten-bearbeiten', 'projekteinstellungen', 'projektuebersicht', 'reihenfolge', 'sammelband', 'serie', 'serie-bearbeiten', 'sprache-vorschlag', 'stilprofil-vorschlag', 'teil-bearbeiten', 'vor-nachspann', 'warteschlange', 'widerspruch-vorschlag', 'zeitleiste', 'zeitleiste-vorschlag']
 
 
 def validate_translations():

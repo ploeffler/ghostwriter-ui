@@ -1,0 +1,93 @@
+<!--
+  Vorlage: Glossar-Begriffe aus dem Text (Auswahl, GhostWriter #490, #630)
+
+  Inline-Widget für den Chat. Zeigt die Vorschläge eines Hintergrundlaufs
+  (scripts/analyze.py, Art glossary): Begriffe, die der Text selbst nennt, mit
+  Erklärung (nur wenn der Text sie gibt), Abschnitten und Fundstellen. Nichts ist
+  vorangehakt: nur gewählte Begriffe kommen ins Glossar, vorhandene Einträge
+  bleiben unverändert, ohne Erklärung wird nichts angelegt.
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{KIND}}                glossary
+  - {{RUN_ID}}, {{RUN_TEXT}}  Hintergrundlauf
+  - {{SCOPE_TEXT}}, {{SUGGEST_COUNT_TEXT}}  z. B. „ganzes Buch“, „9 Begriffe“
+  Wiederholung je Begriff zwischen {{#SUGGESTIONS}} und {{/SUGGESTIONS}}:
+  - {{S_IDX}}               Nummer in der Vorschlagsdatei
+  - {{S_TERM}}, {{S_EXPL}}  Begriff und Erklärung (leer, wenn der Text keine gibt)
+  - {{S_SECTIONS}}, {{S_EVIDENCE}}  Abschnitte und Fundstellen
+  - {{S_STATE}}, {{S_STATE_TEXT}}  new | existing, Text („neu“, „steht schon im Glossar“)
+
+  Verhalten:
+  - Übernehmen sendet analysis.apply mit kind, run und choices [{index, term, explanation}] der
+    angehakten Begriffe; ein angehakter Begriff braucht eine Erklärung.
+  - Verwerfen sendet form.cancel (form analysis.apply, kind, run).
+
+  Aktionen: analysis.apply, form.cancel
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts, Tabler-Icons und sendPrompt(text).
+-->
+<h2 class="sr-only">{{t:ui.glossary_terms_for_select_and_apply}}</h2>
+<style>
+.gw-gl .card{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;display:flex;gap:var(--gap-sm);align-items:flex-start}
+.gw-gl .card.off{opacity:0.55}
+.gw-gl .main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.gw-gl input[type=text],.gw-gl textarea{font:inherit;font-size:14px;padding:5px 8px;border:0.5px solid var(--border-strong);border-radius:8px;background:var(--surface-1);color:var(--text-primary);box-sizing:border-box;width:100%}
+.gw-gl .tm{font-weight:500}
+.gw-gl .st{font-size:11px;padding:1px 6px;border-radius:999px;border:0.5px solid var(--border);color:var(--text-muted);white-space:nowrap}
+.gw-gl .st[data-s="new"]{border-color:var(--border-accent);color:var(--text-accent)}
+.gw-gl .meta{font-size:12px;color:var(--text-muted);line-height:1.5}
+.gw-gl .meta.ev{font-style:italic}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)}
+.gw-btn.pri{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-btn:disabled{opacity:0.45;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-gl" id="gw-gl" data-kind="{{KIND}}" data-run="{{RUN_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div>
+      <div style="font-size:12px;color:var(--text-muted)">{{SCOPE_TEXT}} · {{SUGGEST_COUNT_TEXT}}<span data-gw-if="RUN_TEXT"> · {{RUN_TEXT}}</span></div>
+      <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-book-2" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.glossary_terms_from_the_text}}</div>
+    </div>
+    <div id="gw-list" style="display:flex;flex-direction:column;gap:6px">
+      {{#SUGGESTIONS}}
+      <div class="card off" data-idx="{{S_IDX}}" data-state="{{S_STATE}}">
+        <input type="checkbox" class="on" aria-label="{{t:ui.apply_2}}" style="margin-top:8px">
+        <div class="main">
+          <div style="display:flex;gap:var(--gap-sm);align-items:center;flex-wrap:wrap">
+            <input type="text" class="tm" value="{{S_TERM}}" aria-label="{{t:ui.term}}" style="flex:1;min-width:8rem">
+            <span class="st" data-s="{{S_STATE}}">{{S_STATE_TEXT}}</span>
+          </div>
+          <textarea class="ex" rows="2" placeholder="{{t:ui.glossary_explanation_placeholder}}" aria-label="{{t:ui.explanation}}">{{S_EXPL}}</textarea>
+          <div class="meta">{{t:ui.appears_in_2}}</div>
+          <div class="meta ev">{{S_EVIDENCE}}</div>
+        </div>
+      </div>
+      {{/SUGGESTIONS}}
+    </div>
+    <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">{{t:ui.no_terms_with_text_references_found}}</div>
+    <div style="font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.glossary_note}}</div>
+    <div style="display:flex;justify-content:flex-end;gap:var(--gap-sm);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-cancel">{{t:ui.discard}}</button>
+      <button type="button" class="gw-btn pri" id="gw-apply">{{t:ui.apply}}</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+(function(){
+  var box=document.getElementById('gw-gl'),ds=box.dataset,$=function(id){return document.getElementById(id);};
+  var cards=Array.prototype.slice.call(box.querySelectorAll('.card'));
+  if(cards.length)$('gw-none').remove();else $('gw-apply').disabled=true;
+  cards.forEach(function(c){
+    c.querySelectorAll('.meta').forEach(function(x){if(!x.textContent.trim()||/:\s*$/.test(x.textContent.trim()))x.remove();});
+    if(c.dataset.state==='existing'){var o=c.querySelector('.on');o.disabled=true;}   // vorhandene Einträge bleiben unverändert
+    var on=c.querySelector('.on');on.addEventListener('change',function(){c.classList.toggle('off',!on.checked);refresh();});
+  });
+  box.addEventListener('input',refresh);
+  function choices(){return cards.filter(function(c){return c.querySelector('.on').checked;}).map(function(c){
+    return {index:+c.dataset.idx,term:c.querySelector('.tm').value.trim(),explanation:c.querySelector('.ex').value.trim()};});}
+  function refresh(){var ch=choices();$('gw-apply').disabled=!ch.length||ch.some(function(x){return !x.term||!x.explanation;});$('gw-apply').textContent=ch.length?ch.length+tr("ui.glossary_apply_suffix"):tr("ui.apply");}
+  function lock(){box.querySelectorAll('input,textarea,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
+  $('gw-apply').addEventListener('click',function(){var ch=choices();lock();gwSend(ch.length+tr("ui.glossary_apply_message"),'analysis.apply',{kind:ds.kind,run:ds.run,choices:ch});});
+  $('gw-cancel').addEventListener('click',function(){lock();gwSend(tr("ui.suggestions_discarded"),'form.cancel',{form:'analysis.apply',kind:ds.kind,run:ds.run});});
+  refresh();
+})();
+</script>

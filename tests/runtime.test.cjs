@@ -248,3 +248,37 @@ console.log('Repeated user data is never re-interpreted as a placeholder');
   plan.click();assert.match(sent[sent.length-1],/notes_review.plan file=/);
   console.log('Notes review: groups, escaping, one decision per click, rephrase needs text, plan button passed');
 }
+// v0.70.0 (GhostWriter #490, #573, #209, #473, #630): Glossar-Auswahl, Rückgabe, Variantenknöpfe
+{
+  const sent=[];context.sendPrompt=t=>sent.push(t);
+  const made=[];
+  context.document.createElement=()=>{const t={style:{},attrs:{},disabled:false,handlers:{},setAttribute(k,v){this.attrs[k]=v;},addEventListener(e,fn){this.handlers[e]=fn;}};made.push(t);return t;};
+  const attrs={'data-gw-variants':JSON.stringify(['Erste Fassung','Zweite <b>Fassung</b>']),'data-gw-variants-label':'Variante','data-gw-variants-file':'editorial/durchsicht-x.yml','data-gw-variants-entry':'e-007'};
+  const holder={children:[],getAttribute:k=>attrs[k]||null,appendChild(x){this.children.push(x);},remove(){this.removed=true;}};
+  const empty={getAttribute:()=>null,remove(){this.removed=true;},appendChild(){}};
+  const host={innerHTML:'',querySelectorAll:sel=>sel==='[data-gw-variants]'?[holder,empty]:[]};
+  const getById=context.document.getElementById;
+  context.document.getElementById=()=>({textContent:'',dataset:{},addEventListener(){},remove(){},querySelectorAll:()=>[]});
+  GW.render('hinweisdurchsicht',{REVIEW_FILE:'editorial/durchsicht-x.yml',AUTHOR:[{E_ID:'e-007',E_VARIANTS_JSON:JSON.stringify(['Erste Fassung','Zweite <b>Fassung</b>'])}]},host,'de');
+  context.document.getElementById=getById;
+  assert.equal(empty.removed,true,'ohne Varianten entfällt das Element');
+  assert.equal(holder.children.length,2);assert.equal(holder.children[0].textContent,'Variante 1: Erste Fassung');
+  holder.children[1].handlers.click();
+  assert.equal(sent.length,1);assert.match(sent[0],/"action":"notes_review.decide"/);assert.match(sent[0],/"entry":"e-007"/);assert.match(sent[0],/"decision":"geändert"/);
+  assert.match(sent[0],/"variant":2/);assert.match(sent[0],/"new":"Zweite <b>Fassung<\/b>"/);
+  assert.equal(holder.children.every(b=>b.disabled),true,'nach dem Senden sind alle Varianten gesperrt');
+  const html=GW.renderHtml('hinweisdurchsicht',{REVIEW_FILE:'editorial/durchsicht-x.yml',AUTHOR:[{E_ID:'e-007',E_VARIANTS_JSON:'["a \\"b\\" <x>"]'}]},'de');
+  assert.match(html,/data-gw-variants="\[&quot;a \\&quot;b\\&quot; &lt;x&gt;&quot;\]"/);assert.doesNotMatch(html,/<x>/);
+  // Glossar-Begriffe: nichts vorangehakt, Erklärung Pflicht (Skript), Texte de/en
+  const gl=GW.renderHtml('glossar-vorschlag',{KIND:'glossary',RUN_ID:'run-001',SCOPE_TEXT:'ganzes Buch',SUGGEST_COUNT_TEXT:'2 Begriffe',SUGGESTIONS:[{S_IDX:0,S_TERM:'Etikett <b>',S_EXPL:'Ein Wort',S_SECTIONS:'1.1',S_EVIDENCE:'1.1: „Etikett“',S_STATE:'new',S_STATE_TEXT:'neu'}]},'de');
+  assert.match(gl,/Glossar-Begriffe aus dem Text/);assert.match(gl,/<input type="checkbox" class="on"/);assert.doesNotMatch(gl,/class="on" checked/);assert.doesNotMatch(gl,/Etikett <b>/);
+  assert.match(GW.renderHtml('glossar-vorschlag',{KIND:'glossary',SUGGESTIONS:[]},'en'),/Glossary terms from the text/);
+  // Rückgabe: Aufbau-Änderungen mit Auswahl, Befundknopf, Checkout beenden
+  const rt=GW.renderHtml('rueckgabe',{RET_ID:'GW-7F3A',RET_KIND_TEXT:'Word-Datei (DOCX)',RET_DATE_TEXT:'25.11.2026',RET_STATS_TEXT:'3 Befunde · 1 Kommentar',RET_FOLDER:'checkouts/GW-7F3A/rueckgabe-2026-11-25',
+    RET_FINDINGS_FILE:'editorial/rueckgabe-GW-7F3A-2026-11-25.yml',RET_END_ARGS:'{"id":"GW-7F3A"}',RET_APPLY_HINT:'Checkout erst beenden',NOTES:[{N_TEXT:'Vergleich über den Text'}],
+    AUFBAU:[{A_ID:'a-001',A_TEXT:'neuer Abschnitt „X“',A_STATE:'offen'}]},'de');
+  assert.match(rt,/Rückgabe eingecheckt/);assert.match(rt,/data-id="a-001"/);assert.match(rt,/data-gw-send="checkout.end"/);assert.match(rt,/Checkout erst beenden/);assert.doesNotMatch(rt,/class="on" checked/);
+  assert.match(GW.renderHtml('rueckgabe',{RET_ID:'GW-1'},'en'),/Return checked in/);
+  assert.ok(GW.writes.includes('checkout.aufbau'));
+  console.log('v0.70.0: variant buttons, glossary selection, checked-in return passed');
+}

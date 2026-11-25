@@ -7,7 +7,7 @@ const de=JSON.parse(fs.readFileSync(path.join(root,'i18n/de.json'),'utf8'));
 const context={window:{}};
 vm.runInNewContext(fs.readFileSync(path.join(root,'dist/gw.js'),'utf8'),context);
 const GW=context.window.GW;
-assert.equal(GW.templates.length,44);
+assert.equal(GW.templates.length,46);
 for(const name of GW.templates){
   assert.equal(GW.supports(name,'en'),true,name);
   const input={LANGUAGE:'en',SECTION_TITLE:'Titel {{PROJECT_TITLE}} <b>',MANUSCRIPT:'Noch nicht begonnen. {{t:ui.description}} <script>',TITLE:'Titel',CHAPTER_NUMBER:3,SECTION_NUMBER:'3.2'};
@@ -60,7 +60,7 @@ approval(true,false);approval(false,false);approval(false,true);
   const en=GW.renderHtml('warteschlange',{QUEUE_EMPTY:'1',QUEUE_BOOK:'Book',QUEUE_COUNT_TEXT:'no jobs'},'en');
   assert(en.includes('Background queue')&&en.includes('No jobs in the queue.'));
 }
-console.log('All 44 bilingual templates: compilation, fallback, immutable data and approval gates passed');
+console.log('All 46 bilingual templates: compilation, fallback, immutable data and approval gates passed');
 // Rückübersetzung ausschließlich der Quelltextliterale: IDs, Selektoren,
 // Bedingungen, strukturierte Aktionen und Freigaberegeln müssen identisch bleiben.
 const crypto=require('node:crypto');
