@@ -3,15 +3,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const path=require('node:path');
 const source=fs.readFileSync(path.join(__dirname,'../dist/gw.js'),'utf8');
-function payload(text){
-  const block=text.match(/```gw\n([\s\S]*?)\n```$/);
-  if(block)return JSON.parse(block[1]);
-  const short=text.match(/`gw:([^\s`]+)([^`]*)`$/);
-  assert(short,'Missing structured action');
-  const result={action:short[1]};
-  short[2].trim().split(/\s+/).filter(Boolean).forEach(token=>{const i=token.indexOf('=');result[token.slice(0,i)]=token.slice(i+1);});
-  return result;
-}
+const {parseMessage:payload}=require('./helpers.cjs');
 function mount(name,seed={}){
   const nodes={},sent=[];
   const element={innerHTML:'',querySelectorAll:()=>[]};
@@ -34,7 +26,7 @@ for(const [name,action] of [['kapitel-anlegen','chapter.create'],['kapitel-bearb
   const data=payload(m.sent[0]);
   assert.equal(data.action,action);
   assert.equal(data.title,'Deutscher Titel');
-  assert.equal(data.expected_head_sha,'b'.repeat(40));
+  assert.equal(data.expected_head_sha,'b'.repeat(12));
   if(action==='section.create'){
     assert.equal(data.chapter_id,'ch-stable');
     assert.equal(data.fact_check,'requested');
@@ -93,7 +85,7 @@ assert.equal(anData.price_input_per_mtok,0.25);
 assert.equal(anData.price_output_per_mtok,2);
 assert.equal(anData.parallel,6);
 assert.deepEqual(anData.languagetool,{language:'de-AT',words:['Opa Karl','Huber'],disabled_rules:['DE_CASE']});
-assert.equal(anData.expected_head_sha,'b'.repeat(40));
+assert.equal(anData.expected_head_sha,'b'.repeat(12));
 const anEmpty=mount('analyse-einstellungen');
 anEmpty.node('gw-save').handlers.click();
 const anEmptyData=payload(anEmpty.sent[0]);
@@ -116,7 +108,7 @@ assert.equal(data.action,'library.book.create');
 assert.equal(data.working_title,'Überraschung für Groß');
 assert.equal(data.branch,'buch/ueberraschung-fuer-gross');
 assert.equal(data.author,'Deutscher Autor');
-assert.equal(data.expected_head_sha,'b'.repeat(40));
+assert.equal(data.expected_head_sha,'b'.repeat(12));
 assert.match(book.sent[0],/^Create a new book:/);
 const duplicate=mount('buch-anlegen',{'gw-wt':'Schon da',taken:[{dataset:{slug:'schon-da',branch:'buch/schon-da'}}]});
 assert.equal(duplicate.node('gw-create').disabled,true);

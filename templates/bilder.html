@@ -106,7 +106,7 @@
   </div>
 </div>
 <script>
-function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.keys(d),short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');}
+function gwSend(text,action,data){sendPrompt(GW.message(text,action,data));}
 (function(){
   var box=document.getElementById('gw-bilder'),d=box.dataset,$=function(id){return document.getElementById(id);};
   if(!$('gw-style').textContent.trim())$('gw-style').textContent=tr("ui.none_yet_set_in_output_options_or_images_style");

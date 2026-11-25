@@ -93,11 +93,24 @@ RUNTIME = r'''
   // data-gw-confirm=<Hinweis vor dem Senden>, data-gw-confirm-label=<Beschriftung zum Bestätigen>,
   // data-gw-done=<Beschriftung nach dem Senden>. Mit data-gw-confirm zeigt der erste Klick den Hinweis über der
   // Knopfzeile (Element mit data-gw-confirm-at, sonst vor dem Elternelement), erst der zweite sendet; ohne sendet schon der erste. Danach ist der Knopf gesperrt.
-  function sendAction(text,action,data){
-    var d=withHead(action,data||{}),k=Object.keys(d);
-    var short=k.every(function(x){var v=d[x];return typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`]{1,80}$/.test(v));});
-    sendPrompt(short?text+'\n\n`gw:'+action+k.map(function(x){return ' '+x+'='+d[x];}).join('')+'`':text+'\n\n```gw\n'+JSON.stringify(Object.assign({action:action},d))+'\n```');
+  // Nachrichtenformat (GhostWriter #642): kein Codeblock, damit die Claude-App die Nachricht nicht als eingeschleusten Code
+  // markiert. Erst die Klartextzeile, dann die Kennzeile `gw:<aktion> k=v …` (nur kurze Werte ohne Leerzeichen), danach je
+  // Feld mit längerem oder freiem Text eine Zeile `feld: wert`. Mehrzeilige Werte werden mit zwei Leerzeichen eingerückt,
+  // `\` und Backtick mit Backslash maskiert, Zahlen/Objekte als `feld (JSON): …`. expected_head_sha wird auf 12 Zeichen gekürzt.
+  function maskText(s){return String(s).replace(/\\/g,'\\\\').replace(/`/g,'\\`');}
+  function message(text,action,data){
+    var d=withHead(action,data||{}),inline=[],lines=[];
+    Object.keys(d).forEach(function(k){
+      var v=d[k];
+      if(v===undefined)return;
+      if(k==='expected_head_sha'&&typeof v==='string')v=v.slice(0,12);
+      if(typeof v==='number'||typeof v==='boolean'||(typeof v==='string'&&/^[^\s`\\]{1,80}$/.test(v))){inline.push(' '+k+'='+v);return;}
+      if(typeof v==='string')lines.push(k+':'+(v===''?'':' '+maskText(v).replace(/\r\n?|\n/g,'\n  ')));
+      else lines.push(k+' (JSON): '+maskText(JSON.stringify(v)));
+    });
+    return text+'\n\n`gw:'+action+inline.join('')+'`'+(lines.length?'\n'+lines.join('\n'):'');
   }
+  function sendAction(text,action,data){sendPrompt(message(text,action,data));}
   function confirmSend(n){
     var a=function(k){return n.getAttribute(k)||'';},action=a('data-gw-send'),hint=a('data-gw-confirm'),box=null,args;
     try{args=JSON.parse(a('data-gw-args')||'{}');}catch(e){args={};}
@@ -174,7 +187,7 @@ RUNTIME = r'''
     el.querySelectorAll('[data-gw-variants]').forEach(variants);
     T[name].run(translator(lang));
   }
-  window.GW={version:VERSION,templates:Object.keys(T),render:render,renderHtml:renderHtml,supports:supports,withHead:withHead,writes:WRITES.slice(),escape:esc};
+  window.GW={version:VERSION,templates:Object.keys(T),render:render,renderHtml:renderHtml,supports:supports,withHead:withHead,message:message,writes:WRITES.slice(),escape:esc};
 
 '''
 

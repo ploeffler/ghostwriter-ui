@@ -1,3 +1,5 @@
+const {loadGW}=require('./helpers.cjs');
+const realGW=loadGW();
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -30,7 +32,7 @@ function approval(blocked, revoke){
   elements['gw-freigabe'].querySelectorAll=selector=>selector==='.gw-ck'?[{dataset:{state:blocked?'block':'ok'},querySelector:()=>el()}]:[];
   for(const id of ['gw-save','gw-cancel'])elements[id].addEventListener=(type,fn)=>handlers[id]=fn;
   const script=fs.readFileSync(path.join(root,'templates/freigabe-bestaetigen.html'),'utf8').match(/<script>([\s\S]*?)<\/script>/)[1];
-  vm.runInNewContext('(function(tr){'+script+'})(tr)',{document:{getElementById:id=>elements[id]},GW:{withHead:(action,data)=>Object.assign({},data,{expected_head_sha:'abc123'})},tr:key=>JSON.parse(fs.readFileSync(path.join(root,'i18n/en.json'),'utf8'))[key],sendPrompt:s=>sent.push(s)});
+  vm.runInNewContext('(function(tr){'+script+'})(tr)',{document:{getElementById:id=>elements[id]},GW:{withHead:(action,data)=>Object.assign({},data,{expected_head_sha:'abc123'}),message:(t,a,d)=>realGW.message(t,a,Object.assign({},d,{expected_head_sha:'abc123'}))},tr:key=>JSON.parse(fs.readFileSync(path.join(root,'i18n/en.json'),'utf8'))[key],sendPrompt:s=>sent.push(s)});
   handlers['gw-save']();
   if(blocked){assert.equal(sent.length,0);assert.equal(elements['gw-save'].disabled,true);}
   else {assert.match(sent[0],/approval.confirm/);assert.match(sent[0],/section_id=sec-2/);assert.match(sent[0],/expected_head_sha=abc123/);if(revoke)assert.match(sent[0],/revoke=true/);}

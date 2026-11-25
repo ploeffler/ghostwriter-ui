@@ -19,3 +19,4 @@ jobs:
       - run: node tests/runtime.test.cjs
       - run: node tests/forms-runtime.test.cjs
       - run: node tests/all-templates.test.cjs
+      - run: node tests/message.test.cjs

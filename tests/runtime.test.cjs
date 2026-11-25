@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const src = fs.readFileSync(path.join(__dirname, '../dist/gw.js'), 'utf8');
+const {parseMessage:P}=require('./helpers.cjs');
 const sent = [];
 const handlers = {};
 const element = { innerHTML: '', querySelectorAll: () => [] };
@@ -178,7 +179,7 @@ console.log('Repeated user data is never re-interpreted as a placeholder');
   assert.equal(sent.length,0,'erster Klick zeigt nur das Textfeld');assert.equal(parent.inserted,made[0]);assert.equal(made[0].attrs['data-gw-input-box'],'');assert.equal(label.textContent,'Markieren');
   mark.handlers.click();assert.equal(sent.length,0,'ohne Grund wird nichts gesendet');
   made[0].value='  Zeitzeugin widerspricht  ';mark.handlers.click();
-  assert.equal(sent.length,1);assert.match(sent[0],/"action":"section.mark_stale".*"section_id":"sec-01-01".*"reason":"Zeitzeugin widerspricht"/);
+  assert.equal(sent.length,1);{const m=P(sent[0]);assert.equal(m.action,'section.mark_stale');assert.equal(m.section_id,'sec-01-01');assert.equal(m.reason,'Zeitzeugin widerspricht');assert(!sent[0].includes('```'));}
   assert.equal(mark.disabled,true);
   // Vorlagen
   const ov=GW.renderHtml('projektuebersicht',{TODO:[{TODO_TEXT:'Kapitel 2: Sprache nicht bestanden',TODO_ACTION:'view.chapter',TODO_ARGS:'{"chapter_id":"ch-02"}',TODO_ACTION2:'view.notes_review',TODO_ARGS2:'{}'},{TODO_TEXT:'Buch neu prüfen (Sprache)',TODO_ACTION:'',TODO_ARGS:'{}',TODO_ACTION2:'',TODO_ARGS2:'{}'}],
@@ -234,17 +235,17 @@ console.log('Repeated user data is never re-interpreted as a placeholder');
   const box=node({file:'editorial/durchsicht-2026-11-20.yml'});box.kids['*.it']=[a,b,c];
   const plan=node();
   vm.runInNewContext(src+';',{document:{getElementById:id=>id==='gw-nr'?box:id==='gw-plan'?plan:null,createElement:()=>{const t=node();t.value='';return t;}},
-    GW:{withHead:(x,d)=>d},tr:(k,a)=>k+(a?JSON.stringify(a):''),sendPrompt:s=>sent.push(s)});
+    GW:{withHead:(x,d)=>d,message:(t,a,d)=>require('./helpers.cjs').loadGW().message(t,a,d)},tr:(k,a)=>k+(a?JSON.stringify(a):''),sendPrompt:s=>sent.push(s)});
   a.btn('ja').click();
   assert.match(sent[0],/`gw:notes_review.decide file=editorial\/durchsicht-2026-11-20.yml entry=e-001 decision=ja`/);
   b.btn('nein').click();assert.equal(sent.length,1);   // schon entschieden: keine Bindung
   c.btn('geändert').click();assert.equal(sent.length,1);   // erst Textfeld
   c.kids['textarea:not([data-q])'].value='Eigene Fassung';c.btn('geändert').click();
-  assert.match(sent[1],/"action":"notes_review.decide".*"decision":"geändert".*"new":"Eigene Fassung"/);
+  {const m=P(sent[1]);assert.equal(m.action,'notes_review.decide');assert.equal(m.decision,'geändert');assert.equal(m.new,'Eigene Fassung');}
   // Frage stellen (#609): erst Textfeld, dann notes_review.ask; nichts wird gesperrt oder entschieden
   const before=sent.length;a.ask.click();assert.equal(sent.length,before);
   a.kids['textarea[data-q]'].value='Wie lange segelt man von Trogir nach Triest?';a.ask.click();
-  assert.equal(sent.length,before+1);assert.match(sent[before],/"action":"notes_review.ask".*"entry":"e-001".*"question":"Wie lange segelt man von Trogir nach Triest\?"/);
+  assert.equal(sent.length,before+1);{const m=P(sent[before]);assert.equal(m.action,'notes_review.ask');assert.equal(m.entry,'e-001');assert.equal(m.question,'Wie lange segelt man von Trogir nach Triest?');}
   plan.click();assert.match(sent[sent.length-1],/notes_review.plan file=/);
   console.log('Notes review: groups, escaping, one decision per click, rephrase needs text, plan button passed');
 }
@@ -264,8 +265,8 @@ console.log('Repeated user data is never re-interpreted as a placeholder');
   assert.equal(empty.removed,true,'ohne Varianten entfällt das Element');
   assert.equal(holder.children.length,2);assert.equal(holder.children[0].textContent,'Variante 1: Erste Fassung');
   holder.children[1].handlers.click();
-  assert.equal(sent.length,1);assert.match(sent[0],/"action":"notes_review.decide"/);assert.match(sent[0],/"entry":"e-007"/);assert.match(sent[0],/"decision":"geändert"/);
-  assert.match(sent[0],/"variant":2/);assert.match(sent[0],/"new":"Zweite <b>Fassung<\/b>"/);
+  assert.equal(sent.length,1);{const m=P(sent[0]);assert.equal(m.action,'notes_review.decide');assert.equal(m.entry,'e-007');assert.equal(m.decision,'geändert');}
+  {const m=P(sent[0]);assert.equal(String(m.variant),'2');assert.equal(m.new,'Zweite <b>Fassung</b>');}
   assert.equal(holder.children.every(b=>b.disabled),true,'nach dem Senden sind alle Varianten gesperrt');
   const html=GW.renderHtml('hinweisdurchsicht',{REVIEW_FILE:'editorial/durchsicht-x.yml',AUTHOR:[{E_ID:'e-007',E_VARIANTS_JSON:'["a \\"b\\" <x>"]'}]},'de');
   assert.match(html,/data-gw-variants="\[&quot;a \\&quot;b\\&quot; &lt;x&gt;&quot;\]"/);assert.doesNotMatch(html,/<x>/);
