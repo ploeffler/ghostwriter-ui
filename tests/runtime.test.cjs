@@ -186,8 +186,8 @@ console.log('Repeated user data is never re-interpreted as a placeholder');
     addEventListener:(t,f)=>{h[t]=f;},click:()=>h.click&&h.click(),remove(){n.removed=true;},before(x){n.inserted=x;},focus(){},
     querySelector:s=>kids[s]||null,querySelectorAll:s=>kids['*'+s]||[]};n.kids=kids;return n;}
   function item(id,decision,neu){const it=node({id,decision,new:neu});const bs=['ja','nein','geändert'].map(d=>node({d}));
-    const act=node();act.before=x=>{it.kids['textarea']=x;};it.kids['.act']=act;it.kids['.st']=node();
-    it.kids['*button[data-d]']=bs;it.kids['*button,textarea']=bs;it.kids['*[data-opt="new"]']=[];it.btn=d=>bs[['ja','nein','geändert'].indexOf(d)];return it;}
+    const act=node();act.before=x=>{it.kids[x.dataset&&x.dataset.q?'textarea[data-q]':'textarea:not([data-q])']=x;};it.kids['.act']=act;it.kids['.st']=node();
+    it.kids['*button[data-d]']=bs;it.kids['*button,textarea']=bs;it.kids['*[data-opt="new"]']=[];it.btn=d=>bs[['ja','nein','geändert'].indexOf(d)];it.ask=node();it.kids['button[data-ask]']=it.ask;return it;}
   const a=item('e-001','offen','Haus'),b=item('e-002','ja',''),c=item('e-003','offen','');
   const box=node({file:'editorial/durchsicht-2026-11-20.yml'});box.kids['*.it']=[a,b,c];
   const plan=node();
@@ -197,8 +197,12 @@ console.log('Repeated user data is never re-interpreted as a placeholder');
   assert.match(sent[0],/`gw:notes_review.decide file=editorial\/durchsicht-2026-11-20.yml entry=e-001 decision=ja`/);
   b.btn('nein').click();assert.equal(sent.length,1);   // schon entschieden: keine Bindung
   c.btn('geändert').click();assert.equal(sent.length,1);   // erst Textfeld
-  c.kids['textarea'].value='Eigene Fassung';c.btn('geändert').click();
+  c.kids['textarea:not([data-q])'].value='Eigene Fassung';c.btn('geändert').click();
   assert.match(sent[1],/"action":"notes_review.decide".*"decision":"geändert".*"new":"Eigene Fassung"/);
-  plan.click();assert.match(sent[2],/notes_review.plan file=/);
+  // Frage stellen (#609): erst Textfeld, dann notes_review.ask; nichts wird gesperrt oder entschieden
+  const before=sent.length;a.ask.click();assert.equal(sent.length,before);
+  a.kids['textarea[data-q]'].value='Wie lange segelt man von Trogir nach Triest?';a.ask.click();
+  assert.equal(sent.length,before+1);assert.match(sent[before],/"action":"notes_review.ask".*"entry":"e-001".*"question":"Wie lange segelt man von Trogir nach Triest\?"/);
+  plan.click();assert.match(sent[sent.length-1],/notes_review.plan file=/);
   console.log('Notes review: groups, escaping, one decision per click, rephrase needs text, plan button passed');
 }

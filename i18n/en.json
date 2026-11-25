@@ -1101,5 +1101,9 @@
   "ui.queue_cancel_text": "Cancel job",
   "ui.queue_cancel_confirm": "The job is removed from the queue. A job that is already running cannot be stopped this way.",
   "ui.queue_cancel_confirm_label": "Cancel for sure",
-  "ui.queue_cancel_done": "Cancelling …"
+  "ui.queue_cancel_done": "Cancelling …",
+  "ui.from_the_assistant": "from the assistant",
+  "ui.ask_a_question": "Ask a question",
+  "ui.your_question": "Your question",
+  "ui.notes_review_question": "Question about {id}"
 }

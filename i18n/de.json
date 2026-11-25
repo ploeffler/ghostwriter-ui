@@ -1101,5 +1101,9 @@
   "ui.queue_cancel_text": "Auftrag abbrechen",
   "ui.queue_cancel_confirm": "Der Auftrag wird aus der Warteschlange entfernt. Ein schon laufender Auftrag lässt sich so nicht stoppen.",
   "ui.queue_cancel_confirm_label": "Wirklich abbrechen",
-  "ui.queue_cancel_done": "Wird abgebrochen …"
+  "ui.queue_cancel_done": "Wird abgebrochen …",
+  "ui.from_the_assistant": "vom Assistenten",
+  "ui.ask_a_question": "Frage stellen",
+  "ui.your_question": "Deine Frage",
+  "ui.notes_review_question": "Frage zu {id}"
 }
