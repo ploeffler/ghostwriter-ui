@@ -27,12 +27,15 @@
   - {{E_CONTEXT}}, {{E_OLD}}, {{E_NEW}}  Satz mit Umgebung, alter Wortlaut, Vorschlag
   - {{E_DECISION}}         offen | ja | nein | geändert | umgesetzt
   - {{E_QUESTION}}         nur bei Autorenentscheidungen
+  - {{E_PROPOSED}}         gesetzt, wenn der Vorschlag {{E_NEW}} vom Assistenten stammt (hinweise.py propose); nur bei Autorenentscheidungen
   Wiederholung je nicht aufgenommenem Befund zwischen {{#SKIPPED}} und {{/SKIPPED}}: {{SK_REF}}, {{SK_REASON}}
 
   Verhalten:
   - Übernehmen / Vorschlag übernehmen sendet notes_review.decide mit file,
     entry und decision ja; Nicht ändern mit decision nein; Anders formulieren
     bzw. Eigene Antwort mit decision geändert und new (Pflichtfeld).
+  - Frage stellen (nur Autorenentscheidungen) öffnet ein Textfeld und sendet notes_review.ask mit file,
+    entry und question; die Karte bleibt offen, nichts wird entschieden oder gesperrt.
   - Umsetzen prüfen sendet notes_review.plan mit file.
   - Entschiedene Einträge sind gesperrt und zeigen ihre Entscheidung.
 -->
@@ -81,8 +84,8 @@
       <div>{{E_REASON}}</div>
       <div class="q">{{E_QUESTION}}</div>
       <div class="ctx">{{E_CONTEXT}}</div>
-      <div class="new" data-opt="new"><span class="lbl">{{t:ui.suggestion}}</span>{{E_NEW}}</div>
-      <div class="act"><button type="button" class="gw-btn pri" data-d="ja" data-opt="new">{{t:ui.accept_suggestion}}</button><button type="button" class="gw-btn" data-d="nein">{{t:ui.do_not_change}}</button><button type="button" class="gw-btn" data-d="geändert">{{t:ui.own_answer}}</button></div>
+      <div class="new" data-opt="new"><span class="lbl">{{t:ui.suggestion}}<span data-gw-if="E_PROPOSED"> · {{t:ui.from_the_assistant}}</span></span>{{E_NEW}}</div>
+      <div class="act"><button type="button" class="gw-btn pri" data-d="ja" data-opt="new">{{t:ui.accept_suggestion}}</button><button type="button" class="gw-btn" data-d="nein">{{t:ui.do_not_change}}</button><button type="button" class="gw-btn" data-d="geändert">{{t:ui.own_answer}}</button><button type="button" class="gw-btn" data-ask="1">{{t:ui.ask_a_question}}</button></div>
     </div>
     {{/AUTHOR}}
     <div id="gw-none" style="font-size:14px;color:var(--text-secondary);padding:var(--pad-md);border:0.5px dashed var(--border-strong);border-radius:var(--radius)">{{t:ui.no_open_notes}}</div>
@@ -108,11 +111,18 @@ function gwSend(text,action,data){var d=GW.withHead(action,data||{}),k=Object.ke
     it.querySelectorAll('button[data-d]').forEach(function(b){b.addEventListener('click',function(){
       var d=b.dataset.d;
       if(d!=='geändert'){lock(it,d);gwSend(tr("ui.notes_review_decision",{id:id,decision:d}),'notes_review.decide',{file:file,entry:id,decision:d});return;}
-      var ta=it.querySelector('textarea');
+      var ta=it.querySelector('textarea:not([data-q])');
       if(!ta){ta=document.createElement('textarea');ta.rows=2;ta.placeholder=tr("ui.your_wording");ta.value=it.dataset.new||'';it.querySelector('.act').before(ta);ta.focus();return;}
       var v=ta.value.trim();if(!v){ta.focus();return;}
       lock(it,d);gwSend(tr("ui.notes_review_decision",{id:id,decision:d}),'notes_review.decide',{file:file,entry:id,decision:d,new:v});
     });});
+    var ask=it.querySelector('button[data-ask]');
+    if(ask)ask.addEventListener('click',function(){   // Frage stellen: entscheidet nichts, Karte bleibt offen
+      var q=it.querySelector('textarea[data-q]');
+      if(!q){q=document.createElement('textarea');q.rows=2;q.placeholder=tr("ui.your_question");q.dataset.q='1';it.querySelector('.act').before(q);q.focus();return;}
+      var v=q.value.trim();if(!v){q.focus();return;}
+      gwSend(tr("ui.notes_review_question",{id:id}),'notes_review.ask',{file:file,entry:id,question:v});q.remove();
+    });
   });
   document.getElementById('gw-plan').addEventListener('click',function(){gwSend(tr("ui.check_what_can_be_applied"),'notes_review.plan',{file:file});});
 })();
