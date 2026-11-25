@@ -37,9 +37,28 @@ RUNTIME = r'''
     });
     return o;
   }
+  // Kompakte Daten (GhostWriter #674): Mit "_PACK":1 fehlen leere Felder ("", [], null) der obersten Ebene; jeder Platzhalter
+  // der Vorlage gilt dann als leer statt als {{NAME}} stehen zu bleiben. Ein Wiederholblock darf als {"k":[Schlüssel],"r":[[Werte],…]}
+  // kommen (Feldnamen einmal statt je Zeile); fehlende Werte am Zeilenende sind "". Ohne _PACK bleibt alles wie bisher.
+  function unpack(name,d){
+    if(!d||d._PACK!==1)return d;
+    var o={},t=T[name],blank=function(s){String(s).replace(/\{\{([A-Z_]+)\}\}/g,function(m,k){o[k]='';return m;});};
+    if(t)blank(t.html);
+    Object.keys(I18N.de).forEach(function(k){blank(I18N.de[k]);});   // auch Platzhalter in übersetzten Texten, etwa „Bücherregal ({{LIBRARY_COUNT}})“
+    Object.keys(d).forEach(function(k){
+      if(k==='_PACK')return;
+      var v=d[k];
+      if(v&&typeof v==='object'&&!Array.isArray(v)&&Array.isArray(v.k)&&Array.isArray(v.r)){
+        var cols=v.k;
+        v=v.r.map(function(row){var r={};cols.forEach(function(c,i){r[c]=Array.isArray(row)&&row[i]!==undefined?row[i]:'';});return r;});
+      }
+      o[k]=v;
+    });
+    return o;
+  }
   function supports(name,lang){return !!T[name]&&(language(lang)==='de'||LOCALIZED.indexOf(name)!==-1);}
   function renderHtml(name,data,lang){
-    data=data||{};lang=language(lang||data.LANGUAGE);var tr=translator(lang);
+    data=unpack(name,data||{});lang=language(lang||data.LANGUAGE);var tr=translator(lang);
     var t=T[name];if(!t)throw new Error(tr('runtime.unknown_template',{name:name}));
     if(!supports(name,lang))throw new Error(tr('runtime.unavailable',{name:name}));
     // Erst die festen Vorlagentexte übersetzen, dann maskierte Nutzdaten einsetzen.
@@ -172,7 +191,7 @@ RUNTIME = r'''
     var o={};Object.keys(d).forEach(function(k){o[k]=d[k];});o.expected_head_sha=head;return o;
   }
   function render(name,data,el,lang){
-    data=data||{};lang=language(lang||data.LANGUAGE);
+    data=unpack(name,data||{});lang=language(lang||data.LANGUAGE);
     var html=renderHtml(name,data,lang);
     el=el||document.getElementById('gw');
     head=String(data.HEAD_SHA||'');
@@ -187,7 +206,7 @@ RUNTIME = r'''
     el.querySelectorAll('[data-gw-variants]').forEach(variants);
     T[name].run(translator(lang));
   }
-  window.GW={version:VERSION,templates:Object.keys(T),render:render,renderHtml:renderHtml,supports:supports,withHead:withHead,message:message,writes:WRITES.slice(),escape:esc};
+  window.GW={version:VERSION,templates:Object.keys(T),render:render,renderHtml:renderHtml,unpack:unpack,supports:supports,withHead:withHead,message:message,writes:WRITES.slice(),escape:esc};
 
 '''
 
