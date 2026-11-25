@@ -1105,5 +1105,17 @@
   "ui.from_the_assistant": "vom Assistenten",
   "ui.ask_a_question": "Frage stellen",
   "ui.your_question": "Deine Frage",
-  "ui.notes_review_question": "Frage zu {id}"
+  "ui.notes_review_question": "Frage zu {id}",
+  "ui.queue_retry": "Erneut versuchen",
+  "ui.queue_retry_text": "Auftrag erneut versuchen",
+  "ui.queue_retry_done": "Wird erneut versucht …",
+  "ui.needs_attention": "Handlungsbedarf",
+  "ui.review_notes": "Hinweise durchsehen",
+  "ui.end_checkout": "Checkout beenden",
+  "ui.show_outdated_sections": "Veraltete Abschnitte zeigen",
+  "ui.mark_outdated": "Als veraltet markieren",
+  "ui.clear_outdated": "Markierung entfernen",
+  "ui.outdated_reason": "Grund, z. B. neue Angaben von Zeitzeugen",
+  "ui.checked_out_for_proofreading": "Zum Gegenlesen ausgecheckt",
+  "ui.end_checkout_confirm": "Checkout beenden? Der Bereich ist danach wieder bearbeitbar; noch nicht zurückgeführte Änderungen des Gegenlesers können verloren gehen."
 }

@@ -46,6 +46,9 @@
   - {{SECTION_ID}}        stabile Abschnitts-ID
   - {{SECTION_NUMBER}}    sichtbare Nummer, z. B. 1.4
   - {{SECTION_TITLE}}     Titel
+  - {{SECTION_STALE_TEXT}}, {{SECTION_STALE_HINT}}  „veraltet“ bzw. Tooltip „seit 25.11.: Grund“ (GhostWriter #592); leer = keine Marke
+  - {{SECTION_CHECKOUT_TEXT}}  „ausgecheckt“ (#572); leer = keine Marke
+  - Block {{#CHECKOUTS}} … {{/CHECKOUTS}} mit {{CO_ID}}, {{CO_TEXT}}: Hinweis auf ausgecheckte Bereiche des Kapitels, Knopf „Checkout beenden“ (checkout.end)
   - {{SECTION_STATUS}}    Status laut workflow.yml (sections.statuses); gw.js zeigt ihn in der gewählten Bediensprache
   - {{SECTION_COST}}      Abschnittssumme, formatiert, oder "–"
   - {{MARKERS_ANEKDOTE}}  Anzahl offener Platzhalter-Anekdoten (0, 1, …)
@@ -79,6 +82,7 @@
 .gw-tag.anek{border-color:var(--border);background:var(--surface-1);color:var(--text-secondary)}
 .gw-num{font-size:13px;color:var(--text-muted);min-width:28px;font-variant-numeric:tabular-nums}
 .gw-meta{font-size:12px;color:var(--text-muted)}
+.gw-tag:empty{display:none}
 @media (max-width:520px){.gw-tags{display:none!important}}
 .gw-lbl{display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px}
 .gw-txt{font-size:14px;line-height:1.6;color:var(--text-primary);white-space:pre-line;margin:0}
@@ -124,6 +128,11 @@
       </div>
       <button type="button" class="gw-sq" data-p="{{t:ui.open_chapter_research_for_chapter}}" data-a="chapter.research.open" data-args='{"chapter_id":"{{CHAPTER_ID}}"}' title="{{t:ui.edit_goal_and_summary_chapter_research}}" aria-label="{{t:ui.edit_goal_and_summary_chapter_research}}"><i class="ti ti-file-search" aria-hidden="true"></i></button>
     </div>
+    <div data-gw-if="CHECKOUTS" style="display:flex;flex-direction:column;gap:var(--gap-xs)">
+      {{#CHECKOUTS}}
+      <div style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:8px 12px;border:0.5px solid var(--border-accent);border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent);font-size:13px"><i class="ti ti-lock" style="font-size:16px" aria-hidden="true"></i><span style="flex:1;min-width:180px">{{CO_TEXT}}</span><button type="button" class="gw-sq" data-gw-send="checkout.end" data-gw-args="{{CO_ARGS}}" data-gw-text="{{t:ui.end_checkout}}" data-gw-confirm="{{t:ui.end_checkout_confirm}}" data-gw-confirm-label="{{t:ui.end_checkout}}" data-gw-done="{{t:ui.queue_cancel_done}}" style="width:auto;height:32px;padding:0 12px;font-size:13px;color:var(--text-primary)">{{t:ui.end_checkout}}</button></div>
+      {{/CHECKOUTS}}
+    </div>
     <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <span style="font-size:12px;color:var(--text-muted)">{{t:ui.sections}}</span>
@@ -131,7 +140,7 @@
       </div>
       <div id="gw-sections" style="display:flex;flex-direction:column;gap:var(--gap-xs)">
         {{#SECTIONS}}
-        <button type="button" class="gw-row" data-id="{{SECTION_ID}}" data-number="{{SECTION_NUMBER}}" data-title="{{SECTION_TITLE}}" data-anekdote="{{MARKERS_ANEKDOTE}}" data-quelle="{{MARKERS_QUELLE}}" data-medizin="{{MARKERS_MEDIZIN}}" data-recht="{{MARKERS_RECHT}}"><span class="gw-num">{{SECTION_NUMBER}}</span><span style="flex:1;min-width:0;font-size:14px;font-weight:500">{{SECTION_TITLE}}</span><span data-gw-checks="{{SECTION_CHECKS_JSON}}" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end"></span><span class="gw-tags" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end"></span><span class="gw-meta" style="min-width:32px;text-align:right" title="{{t:ui.costs}}">{{SECTION_COST}}</span><span class="gw-meta">{{SECTION_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
+        <button type="button" class="gw-row" data-id="{{SECTION_ID}}" data-number="{{SECTION_NUMBER}}" data-title="{{SECTION_TITLE}}" data-anekdote="{{MARKERS_ANEKDOTE}}" data-quelle="{{MARKERS_QUELLE}}" data-medizin="{{MARKERS_MEDIZIN}}" data-recht="{{MARKERS_RECHT}}"><span class="gw-num">{{SECTION_NUMBER}}</span><span style="flex:1;min-width:0;font-size:14px;font-weight:500">{{SECTION_TITLE}}</span><span class="gw-tag" title="{{SECTION_STALE_HINT}}" style="border-color:var(--border-warning)">{{SECTION_STALE_TEXT}}</span><span class="gw-tag recht">{{SECTION_CHECKOUT_TEXT}}</span><span data-gw-checks="{{SECTION_CHECKS_JSON}}" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end"></span><span class="gw-tags" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end"></span><span class="gw-meta" style="min-width:32px;text-align:right" title="{{t:ui.costs}}">{{SECTION_COST}}</span><span class="gw-meta">{{SECTION_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
         {{/SECTIONS}}
       </div>
       <div data-gw-if="CHECKS_LEGEND" style="margin-top:6px;font-size:11px;color:var(--text-muted)">{{CHECKS_LEGEND}}</div>

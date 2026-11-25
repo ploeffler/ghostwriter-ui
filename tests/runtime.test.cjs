@@ -156,6 +156,48 @@ console.log('Repeated user data is never re-interpreted as a placeholder');
   assert.match(out[1],/`gw:edition.proof formats=pdf`$/);
   console.log('Confirm buttons: preview needs a second click, sends once, shows tag and release link');
 }
+// v0.69.0 (GhostWriter #592, #593, #572, #596): Markieren mit Grund, leere Aktion, Handlungsbedarf, Marken, Checkouts, Erneut versuchen
+{
+  const sent=[];context.sendPrompt=t=>sent.push(t);
+  const made=[];
+  context.document.createElement=()=>{const t={style:{},attrs:{},value:'',disabled:false,setAttribute(k,v){this.attrs[k]=v;},focus(){}};made.push(t);return t;};
+  const parent={insertBefore(x){this.inserted=x;}};
+  const label={nodeType:3,textContent:'Als veraltet markieren'};
+  const attrs={'data-gw-send':'section.mark_stale','data-gw-args':'{"section_id":"sec-01-01"}','data-gw-input':'reason','data-gw-input-placeholder':'Grund','data-gw-confirm-label':'Markieren','data-gw-text':'Als veraltet markieren','data-gw-done':'angefordert'};
+  const mark={disabled:false,lastChild:label,parentNode:parent,getAttribute:k=>attrs[k]||null,hasAttribute:()=>false,closest:()=>null,handlers:{},addEventListener(e,fn){this.handlers[e]=fn;}};
+  const noAction={disabled:false,getAttribute:()=>null,hasAttribute:k=>k==='data-gw-optional',removed:false,remove(){this.removed=true;},addEventListener(){}};
+  const plainEmpty={disabled:false,getAttribute:()=>null,hasAttribute:()=>false,addEventListener(){}};
+  const host={innerHTML:'',querySelectorAll:sel=>sel==='[data-gw-send]'?[mark,noAction,plainEmpty]:[]};
+  const getById=context.document.getElementById;
+  context.document.getElementById=()=>({textContent:'',dataset:{},addEventListener(){},remove(){},querySelectorAll:()=>[]});
+  GW.render('abschnitt-bearbeiten',{SECTION_ID:'sec-01-01',STALE_NONE:'1',STALE_ARGS:'{"section_id":"sec-01-01"}'},host,'de');
+  context.document.getElementById=getById;
+  assert.equal(noAction.removed,true,'optionaler Knopf ohne Aktion entfällt');
+  assert.equal(plainEmpty.disabled,true,'Knopf ohne Aktion ist nicht klickbar');
+  mark.handlers.click();
+  assert.equal(sent.length,0,'erster Klick zeigt nur das Textfeld');assert.equal(parent.inserted,made[0]);assert.equal(made[0].attrs['data-gw-input-box'],'');assert.equal(label.textContent,'Markieren');
+  mark.handlers.click();assert.equal(sent.length,0,'ohne Grund wird nichts gesendet');
+  made[0].value='  Zeitzeugin widerspricht  ';mark.handlers.click();
+  assert.equal(sent.length,1);assert.match(sent[0],/"action":"section.mark_stale".*"section_id":"sec-01-01".*"reason":"Zeitzeugin widerspricht"/);
+  assert.equal(mark.disabled,true);
+  // Vorlagen
+  const ov=GW.renderHtml('projektuebersicht',{TODO:[{TODO_TEXT:'Kapitel 2: Sprache nicht bestanden',TODO_ACTION:'view.chapter',TODO_ARGS:'{"chapter_id":"ch-02"}',TODO_ACTION2:'view.notes_review',TODO_ARGS2:'{}'},{TODO_TEXT:'Buch neu prüfen (Sprache)',TODO_ACTION:'',TODO_ARGS:'{}',TODO_ACTION2:'',TODO_ARGS2:'{}'}],
+    STALE_TEXT:'3 veraltet',CHECKOUTS:[{CO_ID:'GW-7F3A',CO_TEXT:'Kapitel 3–5 ausgecheckt an Anna seit 24.11. (GW-7F3A)',CO_ARGS:'{"checkout":"GW-7F3A"}'}],
+    CHAPTERS:[{CHAPTER_ID:'ch-01',CHAPTER_NUMBER:1,CHAPTER_TITLE:'Eins',CHAPTER_STALE_TEXT:'1 veraltet',CHAPTER_STALE_HINT:'seit 25.11.: Grund',CHAPTER_CHECKOUT_TEXT:'ausgecheckt (GW-7F3A)'}],MATTER_FRONT:[{MATTER_ID:'mat-vorwort',MATTER_TITLE:'Vorwort',MATTER_STALE_TEXT:'veraltet',MATTER_STALE_HINT:'seit 25.11.: Grund'}]},'de');
+  assert.match(ov,/Handlungsbedarf/);assert.match(ov,/data-gw-send="view.chapter"/);assert.match(ov,/Kapitel 2: Sprache nicht bestanden/);
+  assert.match(ov,/data-gw-send="checkout.end" data-gw-args="\{&quot;checkout&quot;:&quot;GW-7F3A&quot;\}"/);assert.match(ov,/data-gw-confirm="Checkout beenden\?/);
+  assert.match(ov,/data-gw-send="stale.list"/);assert.match(ov,/3 veraltet/);
+  assert.match(ov,/title="seit 25.11.: Grund">1 veraltet<\/span><span class="gw-flag co">ausgecheckt \(GW-7F3A\)/);
+  assert.match(ov,/>veraltet<\/span>/);
+  const q=GW.renderHtml('warteschlange',{FAILED:[{J_TITLE:'Recherche',J_DETAIL:'Modell nicht mehr verfügbar',J_WHEN_TEXT:'fehlgeschlagen 24.11.',J_ARGS:'{"request":"chapters/c/research/s/request-001.yml"}'}]},'de');
+  assert.match(q,/data-gw-send="queue.retry"/);assert.match(q,/Erneut versuchen/);
+  assert.match(GW.renderHtml('warteschlange',{FAILED:[{J_TITLE:'x',J_DETAIL:'y',J_WHEN_TEXT:'z',J_ARGS:'{}'}]},'en'),/Retry/);
+  const sec=GW.renderHtml('abschnitt-bearbeiten',{SECTION_ID:'sec-01-01',STALE_TEXT:'Veraltet seit 25.11.2026: Grund',STALE_ARGS:'{"section_id":"sec-01-01"}'},'de');
+  assert.match(sec,/data-gw-send="section.clear_stale"/);
+  const kap=GW.renderHtml('kapitelansicht',{SECTIONS:[{SECTION_ID:'s',SECTION_NUMBER:'1.1',SECTION_TITLE:'T',SECTION_STALE_TEXT:'veraltet',SECTION_STALE_HINT:'seit 25.11.: Grund',SECTION_CHECKOUT_TEXT:'ausgecheckt'}],CHECKOUTS:[{CO_ID:'GW-1',CO_TEXT:'Kapitel 1 ausgecheckt',CO_ARGS:'{"checkout":"GW-1"}'}]},'de');
+  assert.match(kap,/>veraltet<\/span><span class="gw-tag recht">ausgecheckt<\/span>/);assert.match(kap,/data-gw-send="checkout.end"/);
+  console.log('v0.69.0: mark with reason, empty actions, needs-attention card, stale and checkout marks, retry button passed');
+}
 // Zeitleiste (GhostWriter #354): Hinweise als Block, Daten als JSON-Attribut, Knopf in der Projektübersicht
 {
   const json=JSON.stringify({entries:[{id:'chr-001',kind:'event',lo:'1944-01-01',hi:'1944-12-31',label:'um 1944',what:'<b>Flucht</b>',status:'reported',lanes:['@none']}],lanes:[{key:'@none',label:'Ohne Figur'}],chapters:[]});

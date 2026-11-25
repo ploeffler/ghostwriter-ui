@@ -52,6 +52,8 @@
   - {{CHAPTER_WORDS_TEXT}}  Textumfang (#362), z. B. „1.336 Wörter“ (Manuskript ohne Fußnoten)
   - {{CHAPTER_WORDS_PCT}}   Balkenbreite 0–100, relativ zum längsten Kapitel
   - {{CHAPTER_APPROVED_TEXT}} abgeschlossene Abschnitte, z. B. „3 von 3“; leer = entfällt
+  - {{CHAPTER_STALE_TEXT}}, {{CHAPTER_STALE_HINT}}  „2 veraltet“ bzw. Tooltip mit Grund (GhostWriter #592); leer = keine Marke
+  - {{CHAPTER_CHECKOUT_TEXT}}  „ausgecheckt (GW-7F3A)“ (GhostWriter #572); leer = keine Marke
   - {{CHAPTER_NOTES_TEXT}}  offene Hinweise aus dem Prüfprotokoll, z. B. „2 offene Hinweise“; leer = entfällt
   Kapitelkarte in drei Zeilen (#362): 1. Nummer, Titel, Status · 2. Prüf-Tags, abgeschlossene
   Abschnitte · 3. Textumfang mit Balken, offene Hinweise, Kosten. Die Karte bleibt ganz klickbar.
@@ -64,6 +66,14 @@
   - {{MATTER_TITLE}}       Titel, z. B. „Widmung“
   - {{MATTER_STATUS}}      Status wie bei Abschnitten (gw.js zeigt ihn in der gewählten Bediensprache)
   - {{MATTER_MARKERS}}     Zahl offener Marker
+  - {{MATTER_STALE_TEXT}}, {{MATTER_STALE_HINT}}  „veraltet“ bzw. Tooltip mit Datum und Grund (#592); leer = keine Marke
+
+  Handlungsbedarf der Prüfungen (GhostWriter #538, #593): Block {{#TODO}} … {{/TODO}}, fehlt = keine Karte:
+  - {{TODO_TEXT}}          z. B. „Kapitel 2: Sprache nicht bestanden · 3 offene Hinweise“ bzw. „Buch neu prüfen (Sprache)“
+  - {{TODO_ACTION}}, {{TODO_ARGS}}   Aktion und Argumente (JSON) des Klicks, z. B. view.chapter; leer = nicht klickbar
+  - {{TODO_ACTION2}}, {{TODO_ARGS2}} zweiter Knopf „Hinweise durchsehen“ (view.notes_review); leer = entfällt
+  Veraltete Abschnitte (#592): {{STALE_TEXT}} („3 veraltet“, ein Klick sendet stale.list); fehlt = keine Zeile
+  Ausgecheckte Bereiche (#572): Block {{#CHECKOUTS}} … {{/CHECKOUTS}} mit {{CO_ID}}, {{CO_TEXT}} („Kapitel 3–5 ausgecheckt an Anna seit 24.11. (GW-7F3A)“); Knopf „Checkout beenden“ sendet checkout.end
 
   Offene Änderungen (Arbeits-Branch mit Pull Request, siehe START.md,
   „Schreiben ins Repository“); fehlt PENDING_COUNT, entfällt der Hinweis:
@@ -106,7 +116,7 @@
     im Tooltip ", enthält geschätzte Kosten" ergänzt.
 
   Nachrichten: Klartextzeile plus Kurzform `gw:aktion schlüssel=wert` bzw. Block ```gw mit JSON, siehe templates/ui/BEFUELLUNG.md.
-  Aktionen: view.chapter, chapter.edit.open, changes.merge.open, update.apply, project.providers.open, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open, view.library, view.matter, project.output.open, view.characters, character.suggest, analysis.open, view.timeline
+  Aktionen: stale.list, checkout.end, view.notes_review, view.chapter, chapter.edit.open, changes.merge.open, update.apply, project.providers.open, project.edit, chapter.create.open, chapter.reorder.open, edition.create.open, project.settings.open, view.library, view.matter, project.output.open, view.characters, character.suggest, analysis.open, view.timeline
 
   Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts
   (--surface-*, --text-*, --border-*, --bg-*, --gap-*, --pad-*, --radius),
@@ -134,6 +144,12 @@
 .gw-ed{width:42px;flex:none;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text-secondary);cursor:pointer;padding:0}
 .gw-ed:hover{border-color:var(--border-strong);color:var(--text-primary)}
 .gw-cost{font-size:13px;color:var(--text-secondary);font-variant-numeric:tabular-nums;min-width:64px;text-align:right}
+.gw-flag{font-size:11px;padding:1px 7px;border-radius:999px;white-space:nowrap;border:0.5px solid var(--border-warning);background:var(--bg-warning);color:var(--text-warning)}
+.gw-flag.co{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-flag:empty{display:none}
+.gw-note{display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:8px 12px;border:0.5px solid var(--border-accent);border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent);font-size:13px}
+.gw-todo{display:flex;align-items:center;gap:var(--gap-sm);flex:1;min-width:0;padding:6px 10px;border:0.5px solid var(--border-warning);border-radius:var(--radius);background:var(--surface-2);color:var(--text-primary);font:inherit;font-size:13px;text-align:left;cursor:pointer}
+.gw-todo:disabled{cursor:default}
 </style>
 <div style="padding:1rem 0">
   <div style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
@@ -176,6 +192,18 @@
     <div data-gw-if="CHRONOLOGY_TEXT" style="display:flex;align-items:center;gap:var(--gap-sm);font-size:13px;color:var(--text-secondary)"><i class="ti ti-timeline" aria-hidden="true"></i><span>{{CHRONOLOGY_TEXT}}</span></div>
     <div data-gw-if="IMPORT_TEXT" style="display:flex;align-items:center;gap:var(--gap-sm);padding:8px 12px;border:0.5px solid var(--border-strong);border-radius:var(--radius);font-size:13px;color:var(--text-secondary)"><i class="ti ti-file-import" aria-hidden="true"></i><span>{{IMPORT_TEXT}}</span></div>
     <div data-gw-if="CHECKS_RECENT_TEXT" style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;font-size:13px;color:var(--text-secondary)"><i class="ti ti-list-check" aria-hidden="true"></i><span>{{t:ui.latest_checks}}: {{CHECKS_RECENT_TEXT}}</span></div>
+    <div data-gw-if="CHECKOUTS" style="display:flex;flex-direction:column;gap:var(--gap-xs)">
+      {{#CHECKOUTS}}
+      <div class="gw-note"><i class="ti ti-lock" style="font-size:16px" aria-hidden="true"></i><span style="flex:1;min-width:180px">{{CO_TEXT}}</span><button type="button" class="gw-sq" data-gw-send="checkout.end" data-gw-args="{{CO_ARGS}}" data-gw-text="{{t:ui.end_checkout}}" data-gw-confirm="{{t:ui.end_checkout_confirm}}" data-gw-confirm-label="{{t:ui.end_checkout}}" data-gw-done="{{t:ui.queue_cancel_done}}" style="width:auto;height:32px;padding:0 12px;font-size:13px;color:var(--text-primary)">{{t:ui.end_checkout}}</button></div>
+      {{/CHECKOUTS}}
+    </div>
+    <div data-gw-if="STALE_TEXT"><button type="button" data-gw-send="stale.list" data-gw-text="{{t:ui.show_outdated_sections}}" title="{{t:ui.show_outdated_sections}}" style="border:none;background:none;padding:0;font:inherit;font-size:13px;color:var(--text-warning);cursor:pointer;display:inline-flex;align-items:center;gap:6px"><i class="ti ti-alert-triangle" aria-hidden="true"></i>{{STALE_TEXT}} ›</button></div>
+    <div data-gw-if="TODO" style="display:flex;flex-direction:column;gap:var(--gap-xs)">
+      <div style="font-size:12px;color:var(--text-muted)">{{t:ui.needs_attention}}</div>
+      {{#TODO}}
+      <div style="display:flex;gap:var(--gap-xs);min-width:0"><button type="button" class="gw-todo" data-gw-send="{{TODO_ACTION}}" data-gw-args="{{TODO_ARGS}}" data-gw-text="{{TODO_TEXT}}"><i class="ti ti-alert-circle" style="color:var(--text-warning)" aria-hidden="true"></i><span style="flex:1;min-width:0;overflow-wrap:anywhere">{{TODO_TEXT}}</span></button><button type="button" class="gw-todo gw-todo2" data-gw-optional data-gw-send="{{TODO_ACTION2}}" data-gw-args="{{TODO_ARGS2}}" data-gw-text="{{t:ui.review_notes}}" style="flex:none">{{t:ui.review_notes}}</button></div>
+      {{/TODO}}
+    </div>
     {{#ANALYSES}}
     <div style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:10px 12px;border:0.5px solid var(--border-accent);border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent)">
       <i class="ti ti-{{A_ICON}}" style="font-size:18px" aria-hidden="true"></i>
@@ -202,7 +230,7 @@
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">{{t:ui.front_matter}}</div>
       <div style="display:flex;flex-direction:column;gap:var(--gap-xs)">
         {{#MATTER_FRONT}}
-        <button type="button" class="gw-ch gw-mt" data-id="{{MATTER_ID}}" data-title="{{MATTER_TITLE}}"><i class="ti ti-bookmark" style="font-size:15px;color:var(--text-muted);min-width:20px" aria-hidden="true"></i><span style="flex:1;font-size:14px">{{MATTER_TITLE}}</span><span style="font-size:12px;color:var(--text-muted)">{{MATTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
+        <button type="button" class="gw-ch gw-mt" data-id="{{MATTER_ID}}" data-title="{{MATTER_TITLE}}"><i class="ti ti-bookmark" style="font-size:15px;color:var(--text-muted);min-width:20px" aria-hidden="true"></i><span style="flex:1;font-size:14px">{{MATTER_TITLE}}</span><span class="gw-flag" title="{{MATTER_STALE_HINT}}">{{MATTER_STALE_TEXT}}</span><span style="font-size:12px;color:var(--text-muted)">{{MATTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
         {{/MATTER_FRONT}}
       </div>
     </div>
@@ -210,7 +238,7 @@
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">{{t:ui.chapters}}</div>
       <div style="display:flex;flex-direction:column;gap:var(--gap-xs)">
         {{#CHAPTERS}}
-        <div style="display:flex;gap:var(--gap-xs);min-width:0"><button type="button" class="gw-ch gw-card" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" data-title="{{CHAPTER_TITLE}}"><span class="gw-r"><span style="font-size:13px;color:var(--text-muted);min-width:20px">{{CHAPTER_NUMBER}}</span><span style="flex:1;min-width:0;font-size:14px;font-weight:500;overflow-wrap:anywhere">{{CHAPTER_TITLE}}</span><span style="font-size:12px;color:var(--text-muted);white-space:nowrap">{{CHAPTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></span><span class="gw-r gw-sub"><span data-gw-checks="{{CHAPTER_CHECKS_JSON}}" style="display:flex;gap:4px;flex-wrap:wrap;flex:1;min-width:0"></span><span class="gw-e" title="{{t:ui.approved_sections}}"><i class="ti ti-circle-check" aria-hidden="true"></i>{{CHAPTER_APPROVED_TEXT}}</span></span><span class="gw-r gw-sub"><span class="gw-words" title="{{t:ui.words_in_the_manuscript}}"><span class="gw-bar" aria-hidden="true"><span style="width:{{CHAPTER_WORDS_PCT}}%"></span></span><span>{{CHAPTER_WORDS_TEXT}}</span></span><span class="gw-e" title="{{t:ui.open_notes_from_the_latest_check}}"><i class="ti ti-message-exclamation" aria-hidden="true"></i>{{CHAPTER_NOTES_TEXT}}</span><span class="gw-cost" title="{{CHAPTER_COST_HINT}}">{{CHAPTER_COST}}</span></span></button><button type="button" class="gw-ed" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" title="{{t:ui.edit_chapter}}" aria-label="{{t:ui.edit_chapter}}"><i class="ti ti-edit" aria-hidden="true"></i></button></div>
+        <div style="display:flex;gap:var(--gap-xs);min-width:0"><button type="button" class="gw-ch gw-card" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" data-title="{{CHAPTER_TITLE}}"><span class="gw-r"><span style="font-size:13px;color:var(--text-muted);min-width:20px">{{CHAPTER_NUMBER}}</span><span style="flex:1;min-width:0;font-size:14px;font-weight:500;overflow-wrap:anywhere">{{CHAPTER_TITLE}}</span><span class="gw-flag" title="{{CHAPTER_STALE_HINT}}">{{CHAPTER_STALE_TEXT}}</span><span class="gw-flag co">{{CHAPTER_CHECKOUT_TEXT}}</span><span style="font-size:12px;color:var(--text-muted);white-space:nowrap">{{CHAPTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></span><span class="gw-r gw-sub"><span data-gw-checks="{{CHAPTER_CHECKS_JSON}}" style="display:flex;gap:4px;flex-wrap:wrap;flex:1;min-width:0"></span><span class="gw-e" title="{{t:ui.approved_sections}}"><i class="ti ti-circle-check" aria-hidden="true"></i>{{CHAPTER_APPROVED_TEXT}}</span></span><span class="gw-r gw-sub"><span class="gw-words" title="{{t:ui.words_in_the_manuscript}}"><span class="gw-bar" aria-hidden="true"><span style="width:{{CHAPTER_WORDS_PCT}}%"></span></span><span>{{CHAPTER_WORDS_TEXT}}</span></span><span class="gw-e" title="{{t:ui.open_notes_from_the_latest_check}}"><i class="ti ti-message-exclamation" aria-hidden="true"></i>{{CHAPTER_NOTES_TEXT}}</span><span class="gw-cost" title="{{CHAPTER_COST_HINT}}">{{CHAPTER_COST}}</span></span></button><button type="button" class="gw-ed" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" title="{{t:ui.edit_chapter}}" aria-label="{{t:ui.edit_chapter}}"><i class="ti ti-edit" aria-hidden="true"></i></button></div>
         <div class="gw-ckd">{{CHAPTER_CHECK_DETAILS}}</div>
         <details data-gw-checks-box class="gw-ckh"><summary>{{t:ui.earlier_checks}} ({{CHAPTER_HISTORY_COUNT}})</summary><div data-gw-checks-history="{{CHAPTER_HISTORY_JSON}}" style="display:flex;flex-direction:column;gap:4px;margin-top:6px"></div></details>
         {{/CHAPTERS}}
@@ -221,7 +249,7 @@
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">{{t:ui.back_matter}}</div>
       <div style="display:flex;flex-direction:column;gap:var(--gap-xs)">
         {{#MATTER_BACK}}
-        <button type="button" class="gw-ch gw-mt" data-id="{{MATTER_ID}}" data-title="{{MATTER_TITLE}}"><i class="ti ti-bookmark" style="font-size:15px;color:var(--text-muted);min-width:20px" aria-hidden="true"></i><span style="flex:1;font-size:14px">{{MATTER_TITLE}}</span><span style="font-size:12px;color:var(--text-muted)">{{MATTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
+        <button type="button" class="gw-ch gw-mt" data-id="{{MATTER_ID}}" data-title="{{MATTER_TITLE}}"><i class="ti ti-bookmark" style="font-size:15px;color:var(--text-muted);min-width:20px" aria-hidden="true"></i><span style="flex:1;font-size:14px">{{MATTER_TITLE}}</span><span class="gw-flag" title="{{MATTER_STALE_HINT}}">{{MATTER_STALE_TEXT}}</span><span style="font-size:12px;color:var(--text-muted)">{{MATTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
         {{/MATTER_BACK}}
       </div>
     </div>

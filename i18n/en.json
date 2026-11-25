@@ -1105,5 +1105,17 @@
   "ui.from_the_assistant": "from the assistant",
   "ui.ask_a_question": "Ask a question",
   "ui.your_question": "Your question",
-  "ui.notes_review_question": "Question about {id}"
+  "ui.notes_review_question": "Question about {id}",
+  "ui.queue_retry": "Retry",
+  "ui.queue_retry_text": "Retry job",
+  "ui.queue_retry_done": "Retrying …",
+  "ui.needs_attention": "Needs attention",
+  "ui.review_notes": "Review notes",
+  "ui.end_checkout": "End checkout",
+  "ui.show_outdated_sections": "Show outdated sections",
+  "ui.mark_outdated": "Mark as outdated",
+  "ui.clear_outdated": "Remove the mark",
+  "ui.outdated_reason": "Reason, for example new information from witnesses",
+  "ui.checked_out_for_proofreading": "Checked out for proofreading",
+  "ui.end_checkout_confirm": "End the checkout? The area becomes editable again; changes by the proofreader that have not been checked in can be lost."
 }
