@@ -27,6 +27,7 @@
   - {{E_CONTEXT}}, {{E_OLD}}, {{E_NEW}}  Satz mit Umgebung, alter Wortlaut, Vorschlag
   - {{E_DECISION}}         offen | ja | nein | geändert | umgesetzt
   - {{E_QUESTION}}         nur bei Autorenentscheidungen
+  - {{E_VARIANTS_JSON}}    JSON-Liste der Varianten (nur bei Autorenentscheidungen mit `varianten`; leer = keine): je Variante ein Knopf, der „geändert“ mit variant=N und new=<Wortlaut> sendet (notes_review.decide, #473, #630)
   - {{E_PROPOSED}}         gesetzt, wenn der Vorschlag {{E_NEW}} vom Assistenten stammt (hinweise.py propose); nur bei Autorenentscheidungen
   Wiederholung je nicht aufgenommenem Befund zwischen {{#SKIPPED}} und {{/SKIPPED}}: {{SK_REF}}, {{SK_REASON}}
 
@@ -83,6 +84,7 @@
       <div class="hd"><b>{{E_WHERE}}</b><span>{{E_CHAPTER_TEXT}}</span><span>{{E_KIND}}</span><span class="st">{{E_DECISION}}</span></div>
       <div>{{E_REASON}}</div>
       <div class="q">{{E_QUESTION}}</div>
+      <div class="vars" data-gw-variants="{{E_VARIANTS_JSON}}" data-gw-variants-label="{{t:ui.variant}}" data-gw-variants-file="{{REVIEW_FILE}}" data-gw-variants-entry="{{E_ID}}" style="display:flex;flex-direction:column;gap:4px"></div>
       <div class="ctx">{{E_CONTEXT}}</div>
       <div class="new" data-opt="new"><span class="lbl">{{t:ui.suggestion}}<span data-gw-if="E_PROPOSED"> · {{t:ui.from_the_assistant}}</span></span>{{E_NEW}}</div>
       <div class="act"><button type="button" class="gw-btn pri" data-d="ja" data-opt="new">{{t:ui.accept_suggestion}}</button><button type="button" class="gw-btn" data-d="nein">{{t:ui.do_not_change}}</button><button type="button" class="gw-btn" data-d="geändert">{{t:ui.own_answer}}</button><button type="button" class="gw-btn" data-ask="1">{{t:ui.ask_a_question}}</button></div>
