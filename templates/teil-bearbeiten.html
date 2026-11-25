@@ -29,6 +29,7 @@
   - {{MATTER_STATUS}}        Status wie bei Abschnitten (gw.js zeigt ihn deutsch)
   - {{MATTER_GOAL}}          Text unter „## Ziel“
   - {{MATTER_MANUSCRIPT}}    Text unter „## Manuskript“ (beim Glossar leer)
+  - {{STALE_TEXT}}, {{STALE_NONE}}, {{STALE_ARGS}}  wie bei der Abschnittsansicht (GhostWriter #592); `section_id` ist hier die Teil-ID (mat-…)
   - {{MARKER_COUNT_TEXT}}    z. B. „keine offenen Marker“
   - {{APPROVAL_WRITING}}, {{APPROVAL_SECTION}}  true | false
   - {{SIGNED}}               „1“ bei Vorwort und Nachwort, sonst leer (Verfasser, Ort/Datum)
@@ -113,6 +114,10 @@
       <div style="font-size:14px;color:var(--text-secondary);display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;margin-top:8px">
         <span style="display:flex;align-items:center;gap:6px"><i class="ti ti-progress" aria-hidden="true"></i>{{MATTER_STATUS}}</span>
         <span style="display:flex;align-items:center;gap:6px"><i class="ti ti-alert-triangle" aria-hidden="true"></i>{{MARKER_COUNT_TEXT}}</span>
+      </div>
+      <div id="gw-stale-box" style="margin-top:8px;display:flex;flex-direction:column;gap:6px;align-items:flex-start">
+        <div data-gw-if="STALE_TEXT" style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;padding:6px 10px;border:0.5px solid var(--border-warning);border-radius:var(--radius);background:var(--bg-warning);color:var(--text-warning);font-size:13px"><i class="ti ti-alert-triangle" aria-hidden="true"></i><span>{{STALE_TEXT}}</span><button type="button" data-gw-send="section.clear_stale" data-gw-args="{{STALE_ARGS}}" data-gw-text="{{t:ui.clear_outdated}}" data-gw-done="{{t:ui.queue_cancel_done}}" style="border:none;background:none;padding:0;font:inherit;font-size:13px;color:var(--text-primary);text-decoration:underline;cursor:pointer">{{t:ui.clear_outdated}}</button></div>
+        <button type="button" data-gw-if="STALE_NONE" data-gw-send="section.mark_stale" data-gw-args="{{STALE_ARGS}}" data-gw-input="reason" data-gw-input-placeholder="{{t:ui.outdated_reason}}" data-gw-confirm-label="{{t:ui.mark_outdated}}" data-gw-text="{{t:ui.mark_outdated}}" data-gw-done="{{t:ui.queue_cancel_done}}" style="border:none;background:none;padding:0;font:inherit;font-size:13px;color:var(--text-secondary);cursor:pointer;display:inline-flex;align-items:center;gap:6px"><i class="ti ti-alert-triangle" aria-hidden="true"></i>{{t:ui.mark_outdated}}</button>
       </div>
     </div>
 

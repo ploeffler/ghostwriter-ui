@@ -23,7 +23,7 @@
   - PENDING:  {{J_TITLE}}, {{J_DETAIL}}, {{J_STATE_TEXT}}, {{J_WHEN_TEXT}}, {{J_PRIORITY_TEXT}} (leer = nicht vorgezogen),
               {{J_BLOCKED_TEXT}} (leer = nicht abhängig), {{J_NOTE}} (z. B. Ring bei „after“), {{J_PRIO_DISABLED}} (`disabled`
               bei schon vorgezogenen), {{J_ARGS}} (JSON `{"request":"<Pfad im Buch>"}`)
-  - FAILED:   {{J_TITLE}}, {{J_DETAIL}}, {{J_WHEN_TEXT}}
+  - FAILED:   {{J_TITLE}}, {{J_DETAIL}}, {{J_WHEN_TEXT}}, {{J_ARGS}} (JSON `{"request":"<Pfad im Buch>"}`); Knopf „Erneut versuchen“ sendet queue.retry (GhostWriter #596)
   - DONE:     {{J_TITLE}}, {{J_DETAIL}}
   - {{QUEUE_EMPTY}}       „1“ bei leerer Warteschlange, sonst leer
 
@@ -84,6 +84,9 @@
         <div class="ttl"><span>{{J_TITLE}}</span></div>
         <div class="err">{{J_DETAIL}}</div>
         <div class="meta">{{J_WHEN_TEXT}}</div>
+      </div>
+      <div class="act">
+        <button type="button" class="gw-btn" data-gw-send="queue.retry" data-gw-args="{{J_ARGS}}" data-gw-text="{{t:ui.queue_retry_text}}" data-gw-done="{{t:ui.queue_retry_done}}" style="border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)">{{t:ui.queue_retry}}</button>
       </div>
     </div>
     {{/FAILED}}

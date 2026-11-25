@@ -41,6 +41,7 @@
   - {{BOOK_EDITION_TEXT}}     "Auflage 2" | "noch keine Auflage"
   - {{BOOK_COST}}             KI-API-Kosten, z. B. "≈ 4,77 €"
   - {{BOOK_PENDING_TEXT}}     z. B. "3 Änderungen offen"; leer = entfällt
+  - {{BOOK_CHECKOUT_TEXT}}    ausgecheckte Bereiche (GhostWriter #572), z. B. „Kapitel 3–5 ausgecheckt (GW-7F3A)“, überfällig: „… überfällig seit 3 Tagen“; leer = entfällt
   - {{BOOK_JOBS_TEXT}}        Hintergrund-Warteschlange des Buchs (GhostWriter #484), z. B. "Warteschlange: 2 fertig · 1 wartet"; leer = entfällt
   - {{BOOK_UPDATED_TEXT}}     z. B. "zuletzt geändert am 01.11.2026"
   - {{BOOK_SERIES}}           ID der Serie (ser-…) bzw. leer
@@ -150,6 +151,7 @@
         <span class="st">{{BOOK_PROGRESS_TEXT}}</span>
         <span class="pend">{{BOOK_PENDING_TEXT}}</span>
         <span class="pend" title="{{t:ui.background_queue}}">{{BOOK_JOBS_TEXT}}</span>
+        <span class="pend" title="{{t:ui.checked_out_for_proofreading}}">{{BOOK_CHECKOUT_TEXT}}</span>
         <span class="st">{{BOOK_UPDATED_TEXT}} · <code style="font-size:11px">{{BOOK_BRANCH}}</code></span>
         <span class="open"><span class="ol">{{t:ui.open}}</span><i class="ti ti-arrow-right" aria-hidden="true"></i></span>
       </button>

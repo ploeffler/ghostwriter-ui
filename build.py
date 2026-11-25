@@ -103,8 +103,19 @@ RUNTIME = r'''
     try{args=JSON.parse(a('data-gw-args')||'{}');}catch(e){args={};}
     if(!args||typeof args!=='object'||Array.isArray(args))args={};
     function label(t){if(!t)return;var l=n.lastChild;if(l&&l.nodeType===3)l.textContent=t;else n.appendChild(document.createTextNode(t));}
+    if(!action){if(n.hasAttribute('data-gw-optional')){n.remove();}else{n.disabled=true;}return;}   // ohne Aktion: nicht klickbar bzw. entfällt
+    var input=a('data-gw-input'),ta=null;   // Pflichtfeld vor dem Senden (GhostWriter #592): erster Klick zeigt das Textfeld, der zweite sendet
     n.addEventListener('click',function(){
       if(n.disabled)return;
+      if(input){
+        if(!ta){
+          ta=document.createElement('textarea');ta.rows=2;ta.setAttribute('data-gw-input-box','');ta.placeholder=a('data-gw-input-placeholder');
+          ta.style.cssText='width:100%;box-sizing:border-box;font:inherit;font-size:13px;padding:6px 8px;border:0.5px solid var(--border-strong);border-radius:8px;background:var(--surface-1);color:var(--text-primary)';
+          n.parentNode.insertBefore(ta,n);label(a('data-gw-confirm-label'));ta.focus();return;
+        }
+        var v=ta.value.trim();if(!v){ta.focus();return;}
+        args[input]=v;ta.disabled=true;
+      }
       if(hint&&!box){
         box=document.createElement('div');box.setAttribute('role','alert');box.setAttribute('data-gw-confirm-box','');
         box.style.cssText='padding:10px 12px;border:0.5px solid var(--border-warning);border-radius:var(--radius);background:var(--bg-warning);color:var(--text-warning);font-size:13px;line-height:1.5';
