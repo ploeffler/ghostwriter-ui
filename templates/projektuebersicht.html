@@ -24,6 +24,9 @@
   - Vor- und Nachspann (GhostWriter #57, #58): Teile vor Kapitel 1 über der
     Kapitelliste, Teile nach dem letzten Kapitel darunter; ein Klick öffnet den Teil
 
+  Scheiben (GhostWriter #674, ab 0.75.0): {{SLICE}} = kopf | kapitel | kapitel-weiter | ende. Mit SLICE zeigt die Vorlage nur den Teil, dessen
+  Felder gesetzt sind; Kapitel- und Endscheiben verlieren Kopf und Rahmen, damit nacheinander ausgegebene Widgets wie eine Spalte wirken.
+
   Platzhalter (vor der Ausgabe ersetzen):
   - {{PROJECT_TITLE}}              project.title (bzw. working_title, solange kein Titel feststeht)
   - {{PROJECT_TITLE_SHORT}}        project.title_short
@@ -152,8 +155,8 @@
 .gw-todo:disabled{cursor:default}
 </style>
 <div style="padding:1rem 0">
-  <div style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
-    <div>
+  <div id="gw-frame" data-slice="{{SLICE}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div data-gw-head>
       <div style="display:flex;align-items:flex-start;gap:var(--gap-md);flex-wrap:wrap-reverse">
         <div style="flex:1;min-width:220px">
           <div style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;margin-bottom:4px">
@@ -221,8 +224,8 @@
       <span style="flex:1;min-width:180px;font-size:14px">{{t:ui.ghostwriter_update}}</span>
       <button type="button" class="gw-sq" data-p="{{t:ui.install_ghostwriter_update}}" data-a="update.apply" style="width:auto;height:36px;padding:0 14px;font-size:14px;gap:6px;color:var(--text-primary)"><i class="ti ti-download" style="font-size:16px" aria-hidden="true"></i>{{t:ui.install_update}}</button>
     </div>
-    <p style="margin:0;font-size:15px;line-height:1.6;color:var(--text-primary);border-left:2px solid var(--border-accent);border-radius:0;padding-left:var(--pad-md)">{{PROJECT_DESCRIPTION_SHORT}}</p>
-    <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+    <p data-gw-head style="margin:0;font-size:15px;line-height:1.6;color:var(--text-primary);border-left:2px solid var(--border-accent);border-radius:0;padding-left:var(--pad-md)">{{PROJECT_DESCRIPTION_SHORT}}</p>
+    <div data-gw-head style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">{{t:ui.description}}</div>
       <p style="margin:0;font-size:14px;line-height:1.7;color:var(--text-secondary)">{{PROJECT_DESCRIPTION}}</p>
     </div>
@@ -235,7 +238,7 @@
       </div>
     </div>
     <div data-gw-if="CHAPTERS" style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">{{t:ui.chapters}}</div>
+      <div id="gw-chlabel" style="font-size:12px;color:var(--text-muted);margin-bottom:8px">{{t:ui.chapters}}</div>
       <div style="display:flex;flex-direction:column;gap:var(--gap-xs)">
         {{#CHAPTERS}}
         <div style="display:flex;gap:var(--gap-xs);min-width:0"><button type="button" class="gw-ch gw-card" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" data-title="{{CHAPTER_TITLE}}"><span class="gw-r"><span style="font-size:13px;color:var(--text-muted);min-width:20px">{{CHAPTER_NUMBER}}</span><span style="flex:1;min-width:0;font-size:14px;font-weight:500;overflow-wrap:anywhere">{{CHAPTER_TITLE}}</span><span class="gw-flag" title="{{CHAPTER_STALE_HINT}}">{{CHAPTER_STALE_TEXT}}</span><span class="gw-flag co">{{CHAPTER_CHECKOUT_TEXT}}</span><span style="font-size:12px;color:var(--text-muted);white-space:nowrap">{{CHAPTER_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></span><span class="gw-r gw-sub"><span data-gw-checks="{{CHAPTER_CHECKS_JSON}}" style="display:flex;gap:4px;flex-wrap:wrap;flex:1;min-width:0"></span><span class="gw-e" title="{{t:ui.approved_sections}}"><i class="ti ti-circle-check" aria-hidden="true"></i>{{CHAPTER_APPROVED_TEXT}}</span></span><span class="gw-r gw-sub"><span class="gw-words" title="{{t:ui.words_in_the_manuscript}}"><span class="gw-bar" aria-hidden="true"><span style="width:{{CHAPTER_WORDS_PCT}}%"></span></span><span>{{CHAPTER_WORDS_TEXT}}</span></span><span class="gw-e" title="{{t:ui.open_notes_from_the_latest_check}}"><i class="ti ti-message-exclamation" aria-hidden="true"></i>{{CHAPTER_NOTES_TEXT}}</span><span class="gw-cost" title="{{CHAPTER_COST_HINT}}">{{CHAPTER_COST}}</span></span></button><button type="button" class="gw-ed" data-id="{{CHAPTER_ID}}" data-number="{{CHAPTER_NUMBER}}" title="{{t:ui.edit_chapter}}" aria-label="{{t:ui.edit_chapter}}"><i class="ti ti-edit" aria-hidden="true"></i></button></div>
@@ -265,4 +268,15 @@ var lib=document.getElementById('gw-lib');if(lib)lib.addEventListener('click',fu
 document.querySelectorAll('.gw-ch[data-id]:not(.gw-mt)').forEach(function(r){r.addEventListener('click',function(){gwSend(tr("ui.open_chapter_number_title",{number:r.dataset.number,title:r.dataset.title}),'view.chapter',{chapter_id:r.dataset.id});});});
 document.querySelectorAll('.gw-mt[data-id]').forEach(function(r){r.addEventListener('click',function(){gwSend(tr("ui.open_title",{title:r.dataset.title}),'view.matter',{matter_id:r.dataset.id});});});
 document.querySelectorAll('.gw-ed[data-id]').forEach(function(b){b.addEventListener('click',function(){gwSend(tr("ui.edit_chapter_number",{number:b.dataset.number}),'chapter.edit.open',{chapter_id:b.dataset.id});});});
+// Scheiben (GhostWriter #674, ab 0.75.0): SLICE = kopf | kapitel | kapitel-weiter | ende. Eine Scheibe ist ein eigenes kleines Widget ohne äußeren Rahmen,
+// damit mehrere nacheinander ausgegebene Scheiben wie eine Spalte wirken. Kopf behält den Rahmen; Kapitel und Ende verlieren Kopf und Rahmen.
+(function(){var fr=document.getElementById('gw-frame');if(!fr||!fr.dataset.slice)return;var sl=fr.dataset.slice;
+  if(sl!=='kopf'){fr.style.cssText='display:flex;flex-direction:column;gap:var(--gap-md)';fr.parentNode.style.padding='0';
+    fr.querySelectorAll('[data-gw-head]').forEach(function(e){e.remove();});
+
+  }
+  if(sl==='kapitel-weiter'||sl==='ende'){var l=document.getElementById('gw-chlabel');if(l)l.remove();}
+  if(sl==='kapitel'||sl==='kapitel-weiter'||sl==='ende'){fr.querySelectorAll('[style*="border-top"]').forEach(function(e){e.style.borderTop='0';e.style.paddingTop='0';});}
+  if(sl==='kopf'){fr.parentNode.style.paddingBottom='0';}
+})();
 </script>
