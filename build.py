@@ -229,7 +229,7 @@ RUNTIME = r'''
   // einen Lauf oder eine Action starten (run.start, edition.*), gehören nicht dazu.
   var WRITES=['changes.merge','approval.confirm','chapter.sections.add','chapter.research.start','series.volume.add',
     'series.volume.remove','series.omnibus.approve','series.omnibus.revoke','series.omnibus.publish','import.apply',
-    'import.edit','import.outline.apply','analysis.apply','character.suggest.apply','image.place','checkout.aufbau'];
+    'import.edit','import.outline.apply','analysis.apply','character.suggest.apply','image.place','checkout.aufbau','anecdote.plan'];
   function withHead(action,d){
     var writes=(/\.(update|create|reorder)$/.test(action)&&action!=='edition.create')||WRITES.indexOf(action)>=0;
     if(!head||!writes||Object.prototype.hasOwnProperty.call(d,'expected_head_sha'))return d;
@@ -267,7 +267,7 @@ def split(path):
     return html, script
 
 
-LOCALIZED = ['glossar-vorschlag', 'rueckgabe', 'abschnitt-anlegen', 'analyse-einstellungen', 'abschnitt-bearbeiten', 'abschnittssteuerung', 'aenderungen-uebernehmen', 'auflage-erzeugen', 'ausgabeoptionen', 'auswahl', 'bilder', 'buch-anlegen', 'buecherregal', 'chronologie-vorschlag', 'daten', 'einstellungen', 'figur-bearbeiten', 'figuren', 'figuren-vorschlag', 'figurengespraech', 'figurenbild', 'freigabe-bestaetigen', 'gliederung-vorschlag', 'hinweisdurchsicht', 'import-vorschau', 'kapitel-anlegen', 'kapitel-bearbeiten', 'kapitelansicht', 'kapitelrecherche', 'ki-angabe', 'ki-dienste', 'kurzbeschreibung-vorschlag', 'orte-vorschlag', 'projektdaten-bearbeiten', 'projekteinstellungen', 'projektuebersicht', 'reihenfolge', 'sammelband', 'serie', 'serie-bearbeiten', 'sprache-vorschlag', 'stilprofil-vorschlag', 'teil-bearbeiten', 'vor-nachspann', 'warteschlange', 'widerspruch-vorschlag', 'zeitleiste', 'zeitleiste-vorschlag']
+LOCALIZED = ['glossar-vorschlag', 'rueckgabe', 'anekdoten', 'abschnitt-anlegen', 'analyse-einstellungen', 'abschnitt-bearbeiten', 'abschnittssteuerung', 'aenderungen-uebernehmen', 'auflage-erzeugen', 'ausgabeoptionen', 'auswahl', 'bilder', 'buch-anlegen', 'buecherregal', 'chronologie-vorschlag', 'daten', 'einstellungen', 'figur-bearbeiten', 'figuren', 'figuren-vorschlag', 'figurengespraech', 'figurenbild', 'freigabe-bestaetigen', 'gliederung-vorschlag', 'hinweisdurchsicht', 'import-vorschau', 'kapitel-anlegen', 'kapitel-bearbeiten', 'kapitelansicht', 'kapitelrecherche', 'ki-angabe', 'ki-dienste', 'kurzbeschreibung-vorschlag', 'orte-vorschlag', 'projektdaten-bearbeiten', 'projekteinstellungen', 'projektuebersicht', 'reihenfolge', 'sammelband', 'serie', 'serie-bearbeiten', 'sprache-vorschlag', 'stilprofil-vorschlag', 'teil-bearbeiten', 'vor-nachspann', 'warteschlange', 'widerspruch-vorschlag', 'zeitleiste', 'zeitleiste-vorschlag']
 
 
 def validate_translations():

@@ -9,7 +9,7 @@ const de=JSON.parse(fs.readFileSync(path.join(root,'i18n/de.json'),'utf8'));
 const context={window:{}};
 vm.runInNewContext(fs.readFileSync(path.join(root,'dist/gw.js'),'utf8'),context);
 const GW=context.window.GW;
-assert.equal(GW.templates.length,48);
+assert.equal(GW.templates.length,49);
 for(const name of GW.templates){
   assert.equal(GW.supports(name,'en'),true,name);
   const input={LANGUAGE:'en',SECTION_TITLE:'Titel {{PROJECT_TITLE}} <b>',MANUSCRIPT:'Noch nicht begonnen. {{t:ui.description}} <script>',TITLE:'Titel',CHAPTER_NUMBER:3,SECTION_NUMBER:'3.2'};
@@ -62,7 +62,7 @@ approval(true,false);approval(false,false);approval(false,true);
   const en=GW.renderHtml('warteschlange',{QUEUE_EMPTY:'1',QUEUE_BOOK:'Book',QUEUE_COUNT_TEXT:'no jobs'},'en');
   assert(en.includes('Background queue')&&en.includes('No jobs in the queue.'));
 }
-console.log('All 48 bilingual templates: compilation, fallback, immutable data and approval gates passed');
+console.log('All 49 bilingual templates: compilation, fallback, immutable data and approval gates passed');
 // Rückübersetzung ausschließlich der Quelltextliterale: IDs, Selektoren,
 // Bedingungen, strukturierte Aktionen und Freigaberegeln müssen identisch bleiben.
 const crypto=require('node:crypto');
@@ -74,6 +74,25 @@ for(const [name,expected] of Object.entries(contracts)){
   assert.equal(crypto.createHash('sha256').update(normalize(restored)).digest('hex'),expected,'Action logic changed: '+name);
 }
 console.log('All 30 migrated script contracts preserve the original action logic');
+// Anekdoten (GhostWriter #643): Liste und Auswahl, Daten maskiert, Einplanen nur nach zweitem Klick, kein Browser-Dialog
+{
+  for(const lang of ['de','en']){
+    for(const mode of ['list','section']){
+      const html=GW.renderHtml('anekdoten',{LANGUAGE:lang,ANEC_MODE:mode,ANEC_COUNT_TEXT:'2 Anekdoten',ANEC_SECTION_NUMBER:mode==='section'?'1.2':'',ANEC_SECTION_TITLE:mode==='section'?'Der Zaun <b>':'',
+        ANECDOTES:[{A_ID:'anek-001-zaun',A_TITLE:'<i>Zaun</i> {{PROJECT_TITLE}}',A_STATE:'frei',A_STATE_TEXT:'frei',A_MATCH_TEXT:'Themen: Konflikt'}],HINTS:[{H_TEXT:'anek-002 in 2.1: Original ohne Einverständnisvermerk'}]},lang);
+      assert(!html.includes('<i>Zaun</i>') && !html.includes('Der Zaun <b>') && !/\{\{t:/.test(html));
+      assert(html.includes('data-mode="'+mode+'"') && html.includes('class="card"') && html.includes('class="warn"'));
+      assert(lang==='de'?html.includes('Anekdoten'):html.includes('Anecdotes'));
+    }
+  }
+  const tmpl=fs.readFileSync(path.join(root,'templates','anekdoten.html'),'utf8');
+  for(const action of ['anecdote.capture','anecdote.show','anecdote.suggest','anecdote.plan','anecdote.use'])assert(tmpl.includes("'"+action+"'"),action);
+  assert(tmpl.includes('armed')&&tmpl.includes('ui.anec_plan_confirm'));
+  assert(!/window\.(prompt|alert|confirm)/.test(tmpl),'keine Browser-Dialoge');
+  assert(GW.writes.includes('anecdote.plan'));
+  const k=GW.renderHtml('kapitelansicht',{LANGUAGE:'de',SECTIONS:[{SECTION_ID:'sec-01-02',SECTION_NUMBER:'1.2',SECTION_TITLE:'Zaun',SECTION_ANECDOTE_TEXT:'Anekdote eingeplant',SECTION_ANECDOTE_HINT:'Streit am Zaun'}]},'de');
+  assert(k.includes('>Anekdote eingeplant<') && k.includes('title="Streit am Zaun"'));
+}
 // Figurengespräch-Steuerkarte (GhostWriter #431): drei Stufen, Daten maskiert, Texte in beiden Sprachen
 {
   for(const lang of ['de','en']){
