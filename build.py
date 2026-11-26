@@ -235,6 +235,41 @@ RUNTIME = r'''
     if(!head||!writes||Object.prototype.hasOwnProperty.call(d,'expected_head_sha'))return d;
     var o={};Object.keys(d).forEach(function(k){o[k]=d[k];});o.expected_head_sha=head;return o;
   }
+  // Fähigkeiten der Umgebung (GhostWriter #662, ab 0.80.0): GW.capabilities({aktion:{state:'chat'|'spaeter',reason:{de,en}}}) legt fest, was die Umgebung
+  // nicht kann. Danach sind Knöpfe mit data-a bzw. data-gw-send dieser Aktionen schon vor dem Klick ausgegraut (disabled, aria-disabled,
+  // title und data-gw-na mit dem Grund, Klasse gw-na). Ohne Aufruf bleibt alles wie bisher. Die Umgebung (Chat, Web-App) liefert die Liste.
+  var CAPS={};
+  function capability(action){
+    var c=Object.prototype.hasOwnProperty.call(CAPS,action)?CAPS[action]:null;
+    if(!c)return null;
+    var r=c.reason,text=r&&typeof r==='object'?(r[CAPLANG]||r.de||''):String(r||'');
+    return {action:action,state:c.state||'spaeter',reason:text};
+  }
+  var CAPLANG='de';
+  function capabilities(map,lang){
+    if(map===undefined)return Object.keys(CAPS);
+    CAPS={};Object.keys(map||{}).forEach(function(k){if(map[k]&&typeof map[k]==='object')CAPS[k]=map[k];});
+    if(lang)CAPLANG=language(lang);
+    return Object.keys(CAPS);
+  }
+  function markNa(n,action){
+    var c=capability(action);
+    if(!c||n.getAttribute('data-gw-na')!==null&&n.getAttribute('data-gw-na')!==undefined&&n.getAttribute('data-gw-na')!=='')return;
+    n.setAttribute('disabled','');n.setAttribute('aria-disabled','true');
+    n.setAttribute('data-gw-na',c.reason||c.state);
+    if(c.reason)n.setAttribute('title',c.reason);
+    if(n.classList)n.classList.add('gw-na');
+  }
+  function applyCaps(el){
+    if(!Object.keys(CAPS).length||!el||!el.querySelectorAll)return;
+    el.querySelectorAll('[data-a],[data-gw-send]').forEach(function(n){
+      markNa(n,n.getAttribute('data-a')||n.getAttribute('data-gw-send')||'');
+    });
+  }
+  function capsStyle(){
+    if(!Object.keys(CAPS).length||typeof document==='undefined'||!document.head||!document.createElement||document.getElementById('gw-na-style'))return;
+    var st=document.createElement('style');st.id='gw-na-style';st.textContent='.gw-na{opacity:.5;cursor:not-allowed}';document.head.appendChild(st);
+  }
   function render(name,data,el,lang){
     data=unpack(name,data||{});lang=language(lang||data.LANGUAGE);
     var trl=translator(lang);CK_TR=function(k){return trl(k);};
@@ -252,8 +287,9 @@ RUNTIME = r'''
     el.querySelectorAll('[data-gw-variants]').forEach(variants);
     el.querySelectorAll('[data-gw-start]').forEach(startBind);
     T[name].run(translator(lang));
+    capsStyle();applyCaps(el);
   }
-  window.GW={version:VERSION,templates:Object.keys(T),render:render,renderHtml:renderHtml,unpack:unpack,supports:supports,withHead:withHead,message:message,writes:WRITES.slice(),escape:esc};
+  window.GW={version:VERSION,templates:Object.keys(T),render:render,renderHtml:renderHtml,unpack:unpack,supports:supports,withHead:withHead,message:message,capabilities:capabilities,capability:capability,applyCapabilities:applyCaps,writes:WRITES.slice(),escape:esc};
 
 '''
 
