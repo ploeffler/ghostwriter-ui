@@ -110,3 +110,11 @@ console.log('All 30 migrated script contracts preserve the original action logic
   for(const action of ['figurenbild.stil.save','figurenbild.pick','figurenbild.change','form.cancel'])assert(tmpl.includes("'"+action+"'"),action);
   assert(tmpl.includes('armed')&&tmpl.includes('ui.fb_save_confirm'),'Speichern erst nach eigener Bestätigung');
 }
+// Scheiben von Bücherregal und Kapitelansicht (GhostWriter #674, 0.78.0)
+{
+  for(const [name,id,vals] of [['buecherregal','gw-regal',['kopf','buch','ende']],['kapitelansicht','gw-kapitel',['kopf','abschnitt','abschnitt-weiter','ende']]]){
+    const src=fs.readFileSync(path.join(root,'templates',name+'.html'),'utf8');
+    assert(src.includes('data-slice="{{SLICE}}"')&&src.includes("sl!=='kopf'")&&src.includes('data-gw-head'),name);
+    for(const v of vals)assert(GW.renderHtml(name,{LANGUAGE:'de',SLICE:v},'de').includes('data-slice="'+v+'"'),name+' '+v);
+  }
+}

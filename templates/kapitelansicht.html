@@ -1,4 +1,7 @@
 <!--
+  Scheiben (GhostWriter #674, ab 0.78.0): {{SLICE}} = kopf | abschnitt | abschnitt-weiter | ende. Mit SLICE zeigt die Vorlage nur den Teil, dessen
+  Felder gesetzt sind; Abschnitts- und Endscheiben verlieren Kopf und Rahmen, damit nacheinander ausgegebene Widgets wie eine Spalte wirken.
+
   Vorlage: Kapitelansicht (Anzeige mit Symbolleiste, siehe templates/ui/README.md)
 
   Inline-Widget für den Chat. Zeigt ein Kapitel mit allen Abschnitten.
@@ -90,8 +93,8 @@
 @media (max-width:560px){.gw-two{grid-template-columns:1fr!important}}
 </style>
 <div style="padding:1rem 0">
-  <div id="gw-kapitel" data-chapter-id="{{CHAPTER_ID}}" data-chapter-number="{{CHAPTER_NUMBER}}" data-chapter-title="{{CHAPTER_TITLE}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
-    <div>
+  <div id="gw-kapitel" data-slice="{{SLICE}}" data-chapter-id="{{CHAPTER_ID}}" data-chapter-number="{{CHAPTER_NUMBER}}" data-chapter-title="{{CHAPTER_TITLE}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div data-gw-head>
       <div style="display:flex;align-items:flex-start;gap:var(--gap-md);flex-wrap:wrap-reverse">
         <div style="flex:1;min-width:220px">
           <div style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;margin-bottom:4px">
@@ -121,7 +124,7 @@
       </div>
       <details data-gw-if="CHECKS_HISTORY_JSON" data-gw-checks-box style="margin-top:8px"><summary style="font-size:13px;color:var(--text-secondary);cursor:pointer">{{t:ui.earlier_checks}} ({{CHECKS_HISTORY_COUNT}})</summary><div data-gw-checks-history="{{CHECKS_HISTORY_JSON}}" style="display:flex;flex-direction:column;gap:4px;margin-top:6px"></div></details>
     </div>
-    <div style="display:flex;align-items:flex-start;gap:var(--gap-md);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+    <div data-gw-head style="display:flex;align-items:flex-start;gap:var(--gap-md);border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
       <div class="gw-two" style="flex:1;min-width:0;display:grid;grid-template-columns:1fr 1fr;gap:var(--gap-md)">
         <div><span class="gw-lbl">{{t:ui.chapter_goal}}</span><p class="gw-txt">{{CHAPTER_GOAL}}</p></div>
         <div><span class="gw-lbl">{{t:ui.summary}}</span><p class="gw-txt">{{CHAPTER_SUMMARY}}</p></div>
@@ -133,8 +136,8 @@
       <div style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap;padding:8px 12px;border:0.5px solid var(--border-accent);border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent);font-size:13px"><i class="ti ti-lock" style="font-size:16px" aria-hidden="true"></i><span style="flex:1;min-width:180px">{{CO_TEXT}}</span><button type="button" class="gw-sq" data-gw-send="checkout.end" data-gw-args="{{CO_ARGS}}" data-gw-text="{{t:ui.end_checkout}}" data-gw-confirm="{{t:ui.end_checkout_confirm}}" data-gw-confirm-label="{{t:ui.end_checkout}}" data-gw-done="{{t:ui.queue_cancel_done}}" style="width:auto;height:32px;padding:0 12px;font-size:13px;color:var(--text-primary)">{{t:ui.end_checkout}}</button></div>
       {{/CHECKOUTS}}
     </div>
-    <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div data-gw-sections style="border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <div id="gw-seclabel" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <span style="font-size:12px;color:var(--text-muted)">{{t:ui.sections}}</span>
         <span style="font-size:12px;color:var(--text-muted);display:flex;gap:6px;flex-wrap:wrap"><span class="gw-tag anek">{{t:ui.anecdote}}</span><span class="gw-tag">{{t:ui.source}}</span><span class="gw-tag med">{{t:ui.medicine}}</span><span class="gw-tag recht">{{t:ui.law}}</span></span>
       </div>
@@ -145,7 +148,7 @@
       </div>
       <div data-gw-if="CHECKS_LEGEND" style="margin-top:6px;font-size:11px;color:var(--text-muted)">{{CHECKS_LEGEND}}</div>
     </div>
-    <div style="border-top:0.5px solid var(--border);padding-top:var(--pad-md);display:flex;align-items:center;gap:var(--gap-sm);font-size:13px;color:var(--text-secondary)">
+    <div data-gw-tail style="border-top:0.5px solid var(--border);padding-top:var(--pad-md);display:flex;align-items:center;gap:var(--gap-sm);font-size:13px;color:var(--text-secondary)">
       <i class="ti ti-info-circle" aria-hidden="true"></i>{{t:ui.chapter_assembly_is_available_only_when_all_sections_are_approved}}
     </div>
   </div>
@@ -183,5 +186,14 @@ function gwSend(text,action,data){sendPrompt(GW.message(text,action,data));}
   });
 
   wrap.querySelectorAll('.gw-sq[data-p]').forEach(function(b){b.addEventListener('click',function(){gwSend(b.dataset.p,b.dataset.a,b.dataset.args?JSON.parse(b.dataset.args):{});});});
+})();
+// Scheiben (GhostWriter #674, ab 0.78.0): SLICE = kopf | abschnitt | abschnitt-weiter | ende.
+(function(){var fr=document.getElementById('gw-kapitel');if(!fr||!fr.dataset||!fr.dataset.slice)return;var sl=fr.dataset.slice;
+  if(sl!=='kopf'){fr.style.cssText='display:flex;flex-direction:column;gap:var(--gap-md)';fr.parentNode.style.padding='0';fr.querySelectorAll('[data-gw-head]').forEach(function(e){e.remove();});}
+  else{fr.parentNode.style.paddingBottom='0';fr.querySelectorAll('[data-gw-sections],[data-gw-tail]').forEach(function(e){e.remove();});}
+  if(sl==='abschnitt'||sl==='abschnitt-weiter'||sl==='ende'){fr.querySelectorAll('[data-gw-tail]').forEach(function(e){if(sl!=='ende')e.remove();});}
+  if(sl==='abschnitt-weiter'){var l=document.getElementById('gw-seclabel');if(l)l.remove();}
+  if(sl==='ende'){fr.querySelectorAll('[data-gw-sections]').forEach(function(e){e.remove();});}
+  if(sl==='abschnitt'||sl==='abschnitt-weiter'||sl==='ende'){fr.querySelectorAll('[style*="border-top"]').forEach(function(e){e.style.borderTop='0';e.style.paddingTop='0';});}
 })();
 </script>

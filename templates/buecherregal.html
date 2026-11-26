@@ -1,4 +1,7 @@
 <!--
+  Scheiben (GhostWriter #674, ab 0.78.0): {{SLICE}} = kopf | buch | ende. Mit SLICE zeigt die Vorlage nur den Teil, dessen Felder gesetzt sind;
+  die Scheibe „buch“ ist eine Buchkarte ohne Kopf und Rahmen, damit nacheinander ausgegebene Widgets wie eine Spalte wirken.
+
   Vorlage: Bücherregal (Ansicht, siehe templates/ui/README.md in GhostWriter, Issue #37)
 
   Inline-Widget für den Chat. Startseite einer Bibliothek (mehrere Bücher in
@@ -107,8 +110,8 @@
 .gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
 </style>
 <div style="padding:1rem 0">
-  <div id="gw-regal" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
-    <div style="display:flex;align-items:flex-start;gap:var(--gap-md);flex-wrap:wrap">
+  <div id="gw-regal" data-slice="{{SLICE}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div data-gw-head style="display:flex;align-items:flex-start;gap:var(--gap-md);flex-wrap:wrap">
       <div style="flex:1;min-width:200px">
         <div style="display:flex;align-items:center;gap:var(--gap-sm)">
           <i class="ti ti-books" style="font-size:20px;color:var(--text-secondary)" aria-hidden="true"></i>
@@ -212,5 +215,10 @@ function gwSend(text,action,data){sendPrompt(GW.message(text,action,data));}
   });
   document.getElementById('gw-data').addEventListener('click',function(){gwSend(tr("ui.show_library_data"),'view.data',{});});
   document.getElementById('gw-newbook').addEventListener('click',function(){gwSend(tr("ui.create_a_new_book"),'library.book.create.open',{});});
+})();
+// Scheiben (GhostWriter #674, ab 0.78.0): SLICE = kopf | buch | ende. Kopf behält den Rahmen, Buch- und Endscheiben verlieren Kopf und Rahmen.
+(function(){var fr=document.getElementById('gw-regal');if(!fr||!fr.dataset||!fr.dataset.slice)return;var sl=fr.dataset.slice;
+  if(sl!=='kopf'){fr.style.cssText='display:flex;flex-direction:column;gap:var(--gap-md)';fr.parentNode.style.padding='0';fr.querySelectorAll('[data-gw-head]').forEach(function(e){e.remove();});}
+  else fr.parentNode.style.paddingBottom='0';
 })();
 </script>
