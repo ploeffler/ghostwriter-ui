@@ -117,6 +117,23 @@ console.log('Repeated user data is never re-interpreted as a placeholder');
   const html=GW.renderHtml('kapitelansicht',{CHECKS_JSON:'[{"CK_TAG":"S✓"}]',SECTIONS:[{SECTION_ID:'s1',SECTION_CHECKS_JSON:'[{"CK_TAG":"L✓"}]'}]},'de');
   assert.match(html,/data-gw-checks="\[\{&quot;CK_TAG&quot;:&quot;L✓&quot;\}\]"/);
   assert.match(html,/Prüfungen/);
+  // Kompakte Prüf-Listen (GhostWriter #674, 0.74.0): echtes JSON im Platzhalter, gepackte Zeilen mit Berichtsindex, Texte aus den Sprachdateien
+  {const html2=GW.renderHtml('kapitelansicht',{CHECKS_JSON:[{CK_SHORT:'S',CK_LABEL:'Struktur',CK_RESULT:'passed'}]},'de');
+   assert.match(html2,/data-gw-checks="\[\{&quot;CK_SHORT&quot;:&quot;S&quot;/);   // Array als JSON-Text, nicht als [object Object]
+   for(const [lang,expect] of [['de','Struktur: bestanden mit Hinweisen, 2026-11-20 10:00 \u00b7 seit Prüfung geändert \u00b7 teilweise'],['en','Structure: passed with notes, 2026-11-20 10:00 \u00b7 changed since check \u00b7 partial']]){
+     const packed=node(JSON.stringify({k:['CK_SHORT','CK_LABEL','CK_RESULT','CK_STATE','CK_WHEN','CK_PARTIAL','CK_REPORT'],
+       r:[['S',lang==='de'?'Struktur':'Structure','passed_with_notes','changed','2026-11-20 10:00',true,0],['L',lang==='de'?'Sprache':'Language','failed','current','2026-11-21',false,0],['K','Korr','passed','unknown','2026-11-22',false,1]],
+       p:['editorial/a.md','editorial/b.md']}));
+     const host3={innerHTML:'',querySelectorAll:sel=>sel==='[data-gw-checks]'?[packed]:[]};
+     GW.render('projektuebersicht',{CHAPTERS:[]},host3,lang);
+     const c=packed.children;
+     assert.equal(c.length,3);
+     assert.equal(c[0].textContent,'S\u2713\u00b7*');                       // CK_TAG aus Kürzel, Ergebnis und Stand
+     assert.equal(c[0].title,expect+'\neditorial/a.md');                    // CK_TEXT aus den Sprachdateien, Bericht über den Index
+     assert.equal(c[1].textContent,'L\u2717');
+     assert.equal(c[2].textContent,'K\u2713?');
+     assert.equal(c[2].title.endsWith('\neditorial/b.md'),true);
+     assert.equal(c[0].attrs['data-result'],'passed_with_notes');}}
   console.log('Check tags: JSON rendering, tooltips, failed/changed styling and missing fields passed');
 }
 // Knopf mit Rückfrage (GhostWriter #352): Vorabfassung im Formular „Neue Auflage“

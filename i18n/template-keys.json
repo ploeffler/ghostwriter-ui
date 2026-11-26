@@ -1,4 +1,13 @@
 [
+  "runtime.check_partial",
+  "runtime.check_result_failed",
+  "runtime.check_result_incomplete",
+  "runtime.check_result_passed",
+  "runtime.check_result_passed_with_notes",
+  "runtime.check_result_unknown",
+  "runtime.check_state_changed",
+  "runtime.check_state_current",
+  "runtime.check_state_unknown",
   "runtime.unavailable",
   "runtime.unknown_template",
   "status.approved",
