@@ -90,3 +90,10 @@ console.log('All 30 migrated script contracts preserve the original action logic
   // Übernehmen nur nach eigener Bestätigung (zweiter Klick), nie vorangehakt
   assert(tmpl.includes('armed')&&tmpl.includes('ui.talk_apply_confirm'));
 }
+// Scheiben der Projektübersicht (GhostWriter #674): Rahmen und Kopf nur in der Kopf-Scheibe
+{
+  const tmpl=fs.readFileSync(path.join(root,'templates','projektuebersicht.html'),'utf8');
+  assert(tmpl.includes('data-slice="{{SLICE}}"')&&tmpl.includes("sl!=='kopf'")&&(tmpl.match(/data-gw-head/g)||[]).length>=3);
+  const html=GW.renderHtml('projektuebersicht',{LANGUAGE:'de',SLICE:'kapitel',CHAPTERS:[{CHAPTER_ID:'ch-1',CHAPTER_NUMBER:1,CHAPTER_TITLE:'Eins'}]},'de');
+  assert(html.includes('data-slice="kapitel"')&&html.includes('Eins'));
+}
