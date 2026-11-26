@@ -270,7 +270,7 @@ document.querySelectorAll('.gw-mt[data-id]').forEach(function(r){r.addEventListe
 document.querySelectorAll('.gw-ed[data-id]').forEach(function(b){b.addEventListener('click',function(){gwSend(tr("ui.edit_chapter_number",{number:b.dataset.number}),'chapter.edit.open',{chapter_id:b.dataset.id});});});
 // Scheiben (GhostWriter #674, ab 0.75.0): SLICE = kopf | kapitel | kapitel-weiter | ende. Eine Scheibe ist ein eigenes kleines Widget ohne äußeren Rahmen,
 // damit mehrere nacheinander ausgegebene Scheiben wie eine Spalte wirken. Kopf behält den Rahmen; Kapitel und Ende verlieren Kopf und Rahmen.
-(function(){var fr=document.getElementById('gw-frame');if(!fr||!fr.dataset.slice)return;var sl=fr.dataset.slice;
+(function(){var fr=document.getElementById('gw-frame');if(!fr||!fr.dataset||!fr.dataset.slice)return;var sl=fr.dataset.slice;
   if(sl!=='kopf'){fr.style.cssText='display:flex;flex-direction:column;gap:var(--gap-md)';fr.parentNode.style.padding='0';
     fr.querySelectorAll('[data-gw-head]').forEach(function(e){e.remove();});
 
