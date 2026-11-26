@@ -51,6 +51,7 @@
   - {{SECTION_TITLE}}     Titel
   - {{SECTION_STALE_TEXT}}, {{SECTION_STALE_HINT}}  „veraltet“ bzw. Tooltip „seit 25.11.: Grund“ (GhostWriter #592); leer = keine Marke
   - {{SECTION_CHECKOUT_TEXT}}  „ausgecheckt“ (#572); leer = keine Marke
+  - {{SECTION_ANECDOTE_TEXT}}, {{SECTION_ANECDOTE_HINT}}  „Anekdote eingeplant“ bzw. „enthält Anekdote“ und Tooltip mit Titel (#643); leer = keine Marke
   - Block {{#CHECKOUTS}} … {{/CHECKOUTS}} mit {{CO_ID}}, {{CO_TEXT}}: Hinweis auf ausgecheckte Bereiche des Kapitels, Knopf „Checkout beenden“ (checkout.end)
   - {{SECTION_STATUS}}    Status laut workflow.yml (sections.statuses); gw.js zeigt ihn in der gewählten Bediensprache
   - {{SECTION_COST}}      Abschnittssumme, formatiert, oder "–"
@@ -143,7 +144,7 @@
       </div>
       <div id="gw-sections" style="display:flex;flex-direction:column;gap:var(--gap-xs)">
         {{#SECTIONS}}
-        <button type="button" class="gw-row" data-id="{{SECTION_ID}}" data-number="{{SECTION_NUMBER}}" data-title="{{SECTION_TITLE}}" data-anekdote="{{MARKERS_ANEKDOTE}}" data-quelle="{{MARKERS_QUELLE}}" data-medizin="{{MARKERS_MEDIZIN}}" data-recht="{{MARKERS_RECHT}}"><span class="gw-num">{{SECTION_NUMBER}}</span><span style="flex:1;min-width:0;font-size:14px;font-weight:500">{{SECTION_TITLE}}</span><span class="gw-tag" title="{{SECTION_STALE_HINT}}" style="border-color:var(--border-warning)">{{SECTION_STALE_TEXT}}</span><span class="gw-tag recht">{{SECTION_CHECKOUT_TEXT}}</span><span data-gw-checks="{{SECTION_CHECKS_JSON}}" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end"></span><span class="gw-tags" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end"></span><span class="gw-meta" style="min-width:32px;text-align:right" title="{{t:ui.costs}}">{{SECTION_COST}}</span><span class="gw-meta">{{SECTION_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
+        <button type="button" class="gw-row" data-id="{{SECTION_ID}}" data-number="{{SECTION_NUMBER}}" data-title="{{SECTION_TITLE}}" data-anekdote="{{MARKERS_ANEKDOTE}}" data-quelle="{{MARKERS_QUELLE}}" data-medizin="{{MARKERS_MEDIZIN}}" data-recht="{{MARKERS_RECHT}}"><span class="gw-num">{{SECTION_NUMBER}}</span><span style="flex:1;min-width:0;font-size:14px;font-weight:500">{{SECTION_TITLE}}</span><span class="gw-tag" title="{{SECTION_STALE_HINT}}" style="border-color:var(--border-warning)">{{SECTION_STALE_TEXT}}</span><span class="gw-tag recht">{{SECTION_CHECKOUT_TEXT}}</span><span class="gw-tag anek" title="{{SECTION_ANECDOTE_HINT}}">{{SECTION_ANECDOTE_TEXT}}</span><span data-gw-checks="{{SECTION_CHECKS_JSON}}" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end"></span><span class="gw-tags" style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end"></span><span class="gw-meta" style="min-width:32px;text-align:right" title="{{t:ui.costs}}">{{SECTION_COST}}</span><span class="gw-meta">{{SECTION_STATUS}}</span><i class="ti ti-chevron-right" style="font-size:16px;color:var(--text-muted)" aria-hidden="true"></i></button>
         {{/SECTIONS}}
       </div>
       <div data-gw-if="CHECKS_LEGEND" style="margin-top:6px;font-size:11px;color:var(--text-muted)">{{CHECKS_LEGEND}}</div>

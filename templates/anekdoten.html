@@ -1,0 +1,131 @@
+<!--
+  Vorlage: Anekdoten – Liste und Auswahl für einen Abschnitt (GhostWriter #643)
+
+  Inline-Widget für den Chat, nur für Eigentümer und Bearbeiter (Rollen aus #455); der Assistent zeigt es Lesern nicht.
+  Zwei Stufen, gewählt mit ANEC_MODE:
+  - list:    alle Anekdoten des Buchs und seiner Reihe mit Zustand (frei · eingeplant · verwendet), Filter nach Zustand,
+             Hinweise für Auflage und Probedruck (Original ohne Einverständnisvermerk)
+  - section: passende freie Anekdoten für einen Abschnitt (Vorschlag mit Begründung), Knöpfe „Einplanen“ und „Einbauen“
+  Der Originaltext der Anekdote steht nicht im Widget; „Anzeigen“ holt ihn im Chat.
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{ANEC_MODE}}            list | section
+  - {{ANEC_COUNT_TEXT}}      z. B. „5 Anekdoten · 3 frei · 1 eingeplant · 1 verwendet“
+  - {{ANEC_SECTION_ID}}, {{ANEC_SECTION_NUMBER}}, {{ANEC_SECTION_TITLE}}   Abschnitt (section)
+  Wiederholung zwischen {{#ANECDOTES}} und {{/ANECDOTES}}:
+  - {{A_ID}}            Kennung, z. B. anek-001-streit-am-zaun
+  - {{A_TITLE}}         Titel
+  - {{A_STATE}}         frei | eingeplant | verwendet (Filter); {{A_STATE_TEXT}} in der Bediensprache
+  - {{A_PLANNED_TEXT}}  z. B. „für 1.2“; leer = nicht eingeplant
+  - {{A_TOPICS_TEXT}}   Themen, durch Komma getrennt; leer = keine
+  - {{A_SERIES_TEXT}}   „Reihe <Name>“ bei Reihen-Anekdoten; leer = Buch
+  - {{A_USES_TEXT}}     z. B. „verwendet in 2.1 (anonymisiert)“; leer = nie verwendet
+  - {{A_MATCH_TEXT}}    nur section: warum sie passt, z. B. „Themen: Konflikt · Wörter: Zaun, Nachbar“
+  Wiederholung zwischen {{#HINTS}} und {{/HINTS}}: {{H_TEXT}} (Hinweis aus `anekdoten.py check`)
+
+  Aktionen (Klartextzeile plus Kurzform `gw:aktion schlüssel=wert`, siehe templates/ui/BEFUELLUNG.md):
+  - anecdote.capture                      → „Anekdote erfassen“ (Gespräch im Chat)
+  - anecdote.show     id                  → Original im Chat zeigen
+  - anecdote.suggest  section             → Vorschläge für einen Abschnitt (Abschnittsnummer eingeben)
+  - anecdote.plan     id, section         → für den Abschnitt einplanen (schreibt erst nach Bestätigung auf der Karte)
+  - anecdote.use      id, section         → Einbau im Chat beginnen: Fassung, Wahrheitsgehalt und Einverständnis klärt der Assistent
+  - view.section      section_id          → zum Abschnitt
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts, Tabler-Icons (ti-*) und sendPrompt(text).
+-->
+<h2 class="sr-only">{{t:ui.anec_title}}</h2>
+<style>
+.gw-an .row{display:flex;gap:var(--gap-sm);flex-wrap:wrap;align-items:center}
+.gw-an .meta{font-size:12px;color:var(--text-muted);line-height:1.5}
+.gw-an .meta:empty{display:none}
+.gw-an .card{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.gw-an .pill{font-size:11px;padding:1px 7px;border-radius:999px;white-space:nowrap;border:0.5px solid var(--border);background:var(--surface-1);color:var(--text-secondary)}
+.gw-an .pill[data-state="eingeplant"]{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-an .pill[data-state="verwendet"]{border-color:var(--border-success);background:var(--bg-success);color:var(--text-success)}
+.gw-an .flt{font:inherit;font-size:13px;padding:4px 10px;border-radius:999px;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-secondary);cursor:pointer}
+.gw-an .flt.on{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-an .warn{display:flex;gap:6px;align-items:flex-start;padding:6px 10px;border:0.5px solid var(--border-warning);border-radius:var(--radius);background:var(--bg-warning);color:var(--text-warning);font-size:13px}
+.gw-mini{padding:4px 10px;border:0.5px solid var(--border-strong);border-radius:var(--radius);background:transparent;color:var(--text-primary);font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+.gw-mini.pri{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-mini:disabled{opacity:0.45;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-an" id="gw-an" data-mode="{{ANEC_MODE}}" data-section="{{ANEC_SECTION_NUMBER}}" data-section-id="{{ANEC_SECTION_ID}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-message-circle-2" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.anec_title}}</div>
+        <div class="meta" data-gw-if="ANEC_SECTION_TITLE">{{t:ui.anec_for_section}} {{ANEC_SECTION_NUMBER}} · {{ANEC_SECTION_TITLE}}</div>
+        <div class="meta">{{ANEC_COUNT_TEXT}}</div>
+      </div>
+      <div class="row">
+        <button type="button" class="gw-mini" id="gw-an-sec">{{t:ui.anec_suggest}}</button>
+        <button type="button" class="gw-mini pri" id="gw-an-new">{{t:ui.anec_capture}}</button>
+      </div>
+    </div>
+
+    <div id="gw-an-filter" class="row">
+      <button type="button" class="flt on" data-f="">{{t:ui.anec_all}}</button>
+      <button type="button" class="flt" data-f="frei">{{t:ui.anec_state_free}}</button>
+      <button type="button" class="flt" data-f="eingeplant">{{t:ui.anec_state_planned}}</button>
+      <button type="button" class="flt" data-f="verwendet">{{t:ui.anec_state_used}}</button>
+      <label class="row meta" style="margin-left:auto">{{t:ui.anec_section_label}} <input id="gw-an-s" type="text" inputmode="decimal" placeholder="1.2" aria-label="{{t:ui.anec_section_label}}" style="width:5em;font:inherit;font-size:13px;padding:4px 8px;border:0.5px solid var(--border-strong);border-radius:8px;background:var(--surface-2);color:var(--text-primary)"></label>
+    </div>
+
+    <div data-gw-if="HINTS" style="display:flex;flex-direction:column;gap:4px">
+      {{#HINTS}}<div class="warn"><i class="ti ti-alert-triangle" aria-hidden="true"></i><span>{{H_TEXT}}</span></div>{{/HINTS}}
+    </div>
+
+    <div id="gw-an-list" style="display:flex;flex-direction:column;gap:6px">
+      {{#ANECDOTES}}
+      <div class="card" data-id="{{A_ID}}" data-state="{{A_STATE}}" data-title="{{A_TITLE}}">
+        <div class="row" style="justify-content:space-between">
+          <div style="font-weight:500;flex:1;min-width:160px">{{A_TITLE}}</div>
+          <span class="pill" data-state="{{A_STATE}}">{{A_STATE_TEXT}}</span>
+        </div>
+        <div class="meta">{{A_MATCH_TEXT}}</div>
+        <div class="meta">{{A_TOPICS_TEXT}}</div>
+        <div class="meta">{{A_PLANNED_TEXT}}</div>
+        <div class="meta">{{A_USES_TEXT}}</div>
+        <div class="meta">{{A_SERIES_TEXT}}</div>
+        <div class="row" style="justify-content:flex-end">
+          <button type="button" class="gw-mini" data-do="show">{{t:ui.anec_show}}</button>
+          <button type="button" class="gw-mini" data-do="plan">{{t:ui.anec_plan}}</button>
+          <button type="button" class="gw-mini pri" data-do="use">{{t:ui.anec_use}}</button>
+        </div>
+      </div>
+      {{/ANECDOTES}}
+      <div id="gw-an-none" class="meta">{{t:ui.anec_none}}</div>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){sendPrompt(GW.message(text,action,data));}
+(function(){
+  var box=document.getElementById('gw-an'),ds=box.dataset,mode=ds.mode||'list';
+  var cards=Array.prototype.slice.call(box.querySelectorAll('.card'));
+  if(cards.length)document.getElementById('gw-an-none').remove();
+  if(mode==='section'){document.getElementById('gw-an-filter').style.display='none';document.getElementById('gw-an-sec').style.display='none';}
+  function lock(){box.querySelectorAll('button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
+  // Filter nach Zustand (nur Ansicht, schickt nichts)
+  box.querySelectorAll('.flt').forEach(function(b){b.addEventListener('click',function(){
+    box.querySelectorAll('.flt').forEach(function(x){x.classList.toggle('on',x===b);});
+    cards.forEach(function(c){c.style.display=(!b.dataset.f||c.dataset.state===b.dataset.f)?'':'none';});});});
+  // Einplanen und Einbauen brauchen einen Abschnitt; in der Liste kommt er aus dem Feld „Abschnitt“
+  var sin=document.getElementById('gw-an-s');
+  function section(){var s=ds.section||(sin.value||'').trim();if(!s){sin.focus();sin.placeholder=tr("ui.anec_ask_section");sin.style.borderColor='var(--border-warning)';}return s;}
+  cards.forEach(function(c){
+    var id=c.dataset.id,title=c.dataset.title;
+    if(c.dataset.state==='verwendet')c.querySelector('[data-do="plan"]').style.display='none';
+    c.querySelector('[data-do="show"]').addEventListener('click',function(){lock();gwSend(tr("ui.anec_message_show",{title:title}),'anecdote.show',{id:id});});
+    var plan=c.querySelector('[data-do="plan"]'),armed=false;
+    plan.addEventListener('click',function(){
+      var s=section();if(!s)return;
+      if(!armed){armed=true;plan.textContent=tr("ui.anec_plan_confirm",{section:s});plan.dataset.s=s;return;}
+      lock();gwSend(tr("ui.anec_message_plan",{title:title,section:plan.dataset.s}),'anecdote.plan',{id:id,section:plan.dataset.s});});
+    c.querySelector('[data-do="use"]').addEventListener('click',function(){
+      var s=section();if(!s)return;lock();gwSend(tr("ui.anec_message_use",{title:title,section:s}),'anecdote.use',{id:id,section:s});});
+  });
+  document.getElementById('gw-an-new').addEventListener('click',function(){lock();gwSend(tr("ui.anec_message_capture"),'anecdote.capture',{});});
+  document.getElementById('gw-an-sec').addEventListener('click',function(){var s=section();if(!s)return;lock();gwSend(tr("ui.anec_message_suggest",{section:s}),'anecdote.suggest',{section:s});});
+})();
+</script>
