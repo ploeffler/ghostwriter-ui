@@ -1,0 +1,138 @@
+<!--
+  Vorlage: Figurengespräch – Steuerkarte neben dem Chat (GhostWriter #431)
+
+  Inline-Widget für den Chat. Das Widget kann Nachrichten an den Chat schicken, aber die Antworten der Figur nicht lesen:
+  Das Sprechen läuft im normalen Chat, die Karte steuert nur. Drei Stufen, gewählt mit TALK_PHASE:
+  - start:    Figur wählen (mit Profilbild, falls vorhanden), Stelle im Buch wählen, „Gespräch beginnen“
+  - active:   Knöpfe „Gespräch beenden“, „Stelle ändern“, „Figur wechseln“ (eine Nachricht je Klick)
+  - insights: Karte „Erkenntnisse“ nach dem Gespräch: Vorschläge des Assistenten einzeln ankreuzen, eigene Bestätigung,
+              nichts vorangehakt und nichts automatisch
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{TALK_PHASE}}          start | active | insights
+  - {{TALK_FIGURE_ID}}, {{TALK_FIGURE_NAME}}   gewählte Figur (active, insights)
+  - {{TALK_PORTRAIT}}       Adresse des Profilbilds (freigegebenes Referenzbild, #417); leer = Anfangsbuchstabe
+  - {{TALK_UNTIL}}, {{TALK_UNTIL_TEXT}}   Stelle als Eingabe für „bis“ (z. B. 2.3, Kapitel 5; leer = ganzes Buch) und als Text
+  - {{TALK_KNOWLEDGE_TEXT}} woher der Wissensstand kommt, z. B. „7 Ereignisse, 5 belegt, 2 angenähert“; leer = keine Angabe
+  Wiederholung zwischen {{#FIGURES}} und {{/FIGURES}} (Auswahl der Figur): {{F_ID}}, {{F_NAME}}, {{F_PORTRAIT}}
+  Wiederholung zwischen {{#PLACES}} und {{/PLACES}} (Auswahl der Stelle): {{P_VALUE}} (leer = ganzes Buch), {{P_LABEL}}
+  Wiederholung zwischen {{#INSIGHTS}} und {{/INSIGHTS}} (insights): {{I_IDX}}, {{I_FIELD}} (Profilfeld: traits, voice, short, appearance,
+  age, description, notes oder relation), {{I_FIELD_TEXT}} (Name des Feldes), {{I_TEXT}} (Vorschlag), {{I_CURRENT}} (bisheriger Wert)
+
+  Aktionen (Klartextzeile plus Kurzform `gw:aktion schlüssel=wert`, siehe templates/ui/BEFUELLUNG.md):
+  - character.talk.start    figure, until   → Klartext „Figurengespräch <Name> bis <Stelle>“ bzw. „Talk to <Name> until <place>“
+  - character.talk.end                      → „Gespräch beenden“ bzw. „End conversation“
+  - character.talk.until    until           → „Stelle ändern: bis <Stelle>“
+  - character.talk.switch   figure, until   → neues Gespräch mit anderer Figur
+  - character.talk.apply    figure, choices [{index, field, text}] der angekreuzten Erkenntnisse; erst nach Bestätigung auf der Karte;
+                            der Assistent übernimmt mit character.update nur diese Felder
+  - form.cancel (form: character.talk.apply)
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts, Tabler-Icons (ti-*) und sendPrompt(text).
+-->
+<h2 class="sr-only">{{t:ui.talk_title}}</h2>
+<style>
+.gw-tk select{font:inherit;font-size:14px;padding:6px 8px;border:0.5px solid var(--border-strong);border-radius:8px;background:var(--surface-1);color:var(--text-primary);min-width:0}
+.gw-tk .row{display:flex;gap:var(--gap-sm);flex-wrap:wrap;align-items:center}
+.gw-tk .pic{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--surface-2);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:500;color:var(--text-secondary);flex:none;overflow:hidden}
+.gw-tk .meta{font-size:12px;color:var(--text-muted);line-height:1.5}
+.gw-tk .meta:empty{display:none}
+.gw-tk .ins{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;display:flex;gap:var(--gap-sm);align-items:flex-start}
+.gw-tk .ins.off{opacity:0.7}
+.gw-btn{padding:9px 16px;border-radius:var(--radius);font:inherit;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)}
+.gw-btn.pri{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-btn:disabled{opacity:0.45;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-tk" id="gw-tk" data-phase="{{TALK_PHASE}}" data-figure="{{TALK_FIGURE_ID}}" data-name="{{TALK_FIGURE_NAME}}" data-until="{{TALK_UNTIL}}" data-until-text="{{TALK_UNTIL_TEXT}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-messages" style="color:var(--text-secondary)" aria-hidden="true"></i>{{t:ui.talk_title}}</div>
+
+    <div id="gw-tk-who" class="row" data-gw-if="TALK_FIGURE_NAME">
+      <span class="pic" id="gw-tk-pic" data-src="{{TALK_PORTRAIT}}" aria-hidden="true"></span>
+      <div><div style="font-weight:500">{{TALK_FIGURE_NAME}}</div><div class="meta">{{t:ui.talk_until}}: {{TALK_UNTIL_TEXT}}</div><div class="meta">{{TALK_KNOWLEDGE_TEXT}}</div></div>
+    </div>
+
+    <div id="gw-tk-pick" class="row">
+      <label class="row" id="gw-tk-fig-l">{{t:ui.talk_figure}} <select id="gw-tk-fig" aria-label="{{t:ui.talk_figure}}">
+        {{#FIGURES}}<option value="{{F_NAME}}" data-portrait="{{F_PORTRAIT}}" data-id="{{F_ID}}">{{F_NAME}}</option>{{/FIGURES}}
+      </select></label>
+      <label class="row">{{t:ui.talk_until}} <select id="gw-tk-until" aria-label="{{t:ui.talk_until}}">
+        <option value="">{{t:ui.talk_whole_book}}</option>
+        {{#PLACES}}<option value="{{P_VALUE}}">{{P_LABEL}}</option>{{/PLACES}}
+      </select></label>
+    </div>
+
+    <div id="gw-tk-hint" class="meta" style="line-height:1.5">{{t:ui.talk_active_hint}}</div>
+
+    <div id="gw-tk-ins" style="display:flex;flex-direction:column;gap:6px">
+      <div class="meta" style="line-height:1.5">{{t:ui.talk_insights_hint}}</div>
+      {{#INSIGHTS}}
+      <div class="ins" data-idx="{{I_IDX}}" data-field="{{I_FIELD}}">
+        <input type="checkbox" class="on" aria-label="{{t:ui.apply_2}}" style="margin-top:6px">
+        <div style="flex:1;min-width:0"><div class="meta">{{I_FIELD_TEXT}}</div><div class="txt">{{I_TEXT}}</div><div class="meta">{{t:ui.talk_current}} {{I_CURRENT}}</div></div>
+      </div>
+      {{/INSIGHTS}}
+      <div id="gw-tk-none" class="meta">{{t:ui.talk_none}}</div>
+    </div>
+
+    <div id="gw-tk-bar" class="row" style="justify-content:flex-end;border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-tk-discard">{{t:ui.discard}}</button>
+      <button type="button" class="gw-btn" id="gw-tk-end">{{t:ui.talk_end}}</button>
+      <button type="button" class="gw-btn" id="gw-tk-place">{{t:ui.talk_change_place}}</button>
+      <button type="button" class="gw-btn" id="gw-tk-switch">{{t:ui.talk_switch}}</button>
+      <button type="button" class="gw-btn pri" id="gw-tk-start">{{t:ui.talk_start}}</button>
+      <button type="button" class="gw-btn pri" id="gw-tk-apply">{{t:ui.apply}}</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){sendPrompt(GW.message(text,action,data));}
+(function(){
+  var box=document.getElementById('gw-tk'),ds=box.dataset,$=function(id){return document.getElementById(id);};
+  var phase=ds.phase||'start';
+  function show(id,on){var e=$(id);if(e&&!on)e.style.display='none';}
+  var fig=$('gw-tk-fig'),until=$('gw-tk-until');
+  // Profilbild oder Anfangsbuchstabe
+  function portrait(src,name){
+    var p=$('gw-tk-pic');if(!p)return;p.textContent='';
+    if(src){var i=document.createElement('img');i.src=src;i.alt='';i.className='pic';i.style.border='0';p.appendChild(i);}
+    else p.textContent=(name||'?').charAt(0).toUpperCase();
+  }
+  portrait($('gw-tk-pic')&&$('gw-tk-pic').dataset.src,ds.name);
+  if(until&&ds.until)until.value=ds.until;
+  var cards=Array.prototype.slice.call(box.querySelectorAll('.ins'));
+  show('gw-tk-who',phase!=='start'&&!!ds.name);
+  show('gw-tk-pick',phase==='start'||phase==='active');
+  show('gw-tk-hint',phase==='active');
+  show('gw-tk-ins',phase==='insights');
+  ['gw-tk-start'].forEach(function(id){show(id,phase==='start');});
+  ['gw-tk-end','gw-tk-place','gw-tk-switch'].forEach(function(id){show(id,phase==='active');});
+  ['gw-tk-apply','gw-tk-discard'].forEach(function(id){show(id,phase==='insights');});
+  if(phase==='active'){var l=$('gw-tk-fig-l');if(l)l.style.display='none';}   // Figur wechseln zeigt die Auswahl erst auf Klick
+  if(cards.length)$('gw-tk-none').remove();
+  var pending=false;
+  function lock(){box.querySelectorAll('input,select,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
+  function placeText(){return until.value?until.options[until.selectedIndex].text:tr("ui.talk_whole_book");}
+  function startText(name){var u=until.value;return u?tr("ui.talk_message_start_until",{name:name,until:u}):tr("ui.talk_message_start",{name:name});}
+  $('gw-tk-start').addEventListener('click',function(){var name=fig.value;if(!name)return;lock();gwSend(startText(name),'character.talk.start',{figure:name,until:until.value||undefined});});
+  $('gw-tk-end').addEventListener('click',function(){lock();gwSend(tr("ui.talk_message_end"),'character.talk.end',{});});
+  $('gw-tk-place').addEventListener('click',function(){
+    if($('gw-tk-pick').dataset.open!=='1'){$('gw-tk-pick').dataset.open='1';$('gw-tk-pick').style.display='';$('gw-tk-fig-l').style.display='none';$('gw-tk-place').textContent=tr("ui.talk_apply_place");return;}
+    lock();gwSend(tr("ui.talk_message_until",{until:until.value||tr("ui.talk_whole_book")}),'character.talk.until',{until:until.value||'book'});});
+  $('gw-tk-switch').addEventListener('click',function(){
+    if($('gw-tk-pick').dataset.open!=='1'){$('gw-tk-pick').dataset.open='1';$('gw-tk-pick').style.display='';$('gw-tk-fig-l').style.display='';$('gw-tk-switch').textContent=tr("ui.talk_apply_switch");return;}
+    var name=fig.value;if(!name)return;lock();gwSend(startText(name),'character.talk.switch',{figure:name,until:until.value||undefined});});
+  if(phase==='active'){$('gw-tk-pick').style.display='none';}
+  // Erkenntnisse: nichts vorangehakt; erst ankreuzen, dann eigene Bestätigung (zweiter Klick)
+  function choices(){return cards.filter(function(c){return c.querySelector('.on').checked;}).map(function(c){return {index:+c.dataset.idx,field:c.dataset.field,text:c.querySelector('.txt').textContent.trim()};});}
+  function refresh(){var n=choices().length;$('gw-tk-apply').disabled=!n;$('gw-tk-apply').textContent=n?tr("ui.talk_apply_count",{n:n}):tr("ui.apply");cards.forEach(function(c){c.classList.toggle('off',!c.querySelector('.on').checked);});armed=false;}
+  var armed=false;
+  box.addEventListener('change',refresh);
+  $('gw-tk-apply').addEventListener('click',function(){
+    var ch=choices();if(!ch.length)return;
+    if(!armed){armed=true;$('gw-tk-apply').textContent=tr("ui.talk_apply_confirm");return;}
+    lock();gwSend(tr("ui.talk_message_apply",{n:ch.length,name:ds.name}),'character.talk.apply',{figure:ds.figure||ds.name,choices:ch});});
+  $('gw-tk-discard').addEventListener('click',function(){lock();gwSend(tr("ui.talk_message_discard"),'form.cancel',{form:'character.talk.apply'});});
+  if(phase==='insights')refresh();
+})();
+</script>

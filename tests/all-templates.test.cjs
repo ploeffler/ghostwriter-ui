@@ -9,7 +9,7 @@ const de=JSON.parse(fs.readFileSync(path.join(root,'i18n/de.json'),'utf8'));
 const context={window:{}};
 vm.runInNewContext(fs.readFileSync(path.join(root,'dist/gw.js'),'utf8'),context);
 const GW=context.window.GW;
-assert.equal(GW.templates.length,46);
+assert.equal(GW.templates.length,47);
 for(const name of GW.templates){
   assert.equal(GW.supports(name,'en'),true,name);
   const input={LANGUAGE:'en',SECTION_TITLE:'Titel {{PROJECT_TITLE}} <b>',MANUSCRIPT:'Noch nicht begonnen. {{t:ui.description}} <script>',TITLE:'Titel',CHAPTER_NUMBER:3,SECTION_NUMBER:'3.2'};
@@ -62,7 +62,7 @@ approval(true,false);approval(false,false);approval(false,true);
   const en=GW.renderHtml('warteschlange',{QUEUE_EMPTY:'1',QUEUE_BOOK:'Book',QUEUE_COUNT_TEXT:'no jobs'},'en');
   assert(en.includes('Background queue')&&en.includes('No jobs in the queue.'));
 }
-console.log('All 46 bilingual templates: compilation, fallback, immutable data and approval gates passed');
+console.log('All 47 bilingual templates: compilation, fallback, immutable data and approval gates passed');
 // Rückübersetzung ausschließlich der Quelltextliterale: IDs, Selektoren,
 // Bedingungen, strukturierte Aktionen und Freigaberegeln müssen identisch bleiben.
 const crypto=require('node:crypto');
@@ -74,3 +74,19 @@ for(const [name,expected] of Object.entries(contracts)){
   assert.equal(crypto.createHash('sha256').update(normalize(restored)).digest('hex'),expected,'Action logic changed: '+name);
 }
 console.log('All 30 migrated script contracts preserve the original action logic');
+// Figurengespräch-Steuerkarte (GhostWriter #431): drei Stufen, Daten maskiert, Texte in beiden Sprachen
+{
+  for(const lang of ['de','en']){
+    const html=GW.renderHtml('figurengespraech',{LANGUAGE:lang,TALK_PHASE:'insights',TALK_FIGURE_ID:'char-opi',TALK_FIGURE_NAME:'Opi <b>',TALK_UNTIL_TEXT:'Kapitel 2',
+      FIGURES:[{F_ID:'char-opi',F_NAME:'Opi',F_PORTRAIT:''}],PLACES:[{P_VALUE:'2',P_LABEL:'bis Kapitel 2'}],
+      INSIGHTS:[{I_IDX:0,I_FIELD:'traits',I_FIELD_TEXT:'Eigenschaften',I_TEXT:'<i>geduldig</i> {{PROJECT_TITLE}}',I_CURRENT:'brummig'}]},lang);
+    assert(!html.includes('<i>geduldig</i>') && !html.includes('Opi <b>'));
+    assert(html.includes('data-phase="insights"') && html.includes('class="ins"') && !/\{\{t:/.test(html));
+    assert(!/class="on"[^>]*\schecked/.test(html),'Erkenntnisse sind nie vorangehakt');
+    assert(lang==='de'?html.includes('Erkenntnisse aus dem Gespräch'):html.includes('Insights from the conversation'));
+  }
+  const tmpl=fs.readFileSync(path.join(root,'templates','figurengespraech.html'),'utf8');
+  for(const action of ['character.talk.start','character.talk.end','character.talk.until','character.talk.switch','character.talk.apply','form.cancel'])assert(tmpl.includes("'"+action+"'"),action);
+  // Übernehmen nur nach eigener Bestätigung (zweiter Klick), nie vorangehakt
+  assert(tmpl.includes('armed')&&tmpl.includes('ui.talk_apply_confirm'));
+}
