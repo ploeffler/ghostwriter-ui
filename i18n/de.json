@@ -1157,5 +1157,14 @@
   "ui.talk_message_end": "Gespräch beenden",
   "ui.talk_message_until": "Stelle ändern: bis {until}",
   "ui.talk_message_apply": "{n} Erkenntnisse aus dem Gespräch mit {name} übernehmen",
-  "ui.talk_message_discard": "Erkenntnisse verworfen"
+  "ui.talk_message_discard": "Erkenntnisse verworfen",
+  "runtime.check_result_passed": "bestanden",
+  "runtime.check_result_passed_with_notes": "bestanden mit Hinweisen",
+  "runtime.check_result_failed": "nicht bestanden",
+  "runtime.check_result_incomplete": "unvollständig",
+  "runtime.check_result_unknown": "Ergebnis unbekannt",
+  "runtime.check_state_current": "aktuell",
+  "runtime.check_state_changed": "seit Prüfung geändert",
+  "runtime.check_state_unknown": "Stand unbekannt",
+  "runtime.check_partial": "teilweise"
 }

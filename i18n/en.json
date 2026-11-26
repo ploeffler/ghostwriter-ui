@@ -1157,5 +1157,14 @@
   "ui.talk_message_end": "End conversation",
   "ui.talk_message_until": "Change position: until {until}",
   "ui.talk_message_apply": "Apply {n} insights from the conversation with {name}",
-  "ui.talk_message_discard": "Insights discarded"
+  "ui.talk_message_discard": "Insights discarded",
+  "runtime.check_result_passed": "passed",
+  "runtime.check_result_passed_with_notes": "passed with notes",
+  "runtime.check_result_failed": "failed",
+  "runtime.check_result_incomplete": "incomplete",
+  "runtime.check_result_unknown": "result unknown",
+  "runtime.check_state_current": "current",
+  "runtime.check_state_changed": "changed since check",
+  "runtime.check_state_unknown": "state unknown",
+  "runtime.check_partial": "partial"
 }

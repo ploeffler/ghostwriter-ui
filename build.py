@@ -13,12 +13,14 @@ VERSION = (ROOT / 'VERSION').read_text(encoding='utf-8').strip()
 
 RUNTIME = r'''
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function fillText(t,d,outer){return t.replace(/\{\{([A-Z_]+)\}\}/g,function(m,k){return Object.prototype.hasOwnProperty.call(d,k)?esc(d[k]):outer&&Object.prototype.hasOwnProperty.call(outer,k)?esc(outer[k]):m;});}
+  // Arrays und Objekte (GhostWriter #674, ab 0.74.0) werden als JSON-Text eingesetzt: Prüf-Listen kommen als echtes JSON statt als Zeichenkette.
+  function sv(v){return v!==null&&typeof v==='object'?JSON.stringify(v):v;}
+  function fillText(t,d,outer){return t.replace(/\{\{([A-Z_]+)\}\}/g,function(m,k){return Object.prototype.hasOwnProperty.call(d,k)?esc(sv(d[k])):outer&&Object.prototype.hasOwnProperty.call(outer,k)?esc(sv(outer[k])):m;});}
   function fill(t,d){
     // Eine Ersetzung pro Vorlagenstelle: eingesetzte Nutzdaten niemals erneut auswerten.
     return t.replace(/\{\{#([A-Z_]+)\}\}\n?([\s\S]*?)[ \t]*\{\{\/\1\}\}\n?|\{\{([A-Z_]+)\}\}/g,function(m,block,body,key){
       if(block){var rows=d[block]||[];return rows.map(function(r){return fillText(body,r,d);}).join('');}
-      return Object.prototype.hasOwnProperty.call(d,key)?esc(d[key]):m;
+      return Object.prototype.hasOwnProperty.call(d,key)?esc(sv(d[key])):m;
     });
   }
   function language(v){var base=String(v||'de').toLowerCase().replace(/_/g,'-').split('-')[0];return Object.prototype.hasOwnProperty.call(I18N,base)?base:'de';}
@@ -82,7 +84,29 @@ RUNTIME = r'''
       +'color:'+(tone?'var(--text-'+tone+',var(--text-secondary))':'var(--text-secondary)');
     return s;
   }
-  function parse(n,attr){var l;try{l=JSON.parse(n.getAttribute(attr)||'[]');}catch(e){l=null;}n.removeAttribute(attr);return Array.isArray(l)?l:[];}
+  // Kompakte Prüf-Listen (GhostWriter #674, ab 0.74.0): entweder eine Liste von Objekten oder {"k":[Schlüssel],"r":[[Werte],…],"p":[Berichtspfade]};
+  // ist CK_REPORT eine Zahl, ist es der Index in "p" (jeder Pfad steht einmal). Fehlen CK_TEXT, CK_TAG oder CK_MARK, setzt
+  // gw.js sie aus CK_LABEL, CK_SHORT, CK_RESULT, CK_STATE, CK_WHEN bzw. CK_DATE und CK_PARTIAL zusammen (Texte aus den Sprachdateien).
+  var CK_MARKS={passed:'\u2713',passed_with_notes:'\u2713\u00b7',failed:'\u2717',incomplete:'\u2026',unknown:'?'};
+  var CK_TR=function(k){return k;};
+  function ckCompose(c){
+    if(!c.CK_RESULT)return c;
+    var res=String(c.CK_RESULT||''),st=String(c.CK_STATE||''),mark=c.CK_MARK!==undefined?String(c.CK_MARK):(CK_MARKS[res]||'');
+    var suf=st==='changed'?'*':(st==='unknown'?'?':'');if(mark==='?'&&suf==='?')suf='';
+    if(c.CK_MARK===undefined)c.CK_MARK=mark;
+    if(c.CK_TAG===undefined&&c.CK_SHORT!==undefined)c.CK_TAG=String(c.CK_SHORT||'')+mark+suf;
+    if(c.CK_TEXT===undefined&&c.CK_LABEL!==undefined)c.CK_TEXT=String(c.CK_LABEL||'')+': '+CK_TR('runtime.check_result_'+res)+', '+String(c.CK_WHEN||c.CK_DATE||'')+' \u00b7 '+CK_TR('runtime.check_state_'+st)+(c.CK_PARTIAL?' \u00b7 '+CK_TR('runtime.check_partial'):'');
+    return c;
+  }
+  function parse(n,attr){
+    var l;try{l=JSON.parse(n.getAttribute(attr)||'[]');}catch(e){l=null;}n.removeAttribute(attr);
+    if(l&&!Array.isArray(l)&&Array.isArray(l.k)&&Array.isArray(l.r)){
+      var cols=l.k,paths=Array.isArray(l.p)?l.p:[];
+      l=l.r.map(function(row){var o={};cols.forEach(function(c,i){o[c]=Array.isArray(row)&&row[i]!==undefined?row[i]:'';});
+        if(typeof o.CK_REPORT==='number')o.CK_REPORT=paths[o.CK_REPORT]||'';return o;});
+    }
+    return Array.isArray(l)?l.map(function(c){return c&&typeof c==='object'?ckCompose(c):c;}):[];
+  }
   function checks(n){
     var list=parse(n,'data-gw-checks').filter(function(c){return c&&typeof c==='object';});
     if(!list.length){n.remove();return;}
@@ -192,6 +216,7 @@ RUNTIME = r'''
   }
   function render(name,data,el,lang){
     data=unpack(name,data||{});lang=language(lang||data.LANGUAGE);
+    var trl=translator(lang);CK_TR=function(k){return trl(k);};
     var html=renderHtml(name,data,lang);
     el=el||document.getElementById('gw');
     head=String(data.HEAD_SHA||'');
@@ -230,7 +255,9 @@ def validate_translations():
         raise ValueError('Sprachdateien müssen Objekte sein')
     used = set(json.loads((ROOT / 'i18n' / 'native-keys.json').read_text(encoding='utf-8')))
     used |= {'status.' + code for code in ('planned', 'in_progress', 'ready_for_assembly', 'assembly', 'review', 'ready_for_approval', 'approved', 'research', 'brainstorming', 'ready_to_write', 'writing', 'revision', 'fact_check')}
-    used |= {'runtime.unknown_template', 'runtime.unavailable'}
+    used |= {'runtime.unknown_template', 'runtime.unavailable', 'runtime.check_partial'}
+    used |= {'runtime.check_result_' + r for r in ('passed', 'passed_with_notes', 'failed', 'incomplete', 'unknown')}
+    used |= {'runtime.check_state_' + r for r in ('current', 'changed', 'unknown')}
     for name in LOCALIZED:
         html, script = split(ROOT / 'templates' / (name + '.html'))
         used.update(re.findall(r'\{\{t:([a-z0-9_.]+)\}\}', html))
