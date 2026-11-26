@@ -1192,5 +1192,11 @@
   "ui.fb_no_variants": "Noch keine Bilder bei dieser Figur.",
   "ui.fb_no_preview": "keine Vorschau",
   "ui.fb_message_pick": "Bild {id} von {name} auswählen",
-  "ui.fb_message_change": "Bild {id} von {name} ändern"
+  "ui.fb_message_change": "Bild {id} von {name} ändern",
+  "ui.start_queue_label": "Start der Warteschlange",
+  "ui.start_now": "sofort",
+  "ui.start_later": "später",
+  "ui.start_budget_free": "bei freiem Budget",
+  "ui.start_after_approval": "nach Freigabe des Kapitels",
+  "ui.start_time": "Zeitpunkt"
 }

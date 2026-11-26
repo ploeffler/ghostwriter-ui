@@ -141,8 +141,29 @@ RUNTIME = r'''
   // Feld mit längerem oder freiem Text eine Zeile `feld: wert`. Mehrzeilige Werte werden mit zwei Leerzeichen eingerückt,
   // `\` und Backtick mit Backslash maskiert, Zahlen/Objekte als `feld (JSON): …`. expected_head_sha wird auf 12 Zeichen gekürzt.
   function maskText(s){return String(s).replace(/\\/g,'\\\\').replace(/`/g,'\\`');}
+  // Start der Warteschlange (GhostWriter #65, ab 0.77.0): Ein Element mit data-gw-start (Auswahl: now | later | budget_free | after_approval) und
+  // optional data-gw-start-time (Zeitpunkt) ergänzt run.start im Modus scheduled und chapter.research.start um `start`, `not_before` bzw.
+  // `after_event` (chapter_approved[:<Kapitel aus data-chapter>]). Ohne Auswahl oder bei „now“ bleibt die Nachricht unverändert.
+  var START_ACTIONS={'run.start':1,'chapter.research.start':1};
+  function startOptions(action,data){
+    data=data||{};
+    if(!START_ACTIONS[action]||typeof document==='undefined'||!document.querySelector)return data;
+    if(action==='run.start'&&data.mode!=='scheduled')return data;
+    var s=document.querySelector('[data-gw-start]');
+    if(!s||!s.value||s.value==='now')return data;
+    var o={};Object.keys(data).forEach(function(k){o[k]=data[k];});
+    o.start=s.value;
+    if(s.value==='later'){var t=document.querySelector('[data-gw-start-time]');if(t&&t.value)o.not_before=t.value;}
+    if(s.value==='after_approval'){o.after_event='chapter_approved'+(s.getAttribute('data-chapter')?':'+s.getAttribute('data-chapter'):'');}
+    return o;
+  }
+  function startBind(n){
+    var t=n.parentNode&&n.parentNode.querySelector?n.parentNode.querySelector('[data-gw-start-time]'):null;
+    function sync(){if(t)t.style.display=n.value==='later'?'':'none';}
+    n.addEventListener('change',sync);sync();
+  }
   function message(text,action,data){
-    var d=withHead(action,data||{}),inline=[],lines=[];
+    var d=withHead(action,startOptions(action,data)),inline=[],lines=[];
     Object.keys(d).forEach(function(k){
       var v=d[k];
       if(v===undefined)return;
@@ -229,6 +250,7 @@ RUNTIME = r'''
     el.querySelectorAll('[data-gw-checks]').forEach(checks);
     el.querySelectorAll('[data-gw-send]').forEach(confirmSend);
     el.querySelectorAll('[data-gw-variants]').forEach(variants);
+    el.querySelectorAll('[data-gw-start]').forEach(startBind);
     T[name].run(translator(lang));
   }
   window.GW={version:VERSION,templates:Object.keys(T),render:render,renderHtml:renderHtml,unpack:unpack,supports:supports,withHead:withHead,message:message,writes:WRITES.slice(),escape:esc};
