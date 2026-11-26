@@ -1192,5 +1192,11 @@
   "ui.fb_no_variants": "No images for this character yet.",
   "ui.fb_no_preview": "no preview",
   "ui.fb_message_pick": "Pick image {id} of {name}",
-  "ui.fb_message_change": "Change image {id} of {name}"
+  "ui.fb_message_change": "Change image {id} of {name}",
+  "ui.start_queue_label": "Queue start",
+  "ui.start_now": "now",
+  "ui.start_later": "later",
+  "ui.start_budget_free": "when budget is free",
+  "ui.start_after_approval": "after the chapter is approved",
+  "ui.start_time": "Time"
 }

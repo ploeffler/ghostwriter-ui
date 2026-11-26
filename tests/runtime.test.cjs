@@ -300,3 +300,18 @@ console.log('Repeated user data is never re-interpreted as a placeholder');
   assert.ok(GW.writes.includes('checkout.aufbau'));
   console.log('v0.70.0: variant buttons, glossary selection, checked-in return passed');
 }
+// Start der Warteschlange (GhostWriter #65, 0.77.0): data-gw-start ergänzt run.start (scheduled) und chapter.research.start
+{
+  const sel={value:'later',getAttribute:k=>k==='data-chapter'?'ch-02':null},time={value:'2026-11-27T02:00'};
+  context.document.querySelector=q=>q==='[data-gw-start]'?sel:q==='[data-gw-start-time]'?time:null;
+  const m=a=>GW.message('x','run.start',a);
+  assert.match(m({section_id:'s',mode:'scheduled'}),/start=later not_before=2026-11-27T02:00/);
+  assert.doesNotMatch(m({section_id:'s',mode:'immediate'}),/start=/);              // sofort im Chat: nichts ergänzen
+  sel.value='budget_free';assert.match(m({mode:'scheduled'}),/start=budget_free/);assert.doesNotMatch(m({mode:'scheduled'}),/not_before/);
+  sel.value='after_approval';assert.match(m({mode:'scheduled'}),/after_event=chapter_approved:ch-02/);
+  sel.value='now';assert.doesNotMatch(m({mode:'scheduled'}),/start=/);
+  assert.match(GW.message('x','chapter.research.start',{chapter_id:'c'}).replace(/start=now/,''),/chapter.research.start chapter_id=c/);
+  context.document.querySelector=undefined;
+  assert.doesNotMatch(m({mode:'scheduled'}),/start=/);                              // ohne Auswahl im Dokument unverändert
+  console.log('Queue start option: later, budget_free, after_approval and the unchanged defaults passed');
+}

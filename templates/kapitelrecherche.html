@@ -1,4 +1,7 @@
 <!--
+  Start der Warteschlange (ab 0.77.0, GhostWriter #65): Auswahl „Start“ (sofort · später · bei freiem Budget · nach Freigabe) über der Recherche-Zeile; die
+  Laufzeit hängt die Wahl an chapter.research.start (start, not_before, after_event).
+
   Vorlage: Kapitelrecherche (Formular, siehe templates/ui/README.md in GhostWriter)
 
   Inline-Widget für den Chat. Wird über den Knopf rechts im Bereich „Ziel des
@@ -161,6 +164,7 @@
           </div>
         </div>
       </div>
+      <div class="gw-startrow" style="display:flex;align-items:center;gap:var(--gap-sm);flex-wrap:wrap;font-size:13px;color:var(--text-secondary)"><label for="gw-start-sel">{{t:ui.start_queue_label}}</label><select id="gw-start-sel" data-gw-start data-chapter="{{CHAPTER_ID}}" style="font:inherit;font-size:13px;padding:5px 8px;border:0.5px solid var(--border-strong);border-radius:8px;background:var(--surface-1);color:var(--text-primary)"><option value="now">{{t:ui.start_now}}</option><option value="later">{{t:ui.start_later}}</option><option value="budget_free">{{t:ui.start_budget_free}}</option><option value="after_approval">{{t:ui.start_after_approval}}</option></select><input type="datetime-local" data-gw-start-time aria-label="{{t:ui.start_time}}" style="display:none;font:inherit;font-size:13px;padding:5px 8px;border:0.5px solid var(--border-strong);border-radius:8px;background:var(--surface-1);color:var(--text-primary)"></div>
       <div style="display:flex;align-items:center;gap:var(--gap-md);flex-wrap:wrap">
         <div style="flex:1;min-width:200px;font-size:12px;color:var(--text-muted);line-height:1.5">{{t:ui.research_saves_a_separate_run_the_goal_and_summary_change_only_when_saved}}</div>
         <button type="button" class="gw-btn" id="gw-research" style="border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-search" aria-hidden="true"></i>{{t:ui.start_research}}</button>
