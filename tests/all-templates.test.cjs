@@ -9,7 +9,7 @@ const de=JSON.parse(fs.readFileSync(path.join(root,'i18n/de.json'),'utf8'));
 const context={window:{}};
 vm.runInNewContext(fs.readFileSync(path.join(root,'dist/gw.js'),'utf8'),context);
 const GW=context.window.GW;
-assert.equal(GW.templates.length,47);
+assert.equal(GW.templates.length,48);
 for(const name of GW.templates){
   assert.equal(GW.supports(name,'en'),true,name);
   const input={LANGUAGE:'en',SECTION_TITLE:'Titel {{PROJECT_TITLE}} <b>',MANUSCRIPT:'Noch nicht begonnen. {{t:ui.description}} <script>',TITLE:'Titel',CHAPTER_NUMBER:3,SECTION_NUMBER:'3.2'};
@@ -62,7 +62,7 @@ approval(true,false);approval(false,false);approval(false,true);
   const en=GW.renderHtml('warteschlange',{QUEUE_EMPTY:'1',QUEUE_BOOK:'Book',QUEUE_COUNT_TEXT:'no jobs'},'en');
   assert(en.includes('Background queue')&&en.includes('No jobs in the queue.'));
 }
-console.log('All 47 bilingual templates: compilation, fallback, immutable data and approval gates passed');
+console.log('All 48 bilingual templates: compilation, fallback, immutable data and approval gates passed');
 // Rückübersetzung ausschließlich der Quelltextliterale: IDs, Selektoren,
 // Bedingungen, strukturierte Aktionen und Freigaberegeln müssen identisch bleiben.
 const crypto=require('node:crypto');
@@ -96,4 +96,17 @@ console.log('All 30 migrated script contracts preserve the original action logic
   assert(tmpl.includes('data-slice="{{SLICE}}"')&&tmpl.includes("sl!=='kopf'")&&(tmpl.match(/data-gw-head/g)||[]).length>=3);
   const html=GW.renderHtml('projektuebersicht',{LANGUAGE:'de',SLICE:'kapitel',CHAPTERS:[{CHAPTER_ID:'ch-1',CHAPTER_NUMBER:1,CHAPTER_TITLE:'Eins'}]},'de');
   assert(html.includes('data-slice="kapitel"')&&html.includes('Eins'));
+}
+// Figurenbild-Assistent (GhostWriter #540, Teil 3): Stilkarten und Variantenvergleich
+{
+  for(const lang of ['de','en']){
+    const html=GW.renderHtml('figurenbild',{LANGUAGE:lang,FB_MODE:'varianten',FB_FIGURE_ID:'char-opi',FB_FIGURE_NAME:'Opi <b>',
+      VARIANTS:[{V_ID:'bild-001',V_ART_TEXT:'Erzeugung',V_STATUS:'gewaehlt',V_STATUS_TEXT:'ausgewählt',V_KLEIDUNG:'Strickjacke',V_TOOL:'unbekannt',V_PROMPT:'<i>x</i>'}],
+      MEDIA:[{M_VALUE:'foto',M_LABEL:'Foto',M_DESC:'fotorealistisch'}]},lang);
+    assert(!html.includes('Opi <b>')&&!html.includes('<i>x</i>')&&!/\{\{t:/.test(html));
+    assert(html.includes('data-mode="varianten"')&&html.includes('data-status="gewaehlt"'));
+  }
+  const tmpl=fs.readFileSync(path.join(root,'templates','figurenbild.html'),'utf8');
+  for(const action of ['figurenbild.stil.save','figurenbild.pick','figurenbild.change','form.cancel'])assert(tmpl.includes("'"+action+"'"),action);
+  assert(tmpl.includes('armed')&&tmpl.includes('ui.fb_save_confirm'),'Speichern erst nach eigener Bestätigung');
 }

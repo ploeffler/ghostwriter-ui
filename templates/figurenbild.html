@@ -1,0 +1,125 @@
+<!--
+  Vorlage: Figurenbild-Assistent – Stilkarten und Variantenvergleich (GhostWriter #540, Teil 3)
+
+  Inline-Widget für den Chat, zwei Ansichten (FB_MODE):
+  - stil:      Stilkarten für das Medium (Foto, Comic, Illustration, Aquarell, frei) und die weiteren Angaben des Bildstils
+               (Realismus, Farbigkeit, Licht, Ausschnitt, Hintergrund, wiederkehrende Merkmale, Ausschlüsse, Freitext); „Bildstil speichern“
+  - varianten: Variantenvergleich der Bilder einer Figur nebeneinander, je Variante Vorschau, Art, Status, Kleidung, Werkzeug; „Auswählen“
+               und „Ändern“ je Variante
+  Speichern und Auswählen sind eigene Schritte; nichts davon ist eine Referenzfreigabe (#417). Ohne Widget gilt die Textfassung.
+
+  Platzhalter (Text wird von gw.js HTML-maskiert):
+  - {{FB_MODE}}                stil | varianten
+  - {{FB_FIGURE_ID}}, {{FB_FIGURE_NAME}}   Figur (varianten)
+  - {{FB_MEDIUM}}              gewähltes Medium (foto | comic | illustration | aquarell | frei); leer = noch keiner
+  - {{FB_REALISMUS}}, {{FB_FARBIGKEIT}}, {{FB_LICHT}}, {{FB_AUSSCHNITT}}, {{FB_HINTERGRUND}}, {{FB_MERKMALE}}, {{FB_AUSSCHLUESSE}}, {{FB_FREITEXT}}
+                               aktuelle Werte; Merkmale und Ausschlüsse als Text mit Komma
+  - {{FB_INHERITED_TEXT}}      z. B. „Medium von der Serie geerbt“; leer = nichts geerbt
+  Wiederholung zwischen {{#MEDIA}} und {{/MEDIA}}: {{M_VALUE}}, {{M_LABEL}}, {{M_DESC}}
+  Wiederholung zwischen {{#VARIANTS}} und {{/VARIANTS}}: {{V_ID}}, {{V_THUMB}} (kleine Daten-URL oder leer), {{V_ART_TEXT}}, {{V_STATUS}}
+  (idee | gewaehlt | referenz), {{V_STATUS_TEXT}}, {{V_KLEIDUNG}}, {{V_TOOL}}, {{V_INPUT}} (Eingabebild bei einer Änderung), {{V_PROMPT}} (Anfang des Prompts)
+
+  Aktionen (Klartextzeile plus Kurzform, siehe templates/ui/BEFUELLUNG.md):
+  - figurenbild.stil.save    style {medium, realismus, farbigkeit, licht, ausschnitt, hintergrund, merkmale, ausschluesse, freitext} der gefüllten Felder
+  - figurenbild.pick         figure, image_id, status (gewaehlt | idee)
+  - figurenbild.change       figure, image_id (der Assistent fragt, was sich ändern soll)
+  - form.cancel (form: figurenbild.stil.save)
+
+  Voraussetzungen der Darstellungsumgebung: CSS-Variablen des Hosts, Tabler-Icons (ti-*) und sendPrompt(text).
+-->
+<h2 class="sr-only">{{t:ui.fb_title}}</h2>
+<style>
+.gw-fb input[type=text],.gw-fb textarea{font:inherit;font-size:14px;padding:6px 8px;border:0.5px solid var(--border-strong);border-radius:8px;background:var(--surface-1);color:var(--text-primary);min-width:0;width:100%;box-sizing:border-box}
+.gw-fb .meta{font-size:12px;color:var(--text-muted);line-height:1.5}
+.gw-fb .meta:empty{display:none}
+.gw-fb .media{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--gap-sm)}
+.gw-fb .mc{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px 12px;cursor:pointer;text-align:left;font:inherit;color:var(--text-primary);display:flex;flex-direction:column;gap:4px}
+.gw-fb .mc[aria-pressed="true"]{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-fb .vs{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:var(--gap-sm)}
+.gw-fb .vc{border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-2);padding:10px;display:flex;flex-direction:column;gap:6px}
+.gw-fb .vc[data-status="gewaehlt"],.gw-fb .vc[data-status="referenz"]{border-color:var(--border-accent)}
+.gw-fb .th{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;background:var(--surface-1);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:12px}
+.gw-fb .row{display:flex;gap:var(--gap-sm);flex-wrap:wrap;align-items:center}
+.gw-btn{padding:8px 14px;border-radius:var(--radius);font:inherit;font-size:13px;font-weight:500;cursor:pointer;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-primary)}
+.gw-btn.pri{border-color:var(--border-accent);background:var(--bg-accent);color:var(--text-accent)}
+.gw-btn:disabled{opacity:0.45;cursor:default}
+</style>
+<div style="padding:1rem 0">
+  <div class="gw-fb" id="gw-fb" data-mode="{{FB_MODE}}" data-figure="{{FB_FIGURE_ID}}" data-name="{{FB_FIGURE_NAME}}" data-medium="{{FB_MEDIUM}}" style="border:0.5px solid var(--border);border-radius:16px;background:var(--surface-1);padding:var(--pad-lg);display:flex;flex-direction:column;gap:var(--gap-md)">
+    <div style="font-size:18px;font-weight:500;display:flex;align-items:center;gap:8px"><i class="ti ti-palette" style="color:var(--text-secondary)" aria-hidden="true"></i><span id="gw-fb-h"></span></div>
+
+    <div id="gw-fb-stil" style="display:flex;flex-direction:column;gap:var(--gap-md)">
+      <div class="meta">{{t:ui.fb_style_hint}}</div>
+      <div class="meta">{{FB_INHERITED_TEXT}}</div>
+      <div class="media" role="group" aria-label="{{t:ui.fb_medium}}">
+        {{#MEDIA}}<button type="button" class="mc" data-v="{{M_VALUE}}" aria-pressed="false"><span style="font-weight:500">{{M_LABEL}}</span><span class="meta">{{M_DESC}}</span></button>{{/MEDIA}}
+      </div>
+      <label class="meta">{{t:ui.fb_realism}}<input type="text" id="fb-realismus" value="{{FB_REALISMUS}}"></label>
+      <label class="meta">{{t:ui.fb_colours}}<input type="text" id="fb-farbigkeit" value="{{FB_FARBIGKEIT}}"></label>
+      <label class="meta">{{t:ui.fb_light}}<input type="text" id="fb-licht" value="{{FB_LICHT}}"></label>
+      <label class="meta">{{t:ui.fb_framing}}<input type="text" id="fb-ausschnitt" value="{{FB_AUSSCHNITT}}"></label>
+      <label class="meta">{{t:ui.fb_background}}<input type="text" id="fb-hintergrund" value="{{FB_HINTERGRUND}}"></label>
+      <label class="meta">{{t:ui.fb_features}}<input type="text" id="fb-merkmale" value="{{FB_MERKMALE}}"></label>
+      <label class="meta">{{t:ui.fb_exclusions}}<input type="text" id="fb-ausschluesse" value="{{FB_AUSSCHLUESSE}}"></label>
+      <label class="meta">{{t:ui.fb_free_text}}<textarea id="fb-freitext" rows="2">{{FB_FREITEXT}}</textarea></label>
+      <div class="meta">{{t:ui.fb_not_voice}}</div>
+    </div>
+
+    <div id="gw-fb-var" style="display:flex;flex-direction:column;gap:var(--gap-sm)">
+      <div class="meta">{{t:ui.fb_variants_hint}}</div>
+      <div class="vs">
+        {{#VARIANTS}}
+        <div class="vc" data-id="{{V_ID}}" data-status="{{V_STATUS}}">
+          <div class="th" data-src="{{V_THUMB}}"></div>
+          <div style="font-weight:500;font-size:14px">{{V_ID}} · {{V_ART_TEXT}}</div>
+          <div class="meta">{{V_STATUS_TEXT}}</div>
+          <div class="meta">{{t:ui.fb_clothing}}: {{V_KLEIDUNG}}</div>
+          <div class="meta">{{t:ui.fb_tool}}: {{V_TOOL}}</div>
+          <div class="meta">{{V_INPUT}}</div>
+          <div class="meta" style="font-style:italic">{{V_PROMPT}}</div>
+          <div class="row"><button type="button" class="gw-btn pri pick">{{t:ui.fb_pick}}</button><button type="button" class="gw-btn chg">{{t:ui.fb_change}}</button></div>
+        </div>
+        {{/VARIANTS}}
+      </div>
+      <div id="gw-fb-none" class="meta">{{t:ui.fb_no_variants}}</div>
+    </div>
+
+    <div id="gw-fb-bar" class="row" style="justify-content:flex-end;border-top:0.5px solid var(--border);padding-top:var(--pad-md)">
+      <button type="button" class="gw-btn" id="gw-fb-discard">{{t:ui.discard}}</button>
+      <button type="button" class="gw-btn pri" id="gw-fb-save">{{t:ui.fb_save}}</button>
+    </div>
+  </div>
+</div>
+<script>
+function gwSend(text,action,data){sendPrompt(GW.message(text,action,data));}
+(function(){
+  var box=document.getElementById('gw-fb'),ds=box.dataset,mode=ds.mode||'stil',$=function(id){return document.getElementById(id);};
+  $('gw-fb-h').textContent=mode==='varianten'?tr("ui.fb_variants_title",{name:ds.name}):tr("ui.fb_title");
+  function show(id,on){var e=$(id);if(e&&!on)e.remove();}
+  show('gw-fb-stil',mode==='stil');show('gw-fb-var',mode==='varianten');show('gw-fb-bar',mode==='stil');
+  var medium=ds.medium||'';
+  var cards=Array.prototype.slice.call(box.querySelectorAll('.mc'));
+  function mark(){cards.forEach(function(c){c.setAttribute('aria-pressed',String(c.dataset.v===medium));});}
+  cards.forEach(function(c){c.addEventListener('click',function(){medium=(medium===c.dataset.v)?'':c.dataset.v;mark();});});
+  mark();
+  function lock(){box.querySelectorAll('input,textarea,button').forEach(function(x){x.disabled=true;});box.style.opacity='0.6';}
+  function val(id){var e=$(id);return e?e.value.trim():'';}
+  function style(){var s={};if(medium)s.medium=medium;['realismus','farbigkeit','licht','ausschnitt','hintergrund','merkmale','ausschluesse','freitext'].forEach(function(k){var v=val('fb-'+k);if(v)s[k]=v;});return s;}
+  var save=$('gw-fb-save'),armed=false;
+  if(save){save.addEventListener('click',function(){var s=style();if(!Object.keys(s).length)return;
+    if(!armed){armed=true;save.textContent=tr("ui.fb_save_confirm");return;}
+    lock();gwSend(tr("ui.fb_message_save",{medium:medium||'–'}),'figurenbild.stil.save',{style:s});});
+    box.addEventListener('input',function(){armed=false;save.textContent=tr("ui.fb_save");});}
+  var dis=$('gw-fb-discard');if(dis)dis.addEventListener('click',function(){lock();gwSend(tr("ui.fb_message_discard"),'form.cancel',{form:'figurenbild.stil.save'});});
+  // Variantenvergleich: Vorschau, Auswählen, Ändern
+  var vcs=Array.prototype.slice.call(box.querySelectorAll('.vc'));
+  if(vcs.length&&$('gw-fb-none'))$('gw-fb-none').remove();
+  vcs.forEach(function(c){
+    var th=c.querySelector('.th'),src=th.dataset.src;
+    if(src){var i=document.createElement('img');i.src=src;i.alt='';i.className='th';th.replaceWith(i);}else th.textContent=tr("ui.fb_no_preview");
+    c.querySelectorAll('.meta').forEach(function(m){if(!m.textContent.trim()||/:\s*$/.test(m.textContent.trim()))m.remove();});
+    c.querySelector('.pick').addEventListener('click',function(){lock();gwSend(tr("ui.fb_message_pick",{id:c.dataset.id,name:ds.name}),'figurenbild.pick',{figure:ds.figure,image_id:c.dataset.id,status:'gewaehlt'});});
+    c.querySelector('.chg').addEventListener('click',function(){lock();gwSend(tr("ui.fb_message_change",{id:c.dataset.id,name:ds.name}),'figurenbild.change',{figure:ds.figure,image_id:c.dataset.id});});
+  });
+})();
+</script>
