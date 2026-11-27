@@ -63,3 +63,9 @@ Die Version steht in `VERSION`.
 ---
 
 <p align="right"><sub>Entwickelt mit Unterstützung von Claude (Anthropic) · <a href="https://claude.ai">claude.ai</a></sub>&nbsp;&nbsp;<picture><source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg"><img src="assets/logo.svg" alt="GhostWriter" height="22" align="absmiddle"></picture></p>
+
+## Regeln für Vorlagen
+
+- **„Eine Ebene höher“** (Abschnitt → Kapitel → Buch → Bücherregal) hat überall das Symbol `ti-arrow-up`, als quadratischer Knopf (`gw-sq`) im Kopf der Ansicht mit dem Tooltip „Zu <Ebene>“. „Zurück“ ohne Ebene (Einstellungen, Dialoge) bleibt `ti-arrow-left`, Vor/Nächster Abschnitt `ti-chevron-left`/`-right`. `ti-books` zeigt das Bücherregal als Ziel, nicht „höher“. Ein Test (`tests/test_build.py`) prüft die Knöpfe mit `view.project`, `view.chapter` und `view.library` (GhostWriter #760).
+- **„KI-Entwurf“** heißt der Bedienbegriff für das, was früher „Ghostwriting“ hieß (englisch „AI draft“, GhostWriter #759). Interne Kennungen (`data-task="Ghostwriting"`, `writing`, Pfade `writing/`) bleiben unverändert.
+- **Optionen sperren:** `data-available="false"` an einer Option sperrt sie vor dem Klick; die Umgebung setzt den Wert über Platzhalter (z. B. `{{WRITING_NOW_AVAILABLE}}`, `{{RESEARCH_NOW_AVAILABLE}}`), im Chat bleiben sie leer und damit frei.

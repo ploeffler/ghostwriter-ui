@@ -81,3 +81,33 @@ class OutputOptionsFieldsTest(unittest.TestCase):
             self.assertEqual(re.findall(r'value="([^"]*)"', select.group(1)), values)
         formats = re.search(r'id="gw-formats">(.*?)</div>', html, re.S).group(1)
         self.assertEqual(re.findall(r'value="(\w+)"', formats), ['pdf', 'pdf_print', 'booklet', 'cover', 'epub', 'docx'])
+
+
+class UebersichtSymbole(unittest.TestCase):
+    """GhostWriter #760: „eine Ebene höher“ (Abschnitt → Kapitel → Buch → Bücherregal) hat überall das Symbol ti-arrow-up.
+    „Zurück“ ohne Ebene (Einstellungen, Dialoge) bleibt ti-arrow-left."""
+
+    def test_ebene_hoeher_arrow_up(self):
+        import re
+        from pathlib import Path
+        for path in sorted((Path(__file__).resolve().parent.parent / 'templates').glob('*.html')):
+            text = path.read_text(encoding='utf-8')
+            for m in re.finditer(r'<button[^>]*class="gw-sq"[^>]*data-a="view\.(?:project|chapter|library)"[^>]*>\s*<i class="ti ([a-z-]+)"', text):
+                self.assertEqual(m.group(1), 'ti-arrow-up', f'{path.name}: Knopf „eine Ebene höher“ braucht ti-arrow-up')
+        serie = (Path(__file__).resolve().parent.parent / 'templates' / 'serie.html').read_text(encoding='utf-8')
+        self.assertRegex(serie, r'id="gw-back"[^>]*><i class="ti ti-arrow-up"')
+        daten = (Path(__file__).resolve().parent.parent / 'templates' / 'daten.html').read_text(encoding='utf-8')
+        self.assertRegex(daten, r'data-a="view\.library"><i class="ti ti-arrow-up"')
+
+    def test_sofort_sperrbar_und_begriff(self):
+        import json
+        from pathlib import Path
+        root = Path(__file__).resolve().parent.parent
+        t = (root / 'templates' / 'abschnitt-bearbeiten.html').read_text(encoding='utf-8')
+        self.assertIn('data-mode="sofort" data-available="{{WRITING_NOW_AVAILABLE}}"', t)
+        self.assertIn('data-mode="sofort" data-available="{{RESEARCH_NOW_AVAILABLE}}"', t)
+        for lang, word in (('de', 'KI-Entwurf'), ('en', 'AI draft')):
+            d = json.loads((root / 'i18n' / f'{lang}.json').read_text(encoding='utf-8'))
+            self.assertEqual(d['ui.ghostwriting'], word)
+            self.assertNotIn('Automated Content Generation', d['ui.automated_content_generation'])
+            self.assertNotIn('v0.5', d['ui.unavailable_in_v0_5'] + d['ui.after_v0_5'])
